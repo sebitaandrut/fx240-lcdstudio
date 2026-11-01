@@ -49,10 +49,10 @@
   "candidate_binary_bytes": 111746240,
   "candidate_installed_for_autostart": true,
   "physical_lcd_display_loss_tested": true,
-  "actual_os_shutdown_retest_passed": null,
+  "actual_os_shutdown_retest_passed": false,
   "limits": [
     "Owned virtual display loss passed on the frozen executable with the physical LCD, including user-confirmed standby.",
-    "This does not prove that every part of the real desktop shutdown path is identical; an actual OS shutdown/reboot still needs revalidation.",
+    "The owner repeated actual OS reboot with this binary: standby FAILED despite successful isolated physical display-loss testing.",
     "No physical FPS, resource endurance, or other-distribution claim follows from this lifecycle test.",
     "Raw bus/compositor/application logs and lifecycle traces remain private."
   ],
@@ -68,5 +68,18 @@
     "user_confirmed_standby_after_loss": true,
     "actual_os_reboot": false,
     "personal_images_or_video_recorded": false
+  },
+  "actual_os_reboot_result": {
+    "user_confirmed_standby": false,
+    "user_observed": "Last live telemetry frame retained during reboot",
+    "previous_session_event_codes": [
+      "session-start",
+      "guard-started",
+      "gui-start",
+      "guard-armed",
+      "logind-shutdown"
+    ],
+    "completion_events_recorded": false,
+    "interpretation": "Shutdown notification arrived; no worker release or fallback completion was recorded. This does not establish whether processes were blocked or terminated."
   }
 }

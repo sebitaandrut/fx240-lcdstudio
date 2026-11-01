@@ -66,8 +66,16 @@ class ShutdownMonitor(QObject):
         session=self.bridge.session
         if session:session.suspend(active,reason='shutdown')
         if active:
-            self.bridge.flushPreferences()
+            # Do not depend on another Qt event-loop turn: the desktop may tear
+            # down its graphical clients as soon as this callback returns.
+            # Event.wait releases the GIL so the sole USB worker can finish its
+            # current frame, send standby and release its device lock.
+            self.note('shutdown-drain-start')
+            released=not session or session.output_released.wait(self.join_timeout)
+            self.note('shutdown-output-released' if released else 'shutdown-output-timeout')
             self.check()
+            # USB cleanup takes priority over saving UI preferences.
+            self.bridge.flushPreferences()
         else:
             self.release()
             if not self.finished:self.acquire()

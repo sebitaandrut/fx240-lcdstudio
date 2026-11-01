@@ -6,7 +6,7 @@ from pathlib import Path
 import stat
 import time
 
-EVENTS=frozenset('session-start gui-start gui-loop-returned guard-started guard-start-failed guard-armed guard-disarmed guard-control-failed guard-eof guard-term guard-standby-sent guard-standby-failed guard-lock-timeout guard-invalid-input qt-save-state qt-commit qt-about-to-quit logind-shutdown logind-shutdown-canceled sigterm-dispatched sigint-dispatched cleanup-start worker-drained worker-timeout'.split())
+EVENTS=frozenset('session-start gui-start gui-loop-returned guard-started guard-start-failed guard-armed guard-disarmed guard-control-failed guard-eof guard-term guard-standby-sent guard-standby-failed guard-lock-timeout guard-invalid-input qt-save-state qt-commit qt-about-to-quit logind-shutdown logind-shutdown-canceled shutdown-drain-start shutdown-output-released shutdown-output-timeout sigterm-dispatched sigint-dispatched cleanup-start worker-drained worker-timeout'.split())
 
 
 class LifecycleTrace:

@@ -119,6 +119,49 @@ assert device.closes==1 and monitor.finish()
 monitor.dispose();manager.close();dispose_engine(engine)
 ''')
 
+    def test_shutdown_callback_sends_standby_before_return_without_qt_ticks(self):
+        self.run_script(r'''
+import threading
+entered=threading.Event();allow=threading.Event()
+original=device.send
+def delayed_send(reports,delay):
+    if reports!=idle:
+        entered.set();assert allow.wait(2)
+    return original(reports,delay)
+device.send=delayed_send
+assert entered.wait(2)
+# Unblock the in-flight USB frame independently of the GUI event loop.
+timer=threading.Timer(.1,allow.set);timer.start()
+monitor.prepare(True)
+timer.join()
+assert bridge.session.output_released.is_set()
+assert device.last==idle and device.closes==1
+assert monitor.fd is None
+# The still-running session must resume if shutdown is canceled.
+monitor.prepare(False)
+until(lambda:bridge.session.send)
+assert monitor.finish()
+monitor.dispose();manager.close();dispose_engine(engine)
+''')
+
+    def test_shutdown_callback_bounds_wait_and_keeps_inhibitor_on_timeout(self):
+        self.run_script(r'''
+from unittest.mock import Mock
+assert monitor.finish()
+monitor.dispose();manager.close()
+bridge.session=Mock();bridge.session.output_released.wait.return_value=False
+bridge.session.output_released.is_set.return_value=False
+bridge._running=True
+fallback=ShutdownMonitor(app,bridge,bus=Bus(),manager=Manager(),install_signals=False,join_timeout=.02)
+fallback.prepare(True)
+bridge.session.output_released.wait.assert_called_once_with(.02)
+assert fallback.fd is not None # Still waiting; do not report completion.
+bridge.session.output_released.is_set.return_value=True
+fallback.check()
+assert fallback.fd is None
+fallback.dispose();fallback.manager.close();dispose_engine(engine)
+''')
+
     def test_about_to_quit_alone_drains_active_output(self):
         self.run_script(r'''
 QTimer.singleShot(20,app.quit)
