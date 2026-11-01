@@ -1,6 +1,8 @@
 # Extended performance and optical trials — 2026-11-01
 
-These are development measurements on one FX240 and one Linux/Wayland desktop. They do not establish a universal hardware maximum or production stability. The application remains capped at 24 FPS; higher rates were isolated benchmark settings and were never saved as user preferences. No GitHub publication or first commit was performed by these trials.
+These are development measurements on one FX240 and one **Arch Linux/Wayland** desktop. They do not establish a universal hardware maximum or production stability. The application remains capped at 24 FPS; higher rates were isolated benchmark settings and were never saved as user preferences. No GitHub publication or first commit was performed by these trials.
+
+**Distribution scope:** Arch Linux only. Other Linux distributions have not been tested; these results must not be generalized to them.
 
 ## Conclusions for the initial experimental repository
 

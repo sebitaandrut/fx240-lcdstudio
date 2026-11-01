@@ -14,6 +14,7 @@ class TrayController(QObject):
         self.tray_factory = tray_factory
         self.available = False
         self.hidden = False
+        self.pending_startup = False
         icon = tray_icon()
         self.tray = tray_factory(icon,self)
         QGuiApplication.styleHints().colorSchemeChanged.connect(self.update_icon)
@@ -50,11 +51,18 @@ class TrayController(QObject):
         self.available = available
         if available:
             self.tray.show()
+            if self.pending_startup:self.minimize()
         else:
             self.tray.hide()
             if self.hidden:
                 self.restore()
         self.bridge.changed.emit()
+
+    def start_minimized(self):
+        self.pending_startup = True
+        self.check_availability()
+        if self.available:self.minimize()
+        else:self.window.showMinimized()
 
     def minimize(self):
         # Recheck before hiding: never make the only window inaccessible.
@@ -66,8 +74,11 @@ class TrayController(QObject):
     def visibility_changed(self, visibility):
         if visibility == QWindow.Visibility.Minimized:
             self.minimize()
+        elif visibility == QWindow.Visibility.Windowed:
+            self.pending_startup = False
 
     def restore(self):
+        self.pending_startup = False
         self.hidden = False
         self.window.showNormal()
         self.window.requestActivate()

@@ -17,6 +17,7 @@ where = ["src"]
 
 [project.optional-dependencies]
 desktop = ["PySide6-Essentials>=6.8"]
+build = ["PyInstaller>=6.22.3,<7"]
 analysis = ["numpy>=1.26", "opencv-python-headless>=4.8"]
 
 [tool.setuptools.package-data]

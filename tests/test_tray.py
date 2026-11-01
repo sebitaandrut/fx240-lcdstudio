@@ -70,6 +70,24 @@ def finish():
         assert window.isVisible() and not tray.hidden
         tray.minimize()
         assert window.isVisible() # no invisible, inaccessible window
+        tray.start_minimized()
+        assert window.isVisible() and not tray.hidden
+        window.showNormal()
+        assert not tray.pending_startup
+        FakeTray.available=True
+        tray.check_availability()
+        assert window.isVisible() and not tray.hidden
+        FakeTray.available=False
+        tray.check_availability()
+        tray.start_minimized()
+        FakeTray.available=True
+        tray.check_availability()
+        assert tray.hidden and not window.isVisible()
+        tray.restore()
+        assert window.isVisible() and not tray.pending_startup
+        tray.start_minimized()
+        assert tray.hidden
+        tray.restore()
         assert [a.text() for a in tray.menu.actions()]==['Show studio','','Quit']
         bridge.setLanguage('es')
         assert [a.text() for a in tray.menu.actions()]==['Mostrar estudio','','Salir']

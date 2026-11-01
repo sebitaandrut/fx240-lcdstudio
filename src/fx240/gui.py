@@ -70,9 +70,16 @@ class Bridge(QObject):
     sensorsChanged = Signal()
     devicesChanged = Signal()
 
-    def __init__(self, settings, provider=None, session_factory=Session, image_provider=None, preferences=None, application=None):
+    def __init__(self, settings, provider=None, session_factory=Session, image_provider=None, preferences=None, application=None, autostart=None, start_minimized=False):
         super().__init__()
         self.settings = settings
+        self.autostart = autostart
+        self._start_minimized = start_minimized
+        self._startup_error = ""
+        self._autostart_enabled = False
+        if autostart:
+            try:self._autostart_enabled = autostart.enabled
+            except (OSError, ValueError) as error:self._startup_error = str(error)
         self.preferences = preferences
         application = application or {}
         self._language = application.get('language','en')
@@ -108,6 +115,23 @@ class Bridge(QObject):
         self.timer.setInterval(33)
         self.timer.timeout.connect(self.poll)
         self.timer.start()
+
+    @Property(bool, constant=True)
+    def startMinimized(self): return self._start_minimized
+    @Property(bool, constant=True)
+    def autostartSupported(self): return self.autostart is not None
+    @Property(bool, notify=changed)
+    def autostartEnabled(self): return self._autostart_enabled
+    @Slot(bool)
+    def setAutostart(self, enabled):
+        if self.autostart is None:return
+        try:
+            self.autostart.set_enabled(enabled)
+            self._autostart_enabled = self.autostart.enabled
+            self._startup_error = ''
+        except (OSError, ValueError) as error:
+            self._startup_error = str(error)
+        self.changed.emit()
 
     @Property(str, notify=languageChanged)
     def language(self): return self._language
@@ -167,7 +191,10 @@ class Bridge(QObject):
     @Property(str, notify=changed)
     def status(self): return runtime_text(self._status,self._language)
     @Property(str, notify=changed)
-    def runtimeError(self): return runtime_text(self._error,self._language)
+    def runtimeError(self):
+        if self._startup_error:
+            return self.translate('Login startup could not be updated:',self._language)+' '+self._startup_error
+        return runtime_text(self._error,self._language)
     @Property(str, notify=changed)
     def preferenceNotice(self): return runtime_text(self._preference_notice,self._language)
     @Property(bool, notify=changed)
@@ -366,12 +393,12 @@ class Bridge(QObject):
         self.changed.emit()
 
 
-def create_engine(app, settings, provider=None, preferences=None, application=None, session_factory=Session):
+def create_engine(app, settings, provider=None, preferences=None, application=None, session_factory=Session, autostart=None, start_minimized=False):
     app.setApplicationName(APP_NAME)
     app.setApplicationDisplayName(APP_NAME)
     app.setWindowIcon(application_icon())
     QQuickStyle.setStyle("Basic")
-    bridge = Bridge(settings,provider=provider,preferences=preferences,application=application,session_factory=session_factory)
+    bridge = Bridge(settings,provider=provider,preferences=preferences,application=application,session_factory=session_factory,autostart=autostart,start_minimized=start_minimized)
     engine = QQmlApplicationEngine()
     engine.addImageProvider('frames',bridge.images)
     engine.rootContext().setContextProperty('bridge',bridge)
@@ -414,8 +441,11 @@ def launch(args):
             overrides[field] = str(value) if field=='font_path' and value else value
     settings = replace(settings,**overrides)
     settings.validate()
-    engine,bridge = create_engine(app,settings,preferences=preferences,application=application)
+    from .autostart import Autostart
+    minimized = getattr(args,"start_minimized",False)
+    engine,bridge = create_engine(app,settings,preferences=preferences,application=application,autostart=Autostart(),start_minimized=minimized)
     tray = TrayController(engine.rootObjects()[0],bridge)
+    if minimized:tray.start_minimized()
     from .sleep import SleepMonitor
     sleep_monitor = SleepMonitor(bridge)
     QTimer.singleShot(0,bridge.startup)

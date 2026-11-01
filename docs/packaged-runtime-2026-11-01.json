@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-01",
+  "platform_scope": "Arch Linux x86_64 development machine only",
+  "format": "onefile",
+  "binary_bytes": 111718776,
+  "sha256": "1b6dbbaa259156353df55ce75f9f368c291e0345e4afed7339152da349a4fc00",
+  "build_environment": {
+    "python": "3.14.9",
+    "platform": "Linux-7.2.11-arch1-1-x86_64-with-glibc2.44",
+    "architecture": "x86_64",
+    "format": "onefile",
+    "dependencies": {
+      "Pillow": "13.0.0",
+      "PySide6-Essentials": "6.12.0",
+      "shiboken6": "6.12.0",
+      "PyInstaller": "6.22.3",
+      "pyinstaller-hooks-contrib": "2026.9",
+      "altgraph": "0.17.5",
+      "packaging": "26.3",
+      "setuptools": "84.2.1"
+    }
+  },
+  "isolated_runtime": {
+    "application": "FX240 LCD STUDIO",
+    "frozen": true,
+    "qml_loaded": true,
+    "frames": 18,
+    "hid_open_attempts": 0,
+    "preferences_store_enabled": false,
+    "errors": []
+  },
+  "cli_help_exit_code": 0,
+  "config_directory_created": false,
+  "native_graphical_session_tested": false,
+  "physical_usb_tested": false,
+  "clean_machine_tested": false,
+  "other_distributions_tested": false,
+  "real_login_startup_tested": false
+}

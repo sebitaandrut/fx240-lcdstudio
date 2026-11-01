@@ -7,7 +7,7 @@ ApplicationWindow {
     id: window
     width: 1000; height: 650
     minimumWidth: 1000; minimumHeight: 650
-    visible: true; title: bridge.applicationName
+    visible: !bridge.startMinimized; title: bridge.applicationName
     color: backgroundColor
     property int page: 0
     property color lcdAccent: bridge.initialAccent
@@ -457,6 +457,8 @@ ApplicationWindow {
                         GridLayout { columns: 2; Layout.fillWidth: true; columnSpacing: 20; rowSpacing: 12
                             InfoLabel { text: window.tr("Language"); help: "Choose the interface language. Sensor labels and paths from Linux are not translated." }
                             Choice { id: languageChoice; objectName: "languageControl"; model: ["English","Español"]; currentIndex: bridge.language==="es" ? 1 : 0; onCurrentIndexChanged: { if (window.ready) bridge.setLanguage(currentIndex===1 ? "es" : "en") } Layout.fillWidth: true }
+                            InfoLabel { text: window.tr("Start at login"); help: "Start minimized after graphical login. Without a system tray, the window stays in the taskbar. Moving the executable requires enabling this again." }
+                            Choice { objectName: "autostartControl"; model: [window.tr("Disabled"),window.tr("Minimized in tray")]; currentIndex: bridge.autostartEnabled ? 1 : 0; enabled: bridge.autostartSupported; onActivated: function(index) { bridge.setAutostart(index===1) }; Layout.fillWidth: true }
                             InfoLabel { text: window.tr("Output preset"); help: "Presets adjust frame rate, JPEG quality, and report delay together. Custom values remain available below." }
                             Choice { model: ["Smooth · 24 FPS","Conservative · 5 FPS","Custom"]; currentIndex: fps.value===24 && quality.value===65 && Number(delay.text)===2 ? 0 : fps.value===5 && quality.value===85 && Number(delay.text)===10 ? 1 : 2; onActivated: function(index) { window.changeProfile(index) }; Layout.fillWidth: true }
                             InfoLabel { text: window.tr("Typeface file"); help: "Use a local TrueType font or leave this empty for bundled Outfit. A missing font is rejected without interrupting output." }

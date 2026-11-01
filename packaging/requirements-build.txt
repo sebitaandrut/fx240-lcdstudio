@@ -1,0 +1,11 @@
+# Known working Python build environment on Arch Linux x86_64, 2026-11-01.
+# Python itself and native system libraries are documented in docs/building.md.
+pip==26.2.1
+setuptools==84.2.1
+Pillow==13.0.0
+PySide6-Essentials==6.12.0
+shiboken6==6.12.0
+PyInstaller==6.22.3
+pyinstaller-hooks-contrib==2026.9
+altgraph==0.17.5
+packaging==26.3

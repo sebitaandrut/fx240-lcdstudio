@@ -4,11 +4,19 @@ Experimental native Linux client for the **ID-COOLING FX240 LCD**. This first mo
 
 **Status: 0.1.0, experimental; image/GIF output and the Focus/QML workflow have been tested on one FX240. Cold-boot and reconnection tests remain pending.** The protocol comes from a local HID prototype that displayed images and animations in user-reported trials. Packet construction equivalence has been checked; this does not establish compatibility with other models, firmware versions, or interfaces sharing the same VID/PID.
 
+## Validated platform
+
+All hardware, desktop, performance, and optical trials recorded so far were performed on **Arch Linux only**. No other Linux distribution has been tested. General Linux requirements and bundled executables are not evidence of compatibility with other distributions; those remain unverified.
+
 ## Extended performance measurements
 
 [Native USB, Qt preview, resource, and optical trial report](docs/benchmarks/2026-11-01/README.md) records the development tests on one FX240. The host and an experimental Qt instrument reached 90 updates/s in short runs, but this is not evidence of 90 complete physical LCD frames/s. The Gray/inverse videos recovered all 24/30 target IDs under permissive decoding; higher rates had incomplete or mixed-state observability. A ten-minute 60 FPS host run sent 35,981 frames without reported output errors, with approximately 270–274 MiB RSS. The monitor powered off/locked in the final segment, so preview swaps were not uninterrupted for all ten minutes.
 
 The application remains at its conservative 24 FPS default/cap. Higher rates, alternate queue polling, and optical patterns are isolated experimental instruments; 30 FPS is a practical next candidate rather than an enabled application preset. The report includes a failed instrument shutdown, its corrected queued-callback checks, camera/exposure limitations, aggregate evidence, and reproducible commands. Private videos and extracted images are not distributed.
+
+## Build an executable locally
+
+Follow the [build guide](docs/building.md) for Arch Linux dependencies, a pinned isolated build environment, the one-file or directory build, and a safe packaged-runtime check. Users can generate their own executable without keeping a Python environment active at runtime. Only Arch Linux x86_64 has been checked; other distributions and clean-machine installation remain unverified.
 
 ## Quick start
 

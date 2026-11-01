@@ -83,6 +83,11 @@ SPANISH = {
     'Higher quality can increase image detail and USB payload size. Range: 1 to 95.':'Una calidad mayor puede aumentar el detalle y los datos enviados por USB. Rango: 1 a 95.',
     'Pause between HID reports in milliseconds. Lower values may improve transmission time but require hardware validation.':'Pausa entre informes HID, en milisegundos. Reducirla puede acelerar el envío, pero requiere validación en el equipo.',
     'Raw sensor temperatures remain Celsius. Display conversion affects the LCD, preview, and target readings only.':'Los sensores originales se mantienen en Celsius. La conversión cambia el LCD, la vista previa y los valores de referencia.',
+    'Start at login':'Iniciar al entrar al escritorio',
+    'Disabled':'Desactivado','Minimized in tray':'Minimizado en la bandeja',
+    'Login startup could not be updated:':'No se pudo actualizar el inicio automático:',
+    'Start minimized after graphical login. Without a system tray, the window stays in the taskbar. Moving the executable requires enabling this again.':'Inicia minimizado al entrar al escritorio. Sin bandeja, la ventana queda en la barra de tareas. Si movés el ejecutable, activá esta opción nuevamente.',
+
 }
 
 

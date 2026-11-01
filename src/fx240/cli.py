@@ -16,7 +16,8 @@ from .focus import Focus
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="FX240 LCD STUDIO; experimental native Linux client. CLI simulation by default, GUI auto-starts LCD output")
-    parser.add_argument("mode", choices=("image", "gif", "dashboard", "sensors", "focus", "gui"))
+    parser.add_argument("mode", choices=("image", "gif", "dashboard", "sensors", "focus", "gui", "self-test"))
+    parser.add_argument("--start-minimized", action="store_true", help="GUI: start in the tray, or minimize normally when no tray is available")
     parser.add_argument("file", nargs="?", type=Path)
     parser.add_argument("--temperature-unit", choices=("C","F"), default="C", help="Displayed temperature unit; raw sensors remain Celsius")
     parser.add_argument("--temperature-decimals", type=int, choices=(0,1), default=None, help="Focus temperature decimal places")
@@ -52,6 +53,12 @@ def main(argv=None):
         parser.error("At most four metrics are supported")
     if args.overlay and args.mode not in ("image", "gif"):
         parser.error("--overlay requires image or gif mode")
+    if args.start_minimized and args.mode != 'gui':
+        parser.error('--start-minimized requires gui mode')
+    if args.mode == 'self-test':
+        if args.send:parser.error('self-test never transmits')
+        from .selftest import run
+        return run()
     if args.mode == "gui":
         try:
             from .gui import launch
