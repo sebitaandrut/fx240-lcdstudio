@@ -61,3 +61,5 @@ Code, documentation, and commits are maintained in English. The project was deve
 ## Project status and licensing
 
 This is an **experimental baseline**, not a stable release. The packaged GUI and LCD passed initial smoke tests. Startup passed owner trials after full shutdown and warm reboot. Standby passed one actual warm reboot using the desktop-autostarted instance; development-launched trials failed. See [lifecycle evidence and limits](docs/display-loss.md). Repeated lifecycle trials, suspend/resume, prolonged runs, and clean-machine installation remain release gates. GitHub CI is prepared but has not run yet.
+
+Licensed under **GPLv3 or later**: you may use, modify, and redistribute the original project under its terms. See [LICENSE](LICENSE) and [third-party notices](NOTICE.md). Bundled dependencies retain their own licenses; public binary redistribution still requires a complete dependency/notice review.
