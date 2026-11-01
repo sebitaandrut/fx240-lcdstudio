@@ -15,12 +15,13 @@
     "errors": []
   },
   "physical_shutdown_callback_test_passed": true,
-  "actual_os_reboot_standby_passed": false,
+  "actual_os_reboot_standby_passed": true,
   "limits": [
-    "The tested candidate is installed at the autostart path. Its simulated notification passed; its subsequent manually launched real reboot trial failed.",
+    "The same installed binary failed a development-launched reboot trial, then passed one reboot using the desktop-autostarted instance. Launch context correlates with the difference; its exact termination mechanism has not been established.",
     "The previous independent fallback binary failed standby during actual reboot despite passing isolated physical display loss.",
     "Bounded callback drain removes an asynchronous cleanup window; it is not proof of the failed reboot root cause.",
-    "No private trace, OS journal, identity or selected device path is included."
+    "No private trace, OS journal, identity or selected device path is included.",
+    "Full power-off standby with this build, repeated reboot endurance and suspend/resume remain unverified."
   ],
   "physical_shutdown_callback_trial": {
     "real_usb": true,
@@ -53,7 +54,7 @@
     ],
     "user_confirmed_live_output_then_standby": true
   },
-  "actual_os_reboot_trial": {
+  "manually_launched_actual_os_reboot_trial": {
     "user_observed": "Live frame froze immediately after requesting reboot; standby did not appear.",
     "previous_session_event_codes": [
       "session-start",
@@ -67,5 +68,32 @@
     "launch_context": "Candidate was manually launched by the development environment before reboot.",
     "next_login_context": "Read-only process inspection found the autostarted native processes in a dedicated Studio user service.",
     "interpretation": "Missing completion is not proof of a USB hang or forced termination. Different launch ownership is a hypothesis to isolate, not an established cause."
+  },
+  "autostarted_actual_os_reboot_trial": {
+    "actual_os_reboot": true,
+    "launch_context": "Existing instance started by desktop autostart; not relaunched by the development environment.",
+    "user_confirmed_standby_during_reboot": true,
+    "same_installed_binary_hash_verified": true,
+    "previous_session_event_codes": [
+      "session-start",
+      "guard-started",
+      "gui-start",
+      "guard-armed",
+      "logind-shutdown",
+      "shutdown-drain-start",
+      "guard-disarmed",
+      "shutdown-output-released",
+      "sigterm-dispatched",
+      "cleanup-start",
+      "worker-drained",
+      "qt-about-to-quit",
+      "gui-loop-returned",
+      "guard-eof"
+    ],
+    "shutdown_notification_to_output_release_ms": 59.0,
+    "output_timeout_recorded": false,
+    "worker_drained": true,
+    "next_login_fallback_armed": true,
+    "scope": "One owner-observed warm reboot on Arch Linux; trace corroborates worker release and cleanup. Host timing is not an optical latency measurement."
   }
 }

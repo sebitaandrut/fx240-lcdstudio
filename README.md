@@ -10,7 +10,7 @@ An experimental native Linux application for the **ID-COOLING FX240 LCD**, built
 - **Live customization:** colors, rainbow comet, animation speed, fonts, and Celsius/Fahrenheit.
 - **Desktop app:** dark/light themes, English/Spanish, saved preferences, and system tray support.
 - **Image/GIF playback and telemetry overlays through the CLI.** A desktop content editor is planned.
-- **Local executable builds** and opt-in minimized startup after graphical login. Automatic startup was reported successful after full shutdown and warm reboot on Arch Linux; shutdown standby and suspend/resume need further validation.
+- **Local executable builds** and opt-in minimized startup after graphical login. Automatic startup was reported successful after full shutdown and warm reboot on Arch Linux; standby also passed one warm reboot using the autostarted instance. Suspend/resume needs validation.
 
 Sensor availability depends on the hardware and driver. Unsupported readings show `N/A`; proprietary NVIDIA/NVML support is not implemented.
 
@@ -60,6 +60,4 @@ Code, documentation, and commits are maintained in English. The project was deve
 
 ## Project status and licensing
 
-This is an **experimental baseline**, not a stable release. The packaged native GUI and LCD passed an initial visual smoke. Automatic startup passed owner trials after full shutdown and warm reboot. System shutdown still failed to show standby after the signal-based correction. A [display-independent fallback](docs/display-loss.md) passed Wayland-loss tests with simulated transport and the physical LCD; but subsequently failed standby during an actual reboot. A follow-up drains output inside shutdown preparation and passed a simulated notification with the physical LCD, but a manually launched actual reboot still failed. Shutdown remains unresolved. Suspend/resume, prolonged runs, and clean-machine installation remain release gates. GitHub CI is prepared but has not run yet.
-
-Licensed under **GPLv3 or later**: you may use, modify, and redistribute the original project under its terms. See [LICENSE](LICENSE) and [third-party notices](NOTICE.md). Bundled dependencies retain their own licenses; public binary redistribution still requires a complete dependency/notice review.
+This is an **experimental baseline**, not a stable release. The packaged GUI and LCD passed initial smoke tests. Startup passed owner trials after full shutdown and warm reboot. Standby passed one actual warm reboot using the desktop-autostarted instance; development-launched trials failed. See [lifecycle evidence and limits](docs/display-loss.md). Repeated lifecycle trials, suspend/resume, prolonged runs, and clean-machine installation remain release gates. GitHub CI is prepared but has not run yet.

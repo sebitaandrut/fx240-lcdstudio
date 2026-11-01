@@ -1,6 +1,6 @@
 # Boot, endurance, and suspend/resume validation
 
-**Status: automatic startup after full host shutdown and warm reboot was reported successful. The owner observed missing standby on both system shutdown paths; the signal-based correction passed physical SIGTERM standby but failed a subsequent real reboot. The display-independent fallback passed an owned-screen-loss test with the physical LCD; a subsequent real reboot still retained the live frame. The bounded drain passed a simulated notification with the physical LCD, but another manually launched actual reboot failed. Launch ownership is the next variable to isolate. Endurance and suspend/resume remain pending. Arch Linux only.** Run these trials with the packaged executable as a separate validation target; source tests do not establish packaged hardware behavior.
+**Status: automatic startup after full host shutdown and warm reboot passed owner trials. The current packaged build also passed standby during one actual warm reboot using its desktop-autostarted instance; the trace corroborated normal output release and cleanup. Earlier development-launched reboot trials failed and remain recorded. Full power-off standby with this build, repeated lifecycle trials, endurance, and suspend/resume remain pending. Arch Linux only.** Run these trials with the packaged executable as a separate validation target; source tests do not establish packaged hardware behavior.
 
 ## Completed preflight
 
