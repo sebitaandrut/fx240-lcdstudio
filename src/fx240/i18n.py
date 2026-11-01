@@ -94,6 +94,9 @@ SPANISH = {
     'Shutdown standby: logind delay inhibitor active':'Reposo al apagar: reserva de tiempo con logind activa',
     'Shutdown standby: delay inhibitor unavailable; cleanup is best effort':'Reposo al apagar: no se pudo reservar tiempo; se intentará el envío sin garantía',
 
+    'Standby fallback: independent process started':'Respaldo de reposo: proceso independiente iniciado',
+    'Standby fallback: independent process unavailable':'Respaldo de reposo: proceso independiente no disponible',
+
 }
 
 

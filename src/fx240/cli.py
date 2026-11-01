@@ -61,12 +61,20 @@ def main(argv=None):
         from .selftest import run
         return run()
     if args.mode == "gui":
+        from .guard import StandbyGuard
+        from .lifecycle import LifecycleTrace
+        trace=LifecycleTrace();trace.emit('session-start')
+        guard=None
         try:
+            try:guard=StandbyGuard(trace=trace).start()
+            except (OSError,RuntimeError):trace.emit('guard-start-failed')
             from .gui import launch
-            launch(args)
+            trace.emit('gui-start')
+            return launch(args,standby_guard=guard,trace=trace)
         except (ImportError, OSError, RuntimeError) as error:
             parser.exit(1, f"GUI could not start: {error}\nInstall the optional desktop dependencies with: python -m pip install '.[desktop]'\n")
-        return
+        finally:
+            if guard:guard.close()
     if args.mode == "sensors":
         if args.send:
             parser.error("sensors does not transmit")

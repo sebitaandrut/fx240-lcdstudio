@@ -442,6 +442,7 @@ ApplicationWindow {
                         Rule {}
                         Caption { text: bridge.sleepStatus; wrapMode: Text.Wrap; Layout.fillWidth: true }
                         Caption { text: bridge.shutdownStatus; wrapMode: Text.Wrap; Layout.fillWidth: true }
+                        Caption { text: bridge.standbyFallbackStatus; wrapMode: Text.Wrap; Layout.fillWidth: true }
                         Caption { text: bridge.statistics; wrapMode: Text.Wrap; Layout.fillWidth: true }
                         Caption { text: window.tr("One sample feeds the LCD and preview. Sensors refresh at 1 Hz; numeric values update directly. Host timing does not measure physical LCD refresh."); wrapMode: Text.Wrap; Layout.fillWidth: true }
                         Item { Layout.fillHeight: true }

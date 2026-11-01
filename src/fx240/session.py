@@ -77,11 +77,12 @@ def find_devices(root=Path('/sys/class/hidraw')):
 
 
 class Session:
-    def __init__(self, settings, send=False, provider=None, transport_factory=Hidraw, theme_factory=Focus):
+    def __init__(self, settings, send=False, provider=None, transport_factory=Hidraw, theme_factory=Focus, standby_guard=None):
         settings.validate()
         if send and not settings.device:
             raise ValueError('Select a device before starting LCD output')
         self.settings = settings
+        self.standby_guard = standby_guard
         self.send = send
         self.output_requested = send
         self.output_error = None
@@ -157,8 +158,10 @@ class Session:
                 try:
                     jpeg = encode(render_idle(),config.quality,config.rotation)
                     device.send(build_reports(jpeg),config.delay_ms)
+                    if self.standby_guard:self.standby_guard.disarm()
                 except Exception as error:
                     self.output_error = 'Standby frame failed: '+str(error)
+                    if self.standby_guard:self.standby_guard.disarm()
                 finally:
                     manager.__exit__(None,None,None)
                     manager = device = None
@@ -201,6 +204,7 @@ class Session:
                         config = self.settings = candidate
                         if send is not None:
                             self.output_requested = send
+                        if device is not None and self.standby_guard:self.standby_guard.arm(config)
                         self.config_error = None
                         self.config_revision += 1
                     except Exception as error:
@@ -214,6 +218,7 @@ class Session:
                         self.send = True
                         self.output_error = None
                         self.output_released.clear()
+                        if self.standby_guard:self.standby_guard.arm(config)
                     except Exception as error:
                         manager = device = None
                         self.output_requested = self.send = False
@@ -231,6 +236,7 @@ class Session:
                         sent = True
                     except Exception as error:
                         # Do not attempt more reports after a partial/failed write.
+                        if self.standby_guard:self.standby_guard.disarm()
                         manager.__exit__(None,None,None)
                         manager = device = None
                         self.output_requested = self.send = False

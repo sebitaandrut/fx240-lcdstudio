@@ -71,9 +71,10 @@ class Bridge(QObject):
     sensorsChanged = Signal()
     devicesChanged = Signal()
 
-    def __init__(self, settings, provider=None, session_factory=Session, image_provider=None, preferences=None, application=None, autostart=None, start_minimized=False):
+    def __init__(self, settings, provider=None, session_factory=Session, image_provider=None, preferences=None, application=None, autostart=None, start_minimized=False, standby_guard=None):
         super().__init__()
         self.settings = settings
+        self.standby_guard = standby_guard
         self.autostart = autostart
         self._start_minimized = start_minimized
         self._startup_error = ""
@@ -230,6 +231,10 @@ class Bridge(QObject):
     def sleepStatus(self): return runtime_text(self._sleep_status,self._language)
     @Property(str, notify=changed)
     def shutdownStatus(self): return runtime_text(self._shutdown_status,self._language)
+    @Property(str, notify=changed)
+    def standbyFallbackStatus(self):
+        text="Standby fallback: independent process started" if self.standby_guard is not None and self.standby_guard.writer is not None else "Standby fallback: independent process unavailable"
+        return runtime_text(text,self._language)
     @Property(str, constant=True)
     def initialDevice(self): return self.settings.device or ''
     @Property(str, notify=changed)
@@ -294,7 +299,7 @@ class Bridge(QObject):
             config = self.configuration(options)
             config.validate()
             self.settings = config
-            self.session = self.session_factory(config,send=send,provider=self.provider)
+            self.session = self.session_factory(config,send=send,provider=self.provider,**({"standby_guard":self.standby_guard} if self.standby_guard is not None else {}))
             self._error = ''
             self._sequence = -1
             self._running = True
@@ -397,12 +402,12 @@ class Bridge(QObject):
         self.changed.emit()
 
 
-def create_engine(app, settings, provider=None, preferences=None, application=None, session_factory=Session, autostart=None, start_minimized=False):
+def create_engine(app, settings, provider=None, preferences=None, application=None, session_factory=Session, autostart=None, start_minimized=False, standby_guard=None):
     app.setApplicationName(APP_NAME)
     app.setApplicationDisplayName(APP_NAME)
     app.setWindowIcon(application_icon())
     QQuickStyle.setStyle("Basic")
-    bridge = Bridge(settings,provider=provider,preferences=preferences,application=application,session_factory=session_factory,autostart=autostart,start_minimized=start_minimized)
+    bridge = Bridge(settings,provider=provider,preferences=preferences,application=application,session_factory=session_factory,autostart=autostart,start_minimized=start_minimized,standby_guard=standby_guard)
     engine = QQmlApplicationEngine()
     engine.addImageProvider('frames',bridge.images)
     engine.rootContext().setContextProperty('bridge',bridge)
@@ -423,7 +428,7 @@ def dispose_engine(engine):
     QCoreApplication.sendPostedEvents(None,QEvent.Type.DeferredDelete)
 
 
-def launch(args):
+def launch(args,standby_guard=None,trace=None):
     from PySide6.QtWidgets import QApplication
     from .tray import TrayController
     app = QApplication.instance() or QApplication(['fx240'])
@@ -447,17 +452,18 @@ def launch(args):
     settings.validate()
     from .autostart import Autostart
     minimized = getattr(args,"start_minimized",False)
-    engine,bridge = create_engine(app,settings,preferences=preferences,application=application,autostart=Autostart(),start_minimized=minimized)
+    engine,bridge = create_engine(app,settings,preferences=preferences,application=application,autostart=Autostart(),start_minimized=minimized,standby_guard=standby_guard)
     tray = TrayController(engine.rootObjects()[0],bridge)
     if minimized:tray.start_minimized()
     from .sleep import SleepMonitor
     sleep_monitor = SleepMonitor(bridge)
     from .shutdown import ShutdownMonitor
-    shutdown_monitor = ShutdownMonitor(app,bridge)
+    shutdown_monitor = ShutdownMonitor(app,bridge,trace=trace)
     QTimer.singleShot(0,bridge.startup)
     try:
         return app.exec()
     finally:
+        if trace:trace.emit("gui-loop-returned")
         shutdown_monitor.finish()
         shutdown_monitor.dispose()
         sleep_monitor.release()

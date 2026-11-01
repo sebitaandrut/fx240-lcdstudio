@@ -13,9 +13,9 @@
   "privacy_review_application_owned_candidates": "Only upstream Outfit attribution",
   "installed_for_autostart": true,
   "physical_sigterm_trial_tested": true,
-  "physical_system_shutdown_retest_passed": null,
+  "physical_system_shutdown_retest_passed": false,
   "physical_suspend_resume_tested": false,
-  "limits": "Native SIGTERM standby passed; successful standby during desktop shutdown/reboot and physical suspend/resume still require separate revalidation.",
+  "limits": "SIGTERM standby passed, but the subsequent actual desktop reboot failed to show standby. This build is not a successful system-shutdown fix. See display-loss.md for the reproduced bypass and next correction.",
   "physical_sigterm_trial": {
     "scope": "Owned native packaged GUI on the same Arch Linux machine with physical LCD; not an OS reboot",
     "user_confirmed_lcd_updates_before_test": true,
@@ -26,5 +26,6 @@
     "user_confirmed_tray_instance_closed": true,
     "physical_frame_rate_measured": false
   },
-  "physical_system_shutdown_retest_status": "Not run on the corrected binary"
+  "physical_system_shutdown_retest_status": "FAILED: owner observed the last live frame instead of standby during the subsequent real reboot",
+  "next_investigation": "display-loss.md"
 }
