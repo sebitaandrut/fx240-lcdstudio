@@ -89,6 +89,11 @@ SPANISH = {
     'Login startup could not be updated:':'No se pudo actualizar el inicio automático:',
     'Start minimized after graphical login. Without a system tray, the window stays in the taskbar. Moving the executable requires enabling this again.':'Inicia minimizado al entrar al escritorio. Sin bandeja, la ventana queda en la barra de tareas. Si movés el ejecutable, activá esta opción nuevamente.',
 
+    'Shutdown integration not initialized':'Integración de apagado sin iniciar',
+    'Shutdown standby: logind unavailable; desktop/signal cleanup is best effort':'Reposo al apagar: logind no disponible; se intentará el cierre mediante el escritorio o las señales',
+    'Shutdown standby: logind delay inhibitor active':'Reposo al apagar: reserva de tiempo con logind activa',
+    'Shutdown standby: delay inhibitor unavailable; cleanup is best effort':'Reposo al apagar: no se pudo reservar tiempo; se intentará el envío sin garantía',
+
 }
 
 

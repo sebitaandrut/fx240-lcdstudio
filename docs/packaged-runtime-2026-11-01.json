@@ -75,8 +75,22 @@
     "independent_process_or_resource_measurement": false,
     "usb_power_removal_verified": false,
     "device_initialization_independent_of_prior_vendor_use_proven": false,
-    "warm_reboot_separately_tested": false,
+    "warm_reboot_separately_tested": true,
     "suspend_resume_tested": false,
-    "limits": "One owner-observed full host shutdown/startup trial; not an endurance test, independently measured timing, verified USB power cycle, or multi-distribution validation."
-  }
+    "limits": "One owner-observed full host shutdown/startup trial; not an endurance test, independently measured timing, verified USB power cycle, or multi-distribution validation.",
+    "later_shutdown_observation": "Owner later clarified that system shutdown retained the final live frame instead of standby; automatic startup still succeeded."
+  },
+  "warm_reboot_trial": {
+    "date": "2026-11-01",
+    "platform_scope": "Same Arch Linux development machine only",
+    "automatic_startup_user_reported_success": true,
+    "user_reported_result": "Startup also works after a warm reboot; the LCD retained the last live frame during system shutdown and resumed updates after login",
+    "shutdown_standby_user_reported_success": false,
+    "same_shutdown_standby_issue_observed_after_full_poweroff": true,
+    "manual_application_quit_previously_passed": true,
+    "implementation_under_test": "Original packaged executable identified by this report SHA-256",
+    "root_cause_independently_traced": false,
+    "corrected_build_system_shutdown_retest_pending": true
+  },
+  "shutdown_correction_evidence": "shutdown-standby-2026-11-01.json"
 }

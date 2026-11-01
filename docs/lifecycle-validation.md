@@ -1,6 +1,6 @@
 # Boot, endurance, and suspend/resume validation
 
-**Status: one full host shutdown/startup and graphical-login trial reported successful by the owner. Warm reboot, prolonged operation, and physical suspend/resume remain pending. Arch Linux only.** Run these trials with the packaged executable as a separate validation target; source tests do not establish packaged hardware behavior.
+**Status: automatic startup after full host shutdown and warm reboot was reported successful. The owner observed missing standby on both system shutdown paths; the corrected binary passed physical SIGTERM standby but needs real desktop shutdown/reboot revalidation. Endurance and suspend/resume remain pending. Arch Linux only.** Run these trials with the packaged executable as a separate validation target; source tests do not establish packaged hardware behavior.
 
 ## Completed preflight
 
@@ -12,7 +12,13 @@ These are preflight results, **not** an actual boot/login or suspend pass. See [
 
 The owner performed a complete PC shutdown and power-on instead of the requested warm reboot, then reported that it worked perfectly. The preceding checklist covered automatic tray startup without manually launching Studio, updating LCD readings, and restored theme/accent/comet speed. This is recorded as one overall user-confirmed pass; individual checklist answers and an independent process/resource capture were not obtained for this boot.
 
-This verifies the observed host shutdown/startup/login workflow on this Arch Linux machine. It does not establish that USB standby power was removed, that the LCD lost all state, or that prior vendor initialization is unnecessary. No AC disconnection or internal cable manipulation is required for the next trials. Warm reboot remains a separate unchecked case. See [structured evidence](packaged-runtime-2026-11-01.json).
+This verifies the observed host shutdown/startup/login workflow on this Arch Linux machine. It does not establish that USB standby power was removed, that the LCD lost all state, or that prior vendor initialization is unnecessary. No AC disconnection or internal cable manipulation is required for the next trials. A subsequent warm reboot also started correctly; see the shutdown failure below. See [structured evidence](packaged-runtime-2026-11-01.json).
+
+## Warm reboot and shutdown standby failure — 2026-11-01
+
+The owner also confirmed automatic startup after a warm reboot. In both the reboot and full shutdown cases, the LCD retained the last transmitted live frame instead of showing standby; this was more visible on reboot. Updating output resumed after login. This refines the earlier overall success report: startup passed, while standby at system shutdown did not. Manual Quit had previously returned the LCD to standby successfully.
+
+The original build handled manual exit and sleep preparation but did not explicitly subscribe to shutdown preparation or handle Unix termination signals. That is an implementation gap consistent with the symptom, not an independently traced proof of which shutdown path the desktop used. The correction adds logind shutdown preparation with a separate delay inhibitor, desktop session callbacks, termination handling, and bounded worker cleanup. See [shutdown design and verification](shutdown-standby.md). A subsequent owned-process SIGTERM test with the corrected executable returned exit code 0; the owner confirmed the standby image and closed tray instance, with the shutdown delay inhibitor active beforehand. Actual desktop shutdown/reboot with the new executable remains pending until observed again.
 
 ## Preparation
 

@@ -100,6 +100,7 @@ class Session:
         self.config_error = None
         self.config_revision = 0
         self._update_lock = threading.Lock()
+        self._suspend_reasons = set()
         self._pending_config = None
 
     def publish(self, event):
@@ -136,12 +137,15 @@ class Session:
         with self._update_lock:
             self._pending_config = (settings,send)
 
-    def suspend(self, sleeping):
-        if sleeping:
-            self.output_released.clear()
-            self.suspended.set()
-        else:
-            self.suspended.clear()
+    def suspend(self, sleeping, reason='sleep'):
+        # Independent notifications must not resume each other's paused output.
+        with self._update_lock:
+            if sleeping:self._suspend_reasons.add(reason)
+            else:self._suspend_reasons.discard(reason)
+            if self._suspend_reasons:
+                if not self.suspended.is_set():self.output_released.clear()
+                self.suspended.set()
+            else:self.suspended.clear()
 
     def run(self):
         config = self.settings

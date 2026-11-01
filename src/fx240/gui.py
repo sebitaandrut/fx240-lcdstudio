@@ -111,6 +111,7 @@ class Bridge(QObject):
         self._sending = False
         self._closing = False
         self._sleep_status = 'Suspend integration not initialized'
+        self._shutdown_status = 'Shutdown integration not initialized'
         self._tray = None
         self.timer = QTimer(self)
         self.timer.setInterval(33)
@@ -227,6 +228,8 @@ class Bridge(QObject):
     def errorMessage(self): return runtime_text(self._error or self._preference_notice,self._language)
     @Property(str, notify=changed)
     def sleepStatus(self): return runtime_text(self._sleep_status,self._language)
+    @Property(str, notify=changed)
+    def shutdownStatus(self): return runtime_text(self._shutdown_status,self._language)
     @Property(str, constant=True)
     def initialDevice(self): return self.settings.device or ''
     @Property(str, notify=changed)
@@ -449,13 +452,14 @@ def launch(args):
     if minimized:tray.start_minimized()
     from .sleep import SleepMonitor
     sleep_monitor = SleepMonitor(bridge)
+    from .shutdown import ShutdownMonitor
+    shutdown_monitor = ShutdownMonitor(app,bridge)
     QTimer.singleShot(0,bridge.startup)
-    result = app.exec()
-    bridge.stop()
-    if bridge.session and bridge.session.thread:
-        bridge.session.thread.join(timeout=2)
-    bridge.flushPreferences()
-    sleep_monitor.release()
-    tray.dispose()
-    dispose_engine(engine)
-    return result
+    try:
+        return app.exec()
+    finally:
+        shutdown_monitor.finish()
+        shutdown_monitor.dispose()
+        sleep_monitor.release()
+        tray.dispose()
+        dispose_engine(engine)
