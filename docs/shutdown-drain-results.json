@@ -15,9 +15,9 @@
     "errors": []
   },
   "physical_shutdown_callback_test_passed": true,
-  "actual_os_reboot_standby_passed": null,
+  "actual_os_reboot_standby_passed": false,
   "limits": [
-    "Candidate only: currently running/autostart binary is unchanged.",
+    "The tested candidate is installed at the autostart path. Its simulated notification passed; its subsequent manually launched real reboot trial failed.",
     "The previous independent fallback binary failed standby during actual reboot despite passing isolated physical display loss.",
     "Bounded callback drain removes an asynchronous cleanup window; it is not proof of the failed reboot root cause.",
     "No private trace, OS journal, identity or selected device path is included."
@@ -52,5 +52,20 @@
       "guard-eof"
     ],
     "user_confirmed_live_output_then_standby": true
+  },
+  "actual_os_reboot_trial": {
+    "user_observed": "Live frame froze immediately after requesting reboot; standby did not appear.",
+    "previous_session_event_codes": [
+      "session-start",
+      "guard-started",
+      "gui-start",
+      "guard-armed",
+      "logind-shutdown",
+      "shutdown-drain-start"
+    ],
+    "output_release_or_timeout_recorded": false,
+    "launch_context": "Candidate was manually launched by the development environment before reboot.",
+    "next_login_context": "Read-only process inspection found the autostarted native processes in a dedicated Studio user service.",
+    "interpretation": "Missing completion is not proof of a USB hang or forced termination. Different launch ownership is a hypothesis to isolate, not an established cause."
   }
 }
