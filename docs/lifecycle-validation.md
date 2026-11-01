@@ -2,6 +2,12 @@
 
 **Status: planned; no real boot/login or physical suspend/resume pass is claimed. Arch Linux only.** Run these trials with the packaged executable as a separate validation target; source tests do not establish packaged hardware behavior.
 
+## Completed preflight
+
+The owner confirmed that the packaged native GUI opens, updates the preview and physical LCD, and closes normally with the recreated standby frame. The managed login entry passed desktop-file validation and points to the current executable with `gui --start-minimized`. Its configuration and preference file were checked locally without publishing their paths or contents. A manual minimized relaunch was confirmed to start in the tray, resume LCD output, allow tray restoration, and preserve theme, accent, and comet speed. The initial process exited with code 0.
+
+These are preflight results, **not** an actual boot/login or suspend pass. See [packaged runtime evidence](packaged-runtime-2026-11-01.json). The first pending physical step is Trial A below.
+
 ## Preparation
 
 1. Finish and verify a local build using [the build guide](building.md). Keep its executable in a stable directory and record its SHA-256, application commit, Python/Qt versions, session type, target FPS, JPEG quality, and report delay. Keep raw logs and local paths private.

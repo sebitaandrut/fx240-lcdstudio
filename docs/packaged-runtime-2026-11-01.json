@@ -31,11 +31,33 @@
   },
   "cli_help_exit_code": 0,
   "config_directory_created": false,
-  "native_graphical_session_tested": false,
-  "physical_usb_tested": false,
+  "native_graphical_session_tested": true,
+  "physical_usb_tested": true,
   "clean_machine_tested": false,
   "other_distributions_tested": false,
   "real_login_startup_tested": false,
   "project_license": "GPL-3.0-or-later",
-  "project_license_and_notice_bundled": true
+  "project_license_and_notice_bundled": true,
+  "native_confirmation": {
+    "scope": "Initial manual packaged GUI/USB smoke on the same Arch Linux development machine; not a boot, endurance, or suspend result",
+    "user_confirmed_window_opened": true,
+    "user_confirmed_preview_updates": true,
+    "user_confirmed_physical_readings_update": true,
+    "observed_lcd_open_processes": 1,
+    "physical_fps_measured": false
+  },
+  "lifecycle_preflight": {
+    "desktop_entry_valid": true,
+    "entry_targets_current_binary_and_minimized_mode": true,
+    "preferences_load_without_warning": true,
+    "user_confirmed_normal_close_returns_lcd_to_standby": true,
+    "normal_close_process_exit_code": 0,
+    "user_confirmed_manual_minimized_start": true,
+    "user_confirmed_lcd_output_resumes": true,
+    "user_confirmed_theme_accent_speed_preserved": true,
+    "user_confirmed_tray_restore_works": true,
+    "real_reboot_or_login_tested": false,
+    "physical_suspend_resume_tested": false,
+    "scope": "Manual restart with the same packaged executable and validated login entry; not an actual login or reboot trial"
+  }
 }

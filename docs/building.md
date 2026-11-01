@@ -60,11 +60,11 @@ For a directory build, keep the **entire** `dist/fx240-lcd-studio/` folder toget
 
 The executable uses the same preference file as the source app, at `$XDG_CONFIG_HOME/fx240-linux/settings.json`, defaulting to `~/.config/fx240-linux/settings.json`. Keep the executable in a permanent location before enabling **Settings → Start at login → Minimized in tray**. This opt-in setting installs a per-user desktop entry; it runs after graphical login, not before login. Disable it in Settings to remove the managed entry. Moving the executable requires disabling and enabling the option again from its new location. Source-mode startup similarly depends on keeping its installed environment in place.
 
-Run `./dist/fx240-lcd-studio gui --start-minimized` to try minimized startup manually. When the tray host is unavailable, a minimized taskbar window remains accessible; when the host appears, startup can move into the tray. Restoring the window cancels that deferred hide. Autostart-file generation and tray fallback have automated checks, but a real logout/login or reboot remains pending. See the [freedesktop autostart specification](https://specifications.freedesktop.org/autostart/latest/).
+Run `./dist/fx240-lcd-studio gui --start-minimized` to try minimized startup manually. When the tray host is unavailable, a minimized taskbar window remains accessible; when the host appears, startup can move into the tray. Restoring the window cancels that deferred hide. Autostart-file generation and tray fallback have automated checks. The owner also confirmed a manual packaged minimized relaunch, restored tray access, resumed LCD output, and preserved preferences. A real logout/login or reboot remains pending. See the [freedesktop autostart specification](https://specifications.freedesktop.org/autostart/latest/).
 
 Packaging does not grant access to `/dev/hidrawN`. Identify the verified LCD interface and configure its permissions for your distribution. Do not run the whole application as root to bypass access errors. Device numbering can change. Refer to the main README's transport checks and limitations before physical output.
 
-The local build check and its environment are recorded in [packaged runtime evidence](packaged-runtime-2026-11-01.json). These are runtime checks, not a physical LCD performance trial.
+The local build check and its environment are recorded in [packaged runtime evidence](packaged-runtime-2026-11-01.json). The owner subsequently confirmed that this executable opens the native GUI and updates both preview and physical readings, with one process holding the LCD descriptor. This initial smoke does not establish physical FPS, endurance, boot, or suspend/resume behavior.
 
 ## Troubleshooting and unverified platforms
 
