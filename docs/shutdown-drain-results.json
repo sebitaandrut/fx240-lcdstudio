@@ -2,7 +2,7 @@
   "date": "2026-11-01",
   "platform_scope": "Arch Linux x86_64 only",
   "candidate_binary_sha256": "a6a1fe75592dfe32321fdb143f08f9a43dba24f1206dfb8f539f92f14ec10537",
-  "candidate_installed_for_autostart": false,
+  "candidate_installed_for_autostart": true,
   "automated_tests_passed": 113,
   "shutdown_regressions_passed": 7,
   "frozen_self_test": {
@@ -14,12 +14,43 @@
     "preferences_store_enabled": false,
     "errors": []
   },
-  "physical_shutdown_callback_test_passed": null,
+  "physical_shutdown_callback_test_passed": true,
   "actual_os_reboot_standby_passed": null,
   "limits": [
     "Candidate only: currently running/autostart binary is unchanged.",
     "The previous independent fallback binary failed standby during actual reboot despite passing isolated physical display loss.",
     "Bounded callback drain removes an asynchronous cleanup window; it is not proof of the failed reboot root cause.",
     "No private trace, OS journal, identity or selected device path is included."
-  ]
+  ],
+  "physical_shutdown_callback_trial": {
+    "real_usb": true,
+    "frozen_application": true,
+    "isolated_logind_notification": true,
+    "actual_os_shutdown": false,
+    "delay_inhibitor_requests": 2,
+    "notification_received": true,
+    "drain_started": true,
+    "output_released": true,
+    "output_timeout": false,
+    "fallback_disarmed": true,
+    "exit_code": 0,
+    "failure": null,
+    "events": [
+      "session-start",
+      "guard-started",
+      "gui-start",
+      "guard-armed",
+      "logind-shutdown",
+      "shutdown-drain-start",
+      "guard-disarmed",
+      "shutdown-output-released",
+      "sigterm-dispatched",
+      "cleanup-start",
+      "worker-drained",
+      "qt-about-to-quit",
+      "gui-loop-returned",
+      "guard-eof"
+    ],
+    "user_confirmed_live_output_then_standby": true
+  }
 }
