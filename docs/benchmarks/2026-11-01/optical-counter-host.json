@@ -1,0 +1,62 @@
+{
+  "started_utc": "2026-11-01T16:57:45.696274+00:00",
+  "scope": "host loop; not optical refresh",
+  "usb": true,
+  "error": null,
+  "profiles": [
+    {
+      "content": "diagnostic",
+      "target_fps": 24.0,
+      "delay_ms": 1.0,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 360,
+      "duration_s": 15.000056732000303,
+      "host_completion_fps": 23.999909229142823,
+      "start_interval_fps": 23.999927967057236,
+      "interval_ms_p95": 41.67947600035404,
+      "pipeline_ms_mean": 11.668822566659603,
+      "pipeline_ms_p95": 12.160033999862208,
+      "pipeline_ms_p99": 12.437620000127936,
+      "transmission_ms_mean": 10.195223697244021,
+      "transmission_ms_p95": 10.408412999822758,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        9000,
+        9709
+      ],
+      "reports_range": [
+        9,
+        10
+      ],
+      "cpu_one_core_percent": 3.7705756058469055
+    },
+    {
+      "content": "diagnostic",
+      "target_fps": 60.0,
+      "delay_ms": 1.0,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 900,
+      "duration_s": 15.000055800000155,
+      "host_completion_fps": 59.99977680082968,
+      "start_interval_fps": 59.99980068853561,
+      "interval_ms_p95": 16.67307299976528,
+      "pipeline_ms_mean": 11.568364705537736,
+      "pipeline_ms_p95": 12.037466000037966,
+      "pipeline_ms_p99": 12.209213999994972,
+      "transmission_ms_mean": 10.16699665554572,
+      "transmission_ms_p95": 10.297634999915317,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        8881,
+        9913
+      ],
+      "reports_range": [
+        9,
+        10
+      ],
+      "cpu_one_core_percent": 8.943948248512424
+    }
+  ]
+}

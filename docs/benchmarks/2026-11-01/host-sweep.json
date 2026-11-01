@@ -1,0 +1,413 @@
+{
+  "started_utc": "2026-11-01T16:50:34.012400+00:00",
+  "scope": "host loop; not optical refresh",
+  "usb": true,
+  "error": null,
+  "profiles": [
+    {
+      "content": "focus",
+      "target_fps": 24,
+      "delay_ms": 2,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 192,
+      "duration_s": 8.000053135999224,
+      "host_completion_fps": 23.99984059306111,
+      "start_interval_fps": 23.999837627400574,
+      "interval_ms_p95": 41.68081099942356,
+      "pipeline_ms_mean": 19.86827823434112,
+      "pipeline_ms_p95": 20.918448999509565,
+      "pipeline_ms_p99": 23.095626999747765,
+      "transmission_ms_mean": 15.064176703134535,
+      "transmission_ms_p95": 15.441921000274306,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        7447,
+        8027
+      ],
+      "reports_range": [
+        8,
+        8
+      ],
+      "cpu_one_core_percent": 11.75594826699275
+    },
+    {
+      "content": "focus",
+      "target_fps": 30,
+      "delay_ms": 2,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 240,
+      "duration_s": 8.000050075000217,
+      "host_completion_fps": 29.99981221992457,
+      "start_interval_fps": 29.99977034987374,
+      "interval_ms_p95": 33.34582300067268,
+      "pipeline_ms_mean": 19.769470116652126,
+      "pipeline_ms_p95": 20.513113999186317,
+      "pipeline_ms_p99": 21.49466399987432,
+      "transmission_ms_mean": 14.97081152079621,
+      "transmission_ms_p95": 15.145313999710197,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        7017,
+        7911
+      ],
+      "reports_range": [
+        7,
+        8
+      ],
+      "cpu_one_core_percent": 14.633653977471738
+    },
+    {
+      "content": "focus",
+      "target_fps": 40,
+      "delay_ms": 2,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 320,
+      "duration_s": 8.000052852999943,
+      "host_completion_fps": 39.999735736746175,
+      "start_interval_fps": 39.99974671508479,
+      "interval_ms_p95": 25.007984000694705,
+      "pipeline_ms_mean": 19.567492706281087,
+      "pipeline_ms_p95": 20.539754999845172,
+      "pipeline_ms_p99": 21.45076400029211,
+      "transmission_ms_mean": 14.967396956240009,
+      "transmission_ms_p95": 15.221941999698174,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        6956,
+        8001
+      ],
+      "reports_range": [
+        7,
+        8
+      ],
+      "cpu_one_core_percent": 18.717894012893602
+    },
+    {
+      "content": "focus",
+      "target_fps": 48,
+      "delay_ms": 2,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 384,
+      "duration_s": 8.000394369000787,
+      "host_completion_fps": 47.99763390263471,
+      "start_interval_fps": 47.99771173578296,
+      "interval_ms_p95": 20.83845100059989,
+      "pipeline_ms_mean": 18.885044520840683,
+      "pipeline_ms_p95": 19.44726500005345,
+      "pipeline_ms_p99": 20.4846840006212,
+      "transmission_ms_mean": 14.98889204686312,
+      "transmission_ms_p95": 15.045134000502003,
+      "over_budget_frames": 1,
+      "jpeg_bytes_range": [
+        7390,
+        7934
+      ],
+      "reports_range": [
+        8,
+        8
+      ],
+      "cpu_one_core_percent": 19.01954162279685
+    },
+    {
+      "content": "focus",
+      "target_fps": 60,
+      "delay_ms": 2,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 429,
+      "duration_s": 8.012412367999787,
+      "host_completion_fps": 53.541927236964625,
+      "start_interval_fps": 53.541369997752206,
+      "interval_ms_p95": 19.177158000275085,
+      "pipeline_ms_mean": 18.660369657354877,
+      "pipeline_ms_p95": 19.165538999914133,
+      "pipeline_ms_p99": 20.30314600051497,
+      "transmission_ms_mean": 14.995055981351488,
+      "transmission_ms_p95": 15.046393999909924,
+      "over_budget_frames": 429,
+      "jpeg_bytes_range": [
+        7393,
+        8008
+      ],
+      "reports_range": [
+        8,
+        8
+      ],
+      "cpu_one_core_percent": 20.008317974280807
+    },
+    {
+      "content": "focus",
+      "target_fps": 24,
+      "delay_ms": 1,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 192,
+      "duration_s": 8.000053433000176,
+      "host_completion_fps": 23.999839702070123,
+      "start_interval_fps": 23.99985310682637,
+      "interval_ms_p95": 41.68200900039665,
+      "pipeline_ms_mean": 12.697908609401528,
+      "pipeline_ms_p95": 13.39823200032697,
+      "pipeline_ms_p99": 14.232902999538055,
+      "transmission_ms_mean": 8.011675880207273,
+      "transmission_ms_p95": 8.17306000044482,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        7357,
+        7970
+      ],
+      "reports_range": [
+        8,
+        8
+      ],
+      "cpu_one_core_percent": 11.426225995308052
+    },
+    {
+      "content": "focus",
+      "target_fps": 30,
+      "delay_ms": 1,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 240,
+      "duration_s": 8.000071394999395,
+      "host_completion_fps": 29.999732271141582,
+      "start_interval_fps": 29.99980664685292,
+      "interval_ms_p95": 33.34541200001695,
+      "pipeline_ms_mean": 12.714868154156042,
+      "pipeline_ms_p95": 13.302814000780927,
+      "pipeline_ms_p99": 14.227103999473911,
+      "transmission_ms_mean": 8.007206704189684,
+      "transmission_ms_p95": 8.146329999362933,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        7200,
+        7944
+      ],
+      "reports_range": [
+        8,
+        8
+      ],
+      "cpu_one_core_percent": 14.338599649460829
+    },
+    {
+      "content": "focus",
+      "target_fps": 40,
+      "delay_ms": 1,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 320,
+      "duration_s": 8.000055947999499,
+      "host_completion_fps": 39.999720261958856,
+      "start_interval_fps": 39.99975015077613,
+      "interval_ms_p95": 25.01083499919332,
+      "pipeline_ms_mean": 12.610062431269853,
+      "pipeline_ms_p95": 13.11553499999718,
+      "pipeline_ms_p99": 14.290602000073704,
+      "transmission_ms_mean": 7.993300968789185,
+      "transmission_ms_p95": 8.047280999562645,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        7378,
+        7944
+      ],
+      "reports_range": [
+        8,
+        8
+      ],
+      "cpu_one_core_percent": 18.752644178384106
+    },
+    {
+      "content": "focus",
+      "target_fps": 48,
+      "delay_ms": 1,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 384,
+      "duration_s": 8.00004969100064,
+      "host_completion_fps": 47.999701855848045,
+      "start_interval_fps": 47.999694199589314,
+      "interval_ms_p95": 20.837770000071032,
+      "pipeline_ms_mean": 11.76792901821718,
+      "pipeline_ms_p95": 12.244483999893419,
+      "pipeline_ms_p99": 12.777689000358805,
+      "transmission_ms_mean": 7.9840435677193495,
+      "transmission_ms_p95": 8.03956100025971,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        7159,
+        7905
+      ],
+      "reports_range": [
+        8,
+        8
+      ],
+      "cpu_one_core_percent": 18.46509935634202
+    },
+    {
+      "content": "focus",
+      "target_fps": 60,
+      "delay_ms": 1,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 480,
+      "duration_s": 8.00005086300007,
+      "host_completion_fps": 59.99961852992482,
+      "start_interval_fps": 59.99963185778985,
+      "interval_ms_p95": 16.67003599959571,
+      "pipeline_ms_mean": 11.624778289575488,
+      "pipeline_ms_p95": 12.246374999449472,
+      "pipeline_ms_p99": 12.77319900054863,
+      "transmission_ms_mean": 7.986658654162208,
+      "transmission_ms_p95": 8.043670999541064,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        7388,
+        7941
+      ],
+      "reports_range": [
+        8,
+        8
+      ],
+      "cpu_one_core_percent": 22.178750502776463
+    },
+    {
+      "content": "focus",
+      "target_fps": 24,
+      "delay_ms": 0.5,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 192,
+      "duration_s": 8.00005469700045,
+      "host_completion_fps": 23.999835910120552,
+      "start_interval_fps": 23.999841300484622,
+      "interval_ms_p95": 41.67992000020604,
+      "pipeline_ms_mean": 9.158230833288409,
+      "pipeline_ms_p95": 10.062557999845012,
+      "pipeline_ms_p99": 10.649882000507205,
+      "transmission_ms_mean": 4.493369130206777,
+      "transmission_ms_p95": 4.662477999772818,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        7011,
+        7951
+      ],
+      "reports_range": [
+        7,
+        8
+      ],
+      "cpu_one_core_percent": 11.356337467800557
+    },
+    {
+      "content": "focus",
+      "target_fps": 30,
+      "delay_ms": 0.5,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 240,
+      "duration_s": 8.00005843100007,
+      "host_completion_fps": 29.999780885350123,
+      "start_interval_fps": 29.999873539865174,
+      "interval_ms_p95": 33.37220100002014,
+      "pipeline_ms_mean": 9.159384120857794,
+      "pipeline_ms_p95": 9.868471000118006,
+      "pipeline_ms_p99": 10.931439000160026,
+      "transmission_ms_mean": 4.493869083319169,
+      "transmission_ms_p95": 4.544159999568365,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        7265,
+        7896
+      ],
+      "reports_range": [
+        8,
+        8
+      ],
+      "cpu_one_core_percent": 14.210963492398909
+    },
+    {
+      "content": "focus",
+      "target_fps": 40,
+      "delay_ms": 0.5,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 320,
+      "duration_s": 8.00005298600081,
+      "host_completion_fps": 39.999735071750635,
+      "start_interval_fps": 39.99974167941104,
+      "interval_ms_p95": 25.011454000377853,
+      "pipeline_ms_mean": 9.031803481232714,
+      "pipeline_ms_p95": 9.51538499975868,
+      "pipeline_ms_p99": 10.775101000035647,
+      "transmission_ms_mean": 4.499270968739211,
+      "transmission_ms_p95": 4.611438999745587,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        7268,
+        7805
+      ],
+      "reports_range": [
+        8,
+        8
+      ],
+      "cpu_one_core_percent": 18.388772781558803
+    },
+    {
+      "content": "focus",
+      "target_fps": 48,
+      "delay_ms": 0.5,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 384,
+      "duration_s": 8.000050741999985,
+      "host_completion_fps": 47.99969554993114,
+      "start_interval_fps": 47.9996926896733,
+      "interval_ms_p95": 20.842638999965857,
+      "pipeline_ms_mean": 8.374995513013536,
+      "pipeline_ms_p95": 8.980421000160277,
+      "pipeline_ms_p99": 9.563114000229689,
+      "transmission_ms_mean": 4.486601609412351,
+      "transmission_ms_p95": 4.542679999758548,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        7347,
+        8036
+      ],
+      "reports_range": [
+        8,
+        8
+      ],
+      "cpu_one_core_percent": 18.947095385810762
+    },
+    {
+      "content": "focus",
+      "target_fps": 60,
+      "delay_ms": 0.5,
+      "quality": 65,
+      "rotation": 180,
+      "frames": 480,
+      "duration_s": 8.000050876999921,
+      "host_completion_fps": 59.99961842492726,
+      "start_interval_fps": 59.999633548791316,
+      "interval_ms_p95": 16.670555000018794,
+      "pipeline_ms_mean": 8.104644018779558,
+      "pipeline_ms_p95": 8.617645000413177,
+      "pipeline_ms_p99": 9.12720900032582,
+      "transmission_ms_mean": 4.488756629162556,
+      "transmission_ms_p95": 4.543709999779821,
+      "over_budget_frames": 0,
+      "jpeg_bytes_range": [
+        7292,
+        7848
+      ],
+      "reports_range": [
+        8,
+        8
+      ],
+      "cpu_one_core_percent": 22.059403347967198
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+# Preserve the upstream font license byte for byte.
+src/fx240/assets/fonts/OFL.txt -whitespace

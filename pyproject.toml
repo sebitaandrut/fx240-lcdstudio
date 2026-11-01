@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fx240-linux"
+version = "0.1.0"
+description = "FX240 LCD STUDIO: experimental native Linux display client for ID-COOLING FX240"
+requires-python = ">=3.11"
+dependencies = ["Pillow>=10.1"]
+
+[project.scripts]
+fx240 = "fx240.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.optional-dependencies]
+desktop = ["PySide6-Essentials>=6.8"]
+analysis = ["numpy>=1.26", "opencv-python-headless>=4.8"]
+
+[tool.setuptools.package-data]
+fx240 = ["qml/*.qml", "assets/fonts/*.ttf", "assets/fonts/*.txt", "assets/fonts/*.md", "assets/icons/*.svg", "assets/icons/*.txt", "assets/icons/*.json", "assets/icons/*.md", "assets/icons/dark/*.svg", "assets/icons/light/*.svg", "assets/branding/*.svg", "assets/branding/*.md"]

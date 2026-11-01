@@ -1,0 +1,32 @@
+{
+  "expected_frames": 2,
+  "expected_reports": 24,
+  "captured_payload_reports": 24,
+  "payload_length_counts": {
+    "1024": 24
+  },
+  "count_matches": true,
+  "content_mismatches": [],
+  "exact_match": true,
+  "capture_sha256": "66d5ad31b26db9acc4330fc979054b640b291db3d947bc19611cf6ec62724594",
+  "truncated_output_packets": 0,
+  "completion_status_counts": {
+    "0": 24
+  },
+  "scope": "Output submissions only; bus identity and optical behavior require separate verification.",
+  "checked_on": "2026-10-28",
+  "profile": {
+    "quality": 85,
+    "subsampling": 0,
+    "rotation": 180,
+    "delay_ms": 10,
+    "fps": 1
+  },
+  "historical_comparison": {
+    "expected_reports_sha256": "949b9a801484c3539acbf05a82ea0d8e791576be347295ffc259727d2e24b520",
+    "expected_bytes": 3072,
+    "captured_bytes": 3071,
+    "matches_expected_after_removing_byte_at_offset": 2048,
+    "cause": "Undetermined; comparison uses the saved local report buffer, not a contemporaneous sender log."
+  }
+}

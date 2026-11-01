@@ -1,0 +1,152 @@
+{
+  "method": "Fixed crop, center-patch median, contrast >=100, per-bit confidence >=0.5, folded 4-bit check",
+  "video_frames_decoded": 7785,
+  "playback_fps_metadata": 29.98511977999357,
+  "capture_fps_user_declared": 240.0,
+  "capture_rate_independently_verified": false,
+  "estimated_capture_duration_s": 32.4375,
+  "crop_after_rotation": [
+    270,
+    480,
+    576,
+    576
+  ],
+  "classification": {
+    "valid": 2803,
+    "ambiguous": 4165,
+    "check_failed": 53,
+    "low_contrast": 764
+  },
+  "profiles": [
+    {
+      "target_fps": 24,
+      "any_checked_ids": 326,
+      "confirmed_ids_two_samples": 326,
+      "first_id": 17,
+      "last_id": 359,
+      "time_span_s_at_declared_capture_rate": 14.2375,
+      "confirmed_readable_state_rate_hz": 22.8270412642669,
+      "unique_id_coverage_in_observed_range": 0.9504373177842566,
+      "chronological_order_valid": true,
+      "camera_samples_per_confirmed_id_median": 7.0,
+      "first_last_camera_frame": [
+        0.5,
+        3417.5
+      ]
+    },
+    {
+      "target_fps": 60,
+      "any_checked_ids": 259,
+      "confirmed_ids_two_samples": 258,
+      "first_id": 368,
+      "last_id": 1259,
+      "time_span_s_at_declared_capture_rate": 14.845833333333333,
+      "confirmed_readable_state_rate_hz": 17.311254560763402,
+      "unique_id_coverage_in_observed_range": 0.289237668161435,
+      "chronological_order_valid": true,
+      "camera_samples_per_confirmed_id_median": 3.0,
+      "first_last_camera_frame": [
+        3454,
+        7017
+      ]
+    }
+  ],
+  "confidence_sensitivity": {
+    "0.0": [
+      {
+        "target": 24,
+        "checked_ids": 340,
+        "confirmed_ids": 322,
+        "first_id": 17,
+        "last_id": 359,
+        "rate_hz": 22.54939265330016,
+        "order_valid": true,
+        "coverage": 0.9387755102040817
+      },
+      {
+        "target": 60,
+        "checked_ids": 755,
+        "confirmed_ids": 382,
+        "first_id": 361,
+        "last_id": 1259,
+        "rate_hz": 25.47430004178855,
+        "order_valid": false,
+        "coverage": 0.42491657397107896
+      }
+    ],
+    "0.2": [
+      {
+        "target": 24,
+        "checked_ids": 330,
+        "confirmed_ids": 321,
+        "first_id": 17,
+        "last_id": 359,
+        "rate_hz": 22.479145324162154,
+        "order_valid": true,
+        "coverage": 0.9358600583090378
+      },
+      {
+        "target": 60,
+        "checked_ids": 430,
+        "confirmed_ids": 265,
+        "first_id": 368,
+        "last_id": 1259,
+        "rate_hz": 17.785263157894736,
+        "order_valid": false,
+        "coverage": 0.297085201793722
+      }
+    ],
+    "0.35": [
+      {
+        "target": 24,
+        "checked_ids": 328,
+        "confirmed_ids": 321,
+        "first_id": 17,
+        "last_id": 359,
+        "rate_hz": 22.47585601404741,
+        "order_valid": true,
+        "coverage": 0.9358600583090378
+      },
+      {
+        "target": 60,
+        "checked_ids": 290,
+        "confirmed_ids": 257,
+        "first_id": 368,
+        "last_id": 1259,
+        "rate_hz": 17.23905723905724,
+        "order_valid": true,
+        "coverage": 0.2881165919282511
+      }
+    ],
+    "0.5": [
+      {
+        "target": 24,
+        "checked_ids": 326,
+        "confirmed_ids": 326,
+        "first_id": 17,
+        "last_id": 359,
+        "rate_hz": 22.8270412642669,
+        "order_valid": true,
+        "coverage": 0.9504373177842566
+      },
+      {
+        "target": 60,
+        "checked_ids": 259,
+        "confirmed_ids": 258,
+        "first_id": 368,
+        "last_id": 1259,
+        "rate_hz": 17.311254560763402,
+        "order_valid": true,
+        "coverage": 0.289237668161435
+      }
+    ]
+  },
+  "exact_duplicate_normalized_images": 0,
+  "limits": [
+    "Rates depend on capture FPS declaration and independent camera exposures.",
+    "A readable barcode state does not establish a complete tear-free LCD frame.",
+    "Unobserved states may reflect exposure, rolling shutter, LCD response, or decoding rejection.",
+    "This analysis matches the transmitted 24/60 profile and ID ranges only."
+  ],
+  "interpretation": "Inconclusive for physical maximum FPS; low clean-state coverage and threshold sensitivity at 60 FPS. Further Gray/inverse trial requested."
+}
