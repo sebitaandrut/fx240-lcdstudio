@@ -35,7 +35,7 @@
   "physical_usb_tested": true,
   "clean_machine_tested": false,
   "other_distributions_tested": false,
-  "real_login_startup_tested": false,
+  "real_login_startup_tested": true,
   "project_license": "GPL-3.0-or-later",
   "project_license_and_notice_bundled": true,
   "native_confirmation": {
@@ -56,8 +56,27 @@
     "user_confirmed_lcd_output_resumes": true,
     "user_confirmed_theme_accent_speed_preserved": true,
     "user_confirmed_tray_restore_works": true,
-    "real_reboot_or_login_tested": false,
     "physical_suspend_resume_tested": false,
-    "scope": "Manual restart with the same packaged executable and validated login entry; not an actual login or reboot trial"
+    "scope": "Manual restart with the same packaged executable and validated login entry; not an actual login or reboot trial",
+    "real_reboot_or_login_tested_at_preflight": false
+  },
+  "full_shutdown_startup_trial": {
+    "date": "2026-11-01",
+    "platform_scope": "Same Arch Linux development machine only",
+    "successful_user_reported_trials": 1,
+    "method": "Owner shut down the PC completely, then powered it on and logged into the graphical desktop instead of performing a warm reboot",
+    "user_reported_overall_result": "Worked perfectly",
+    "checklist_presented": [
+      "Automatic tray startup without manually opening Studio",
+      "Updated physical LCD readings",
+      "Preserved theme, accent, and comet speed when restoring the window"
+    ],
+    "individual_checklist_items_separately_reconfirmed": false,
+    "independent_process_or_resource_measurement": false,
+    "usb_power_removal_verified": false,
+    "device_initialization_independent_of_prior_vendor_use_proven": false,
+    "warm_reboot_separately_tested": false,
+    "suspend_resume_tested": false,
+    "limits": "One owner-observed full host shutdown/startup trial; not an endurance test, independently measured timing, verified USB power cycle, or multi-distribution validation."
   }
 }

@@ -1,12 +1,18 @@
 # Boot, endurance, and suspend/resume validation
 
-**Status: planned; no real boot/login or physical suspend/resume pass is claimed. Arch Linux only.** Run these trials with the packaged executable as a separate validation target; source tests do not establish packaged hardware behavior.
+**Status: one full host shutdown/startup and graphical-login trial reported successful by the owner. Warm reboot, prolonged operation, and physical suspend/resume remain pending. Arch Linux only.** Run these trials with the packaged executable as a separate validation target; source tests do not establish packaged hardware behavior.
 
 ## Completed preflight
 
 The owner confirmed that the packaged native GUI opens, updates the preview and physical LCD, and closes normally with the recreated standby frame. The managed login entry passed desktop-file validation and points to the current executable with `gui --start-minimized`. Its configuration and preference file were checked locally without publishing their paths or contents. A manual minimized relaunch was confirmed to start in the tray, resume LCD output, allow tray restoration, and preserve theme, accent, and comet speed. The initial process exited with code 0.
 
-These are preflight results, **not** an actual boot/login or suspend pass. See [packaged runtime evidence](packaged-runtime-2026-11-01.json). The first pending physical step is Trial A below.
+These are preflight results, **not** an actual boot/login or suspend pass. See [packaged runtime evidence](packaged-runtime-2026-11-01.json). A subsequent full shutdown/startup result is recorded below; the next planned physical phase is Trial B.
+
+## Full shutdown/startup result — 2026-11-01
+
+The owner performed a complete PC shutdown and power-on instead of the requested warm reboot, then reported that it worked perfectly. The preceding checklist covered automatic tray startup without manually launching Studio, updating LCD readings, and restored theme/accent/comet speed. This is recorded as one overall user-confirmed pass; individual checklist answers and an independent process/resource capture were not obtained for this boot.
+
+This verifies the observed host shutdown/startup/login workflow on this Arch Linux machine. It does not establish that USB standby power was removed, that the LCD lost all state, or that prior vendor initialization is unnecessary. No AC disconnection or internal cable manipulation is required for the next trials. Warm reboot remains a separate unchecked case. See [structured evidence](packaged-runtime-2026-11-01.json).
 
 ## Preparation
 
