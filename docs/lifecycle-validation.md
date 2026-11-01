@@ -1,6 +1,10 @@
 # Boot, endurance, and suspend/resume validation
 
-**Status: automatic startup after full host shutdown and warm reboot passed owner trials. The current packaged build also passed standby during one actual warm reboot using its desktop-autostarted instance; the trace corroborated normal output release and cleanup. Earlier development-launched reboot trials failed and remain recorded. Full power-off standby with this build, repeated lifecycle trials, endurance, and suspend/resume remain pending. Arch Linux only.** Run these trials with the packaged executable as a separate validation target; source tests do not establish packaged hardware behavior.
+**Status: automatic startup after full host shutdown and warm reboot passed owner trials. The current packaged build also passed standby during one warm reboot and one full host shutdown using its desktop-autostarted instance; the trace corroborated normal output release and cleanup. Earlier development-launched reboot trials failed and remain recorded. Repeated lifecycle trials, endurance, and suspend/resume remain pending. Arch Linux only.** Run these trials with the packaged executable as a separate validation target; source tests do not establish packaged hardware behavior.
+
+## Current build: reboot and full shutdown standby confirmed
+
+With the same bounded-drain executable and the desktop-autostarted instance left running, the owner confirmed standby on warm reboot, then reported that the full shutdown/power-on checklist also worked correctly. Both prior-session traces show output release, worker drain and normal cleanup; the next-login traces show verified LCD output arming. The full shutdown confirmation is an overall response to the checklist, not separately collected confirmations for each startup and preference item. These are one trial of each operation, on Arch Linux only. USB standby-power removal and complete loss of device state were not verified. See [structured results](shutdown-drain-results.json). Earlier failures below remain historical evidence.
 
 ## Completed preflight
 

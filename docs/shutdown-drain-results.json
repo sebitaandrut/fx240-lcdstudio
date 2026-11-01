@@ -21,7 +21,7 @@
     "The previous independent fallback binary failed standby during actual reboot despite passing isolated physical display loss.",
     "Bounded callback drain removes an asynchronous cleanup window; it is not proof of the failed reboot root cause.",
     "No private trace, OS journal, identity or selected device path is included.",
-    "Full power-off standby with this build, repeated reboot endurance and suspend/resume remain unverified."
+    "One warm reboot and one full host shutdown/power-on passed with the autostarted instance. Repeatability, endurance and suspend/resume remain unverified."
   ],
   "physical_shutdown_callback_trial": {
     "real_usb": true,
@@ -95,5 +95,35 @@
     "worker_drained": true,
     "next_login_fallback_armed": true,
     "scope": "One owner-observed warm reboot on Arch Linux; trace corroborates worker release and cleanup. Host timing is not an optical latency measurement."
+  },
+  "actual_os_poweroff_standby_passed": true,
+  "autostarted_actual_os_poweroff_trial": {
+    "actual_host_poweroff_and_poweron": true,
+    "launch_context": "Existing desktop-autostarted instance left running.",
+    "user_reported_requested_poweroff_standby_and_startup_check_passed": true,
+    "confirmation_scope": "Overall user confirmation of the preceding checklist; no separate answers for each startup/preferences item.",
+    "same_installed_binary_hash_verified": true,
+    "previous_session_event_codes": [
+      "session-start",
+      "guard-started",
+      "gui-start",
+      "guard-armed",
+      "logind-shutdown",
+      "shutdown-drain-start",
+      "guard-disarmed",
+      "shutdown-output-released",
+      "sigterm-dispatched",
+      "cleanup-start",
+      "worker-drained",
+      "qt-about-to-quit",
+      "gui-loop-returned",
+      "guard-eof"
+    ],
+    "shutdown_notification_to_output_release_ms": 52.0,
+    "output_timeout_recorded": false,
+    "worker_drained": true,
+    "next_login_fallback_armed": true,
+    "usb_standby_power_removal_verified": false,
+    "scope": "One owner-reported full PC shutdown/power-on on Arch Linux. No AC removal or loss of device state was verified. Host timing is not optical latency."
   }
 }
