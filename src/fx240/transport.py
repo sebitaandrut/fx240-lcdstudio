@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Linux hidraw transport. Validate identity and lock the device before every output connection."""
 import fcntl
 import math

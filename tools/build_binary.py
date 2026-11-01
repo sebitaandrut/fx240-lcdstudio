@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Build a local Linux executable bundle. A build is not cross-distro validation."""
 import argparse
 import importlib.metadata
@@ -22,6 +23,8 @@ def main():
              '--specpath',str(root/'build'),'--paths',str(root/'src'),
              '--add-data',str(root/'src/fx240/qml')+':fx240/qml',
              '--add-data',str(root/'src/fx240/assets')+':fx240/assets',
+             '--add-data',str(root/'LICENSE')+':fx240/legal',
+             '--add-data',str(root/'NOTICE.md')+':fx240/legal',
              str(root/'packaging/entrypoint.py')]
     subprocess.run(command,cwd=root,env=env,check=True)
     names=('Pillow','PySide6-Essentials','shiboken6','PyInstaller','pyinstaller-hooks-contrib','altgraph','packaging','setuptools')

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Opt-in per-user graphical-session startup; never installs a system service."""
 import os
 from pathlib import Path

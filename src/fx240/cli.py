@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 import argparse
 from bisect import bisect_right
 import json

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Observed DRA framing; no device I/O."""
 MAGIC = b"CRT\x00\x00DRA"
 REPORT_SIZE = 1024

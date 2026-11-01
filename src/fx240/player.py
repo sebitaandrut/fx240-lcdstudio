@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Bounded wall-clock playback; rebase late deadlines instead of catch-up bursts."""
 import time
 from .protocol import build_reports

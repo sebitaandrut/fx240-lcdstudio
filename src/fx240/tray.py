@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """System tray integration; hiding a window never changes the LCD session."""
 from PySide6.QtCore import QObject,QTimer
 from PySide6.QtGui import QWindow,QGuiApplication

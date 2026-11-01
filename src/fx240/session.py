@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Desktop session worker: one sensor snapshot feeds rendering and diagnostics."""
 from dataclasses import dataclass
 from datetime import datetime, timezone

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """logind suspend coordination using a delay inhibitor and PrepareForSleep."""
 import os
 from PySide6.QtCore import QObject, Slot, QTimer, SLOT

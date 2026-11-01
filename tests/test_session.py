@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 import tempfile
 from pathlib import Path
 import unittest

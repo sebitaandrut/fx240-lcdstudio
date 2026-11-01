@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Circular telemetry overlay with independent one-second sensor sampling."""
 from PIL import Image, ImageDraw
 from .dashboard import centered_text, default_metrics

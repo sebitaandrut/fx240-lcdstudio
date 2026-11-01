@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Read-only sysfs providers. Missing data stays unavailable, never zero."""
 from dataclasses import dataclass, asdict
 import math

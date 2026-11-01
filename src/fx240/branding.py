@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Shared application identity and original LCD icon."""
 from pathlib import Path
 from PySide6.QtCore import Qt

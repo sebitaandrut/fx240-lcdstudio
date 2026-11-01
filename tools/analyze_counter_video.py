@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Decode the private optical counter video; NumPy/OpenCV are analysis-only extras.
 
 Rates are conditional on the user-declared capture FPS, not playback metadata.

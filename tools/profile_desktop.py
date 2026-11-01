@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Bounded desktop soak measurement using synthetic sensors and no USB access.
 
 Run from the repository with PYTHONPATH=src .venv/bin/python tools/profile_desktop.py.

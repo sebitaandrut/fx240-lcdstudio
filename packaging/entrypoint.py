@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Frozen executable entry point; double-click opens the desktop interface."""
 import sys
 from fx240.cli import main

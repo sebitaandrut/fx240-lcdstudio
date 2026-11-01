@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,6 +7,8 @@ name = "fx240-linux"
 version = "0.1.0"
 description = "FX240 LCD STUDIO: experimental native Linux display client for ID-COOLING FX240"
 requires-python = ">=3.11"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE", "NOTICE.md"]
 dependencies = ["Pillow>=10.1"]
 
 [project.scripts]

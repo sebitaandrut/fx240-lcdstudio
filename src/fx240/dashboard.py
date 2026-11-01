@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Dashboard layout for the circular visible area of the 240x240 LCD."""
 import math
 from PIL import Image, ImageDraw, ImageFont

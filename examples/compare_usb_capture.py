@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Compare captured FX240 output payloads with a generated image's reports.
 
 Requires tshark and a private, full-length usbmon capture. Prints only a

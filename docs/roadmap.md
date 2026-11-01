@@ -19,7 +19,7 @@ All validation to date is on Arch Linux. Other distributions require their own i
 - Preferences survive full process restart and graphical-session startup.
 - No inaccessible hidden process when the tray is missing or disappears.
 - Native long-run results and error recovery documented without treating host/Qt updates as optical LCD FPS.
-- Personal-file inventory, third-party notices, and original-code license reviewed before publication.
+- Personal-file inventory, third-party notices, and GPLv3-or-later license and bundled-runtime obligations reviewed before publication.
 - CI results on the public repository before calling the initial release stable.
 
 Commit each coherent implementation and its relevant validation separately after the baseline. Do not reconstruct fictional earlier commits. Publishing the repository still requires the owner's confirmation.

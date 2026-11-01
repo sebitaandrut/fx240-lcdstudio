@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Image/GIF composition and JPEG encoding, independent of transport."""
 import io
 from PIL import Image, ImageOps

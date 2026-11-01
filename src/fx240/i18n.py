@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """English source strings and Spanish UI translations. Sensor identities stay raw."""
 SPANISH = {
     'FPS must be between 0 and 24':'Los FPS deben ser mayores que 0 y no superar 24',

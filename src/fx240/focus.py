@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Minimal circular telemetry theme with time-based motion and cached typography."""
 from functools import lru_cache
 import math

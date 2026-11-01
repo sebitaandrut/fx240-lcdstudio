@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Generate original motion centered between the telemetry overlay bands."""
 import argparse
 from pathlib import Path

@@ -72,6 +72,6 @@ The local build check and its environment are recorded in [packaged runtime evid
 - **Permission denied on HID:** resolve device access; the preview should still remain available.
 - **GLIBC version error:** rebuild on the target system or a deliberately chosen older compatible build system. Do not assume copying this Arch binary to Debian, Ubuntu, Fedora, or another distribution will work.
 - **Missing build wheels:** record Python, architecture, OS, and package versions; this recipe has not validated other architectures or source compilation of Qt/Pillow.
-- **Binary distribution:** original-code licensing and bundled dependency redistribution notices still need a release review before public binary publication. Local build success does not mark the project stable.
+- **Binary distribution:** the code is GPLv3-or-later; bundled dependency redistribution notices still need a release review before public binary publication. Local build success does not mark the project stable.
 
 Other distributions need their own package mapping and installation, native UI, sensor, USB, tray, startup, and endurance validation. Add verified instructions when those tests actually occur.

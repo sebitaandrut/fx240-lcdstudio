@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Programmatically recreated standby artwork; not a firmware reset command."""
 from PIL import Image, ImageDraw
 from .focus import font, resolve_font, SCALE

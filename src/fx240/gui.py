@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Qt Quick desktop controller. The renderer and transport remain independent."""
 from dataclasses import replace
 from pathlib import Path

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Generate original synthetic media for physical LCD validation."""
 import argparse
 from pathlib import Path

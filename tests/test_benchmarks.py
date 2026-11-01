@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Checks for experimental instruments; no USB device is opened."""
 import importlib.util
 from pathlib import Path

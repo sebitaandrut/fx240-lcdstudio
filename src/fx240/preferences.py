@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Private, versioned desktop preferences. No device path or output state is saved."""
 from dataclasses import asdict,replace,fields
 import json

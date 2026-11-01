@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Measure production desktop or diagnostic preview with real Qt swap signals.
 
 A frameSwapped signal counts a Qt buffer swap, not compositor/monitor/LCD proof.

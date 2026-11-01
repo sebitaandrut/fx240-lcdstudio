@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Packaged-runtime smoke check with synthetic sensors and no device/config writes."""
 import json
 import os
