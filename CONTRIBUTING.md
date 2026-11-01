@@ -31,13 +31,23 @@ Use the body for motivation, relevant tradeoffs, and validation results when nee
 
 A local commit does not authorize publishing. Creating a GitHub repository, adding/pushing to a remote, or sharing personal evidence requires the maintainer's explicit authorization.
 
-## Initial history
+## Code structure
 
-The current implementation was developed before the first Git commit. Its history should start with an honest snapshot of the validated implementation, for example:
+| Responsibility | Location |
+| --- | --- |
+| Qt/QML interface and application controller | `src/fx240/qml/`, `gui.py`, `i18n.py` |
+| Worker, live configuration, and frame events | `src/fx240/session.py` |
+| Telemetry collection | `src/fx240/telemetry.py` |
+| Focus rendering, media, and overlays | `src/fx240/focus.py`, `media.py`, `overlay.py`, `dashboard.py` |
+| HID framing and verified transport | `src/fx240/protocol.py`, `transport.py` |
+| Preferences, tray, and login startup | `src/fx240/preferences.py`, `tray.py`, `autostart.py` |
+| Sleep/shutdown coordination and standby fallback | `src/fx240/sleep.py`, `shutdown.py`, `guard.py`, `idle.py`, `lifecycle.py` |
+| CLI and scheduling | `src/fx240/cli.py`, `player.py` |
+| Regression checks, diagnostic tools, and build inputs | `tests/`, `tools/`, `examples/`, `packaging/` |
 
-`feat: establish the validated FX240 Linux baseline`
+Keep rendering, sensor acquisition, output scheduling, and UI responsibilities separate. A bounded latest-frame queue connects the worker to the GUI. Add regression checks for behavior changes; exploratory measurement output belongs outside the repository. Keep only concise validation conclusions and the aggregate evidence needed to support them.
 
-Do not reconstruct fictional intermediate commits or backdate the earlier physical trials as commit history. The real trial sequence and its limits are documented separately in `docs/hardware-trials.md` and the associated records. Subsequent commits should record actual changes made from that baseline.
+The first commit snapshots the implementation developed before Git tracking. Do not reconstruct fictional earlier commits or backdate tests. Consolidating documentation does not rewrite the existing Git history.
 
 ## Interface language and local preferences
 

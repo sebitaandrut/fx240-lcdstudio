@@ -1,30 +1,28 @@
-# Observed protocol
+# Observed HID protocol
 
-This profile is implemented from local HID code; it is not an official specification.
+This unofficial profile was reconstructed from the existing FX240 HID prototype and checked against generated packets and controlled USB output. No code or tests from the abandoned AIO Control Center project are used. Missing historical deductions are not reconstructed as facts.
+
+## Framing
 
 | Offset | Length | Content |
-|---|---|---|
+| --- | --- | --- |
 | 0 | 8 | `43 52 54 00 00 44 52 41` (`CRT\0\0DRA`) |
 | 8 | 4 | Big-endian length: 32 + JPEG size, excluding padding and hidraw prefix |
-| 12 | 1 | `B1`, meaning undetermined |
-| 13 | 19 | Observed zeros; semantics unknown |
-| 32 | variable | RGB JPEG, 240×240 |
+| 12 | 1 | `B1`, meaning unknown |
+| 13 | 19 | Observed zeros, semantics unknown |
+| 32 | Variable | RGB JPEG, 240 × 240 |
 | JPEG end | 0–1023 | Zero padding to a multiple of 1024 |
 
-The message is split into 1024-byte payloads. Each prototype `os.write` call receives `00 + payload`: 1025 bytes in userspace. The leading byte follows hidraw's report-number convention and is excluded from the DRA length. The [kernel documentation](https://docs.kernel.org/hid/hidraw.html) defines this convention; it does not establish the FX240's particular descriptor.
+The padded message is split into 1024-byte payloads. Each Linux `os.write` receives `00 + payload` (1025 bytes). The leading byte follows hidraw's report-number convention and is excluded from the DRA length. See the [kernel hidraw documentation](https://docs.kernel.org/hid/hidraw.html); the convention alone does not establish this device's complete descriptor.
 
-The minimal synthetic test vector uses JPEG markers, not a decodable image: `ff d8 61 62 63 ff d9`, DRA length 39 (`00 00 00 27`), and one report padded to 1024 bytes.
+The sender verifies USB bus 3, VID `0x2000`, and PID `0x3000` using `HIDIOCGRAWINFO`, rejects regular files/symlinks, and takes a cooperative lock. Matching IDs do not establish compatibility with every interface or revision. The default rotation is 180 degrees and remains configurable.
 
-Identity checking uses `HIDIOCGRAWINFO`, USB bus 3, VID 0x2000, and PID 0x3000. A complete descriptor was not analyzed here, and not all devices sharing those IDs have been tested. The old inspector's search for byte `0x85` is insufficient to interpret Report IDs: that byte may also appear in another item's data.
+## Verification and limits
 
-The 180-degree orientation comes from validation comments in later scripts; the initial encoder still described it as a hypothesis. It remains configurable. Aspect-ratio preservation comes from the GIF player; the initial encoder stretched content to a square. JPEG equivalence was checked on a square image, not arbitrary images.
+The modular sender matched the prototype's packets for 240/240 checked frames. A subsequent controlled capture matched all 24 expected 1024-byte reports for a two-frame trial, with successful USB completions and no truncation. Aggregate verification and encoding settings are in [evidence.json](evidence.json). No raw capture or personal image is distributed.
 
-## Unknowns
+An older capture had a one-byte-short final payload and an inconsistent JPEG boundary; it is not exact-validation evidence. The controlled trial did not reproduce that discrepancy, and the historical cause remains unknown.
 
-The functional meaning of B1, cold-boot handshake requirements, LCD buffering, frame acknowledgements, refresh synchronization, size/rate limits, and brightness/firmware commands remain unknown. A complete write confirms host-call acceptance, not optical presentation or absence of internal losses.
+The meaning of `B1`, full descriptor semantics, initial device-state requirements, buffering, acknowledgements, refresh synchronization, size/rate limits, and brightness/firmware commands remain unknown. Host-call acceptance and USB completion do not prove optical presentation or absence of panel losses. Full PC shutdown was tested without verifying removal of USB standby power, so independence from earlier vendor initialization is not established.
 
-The inspected historical capture contains the header and a decodable 240×240 JPEG, but payload lengths are 1024, 1024, and 1023. The JPEG segment selected by the declared length does not end at EOI and differs from the local file. It is therefore not presented as byte-for-byte validation of the current protocol. Capture this version again and compare boundaries, prefix, lengths, and content. The JSON verification record preserves hashes and measurements to distinguish this evidence from future trials.
-
-## Current bus-level verification
-
-A later controlled capture of this modular sender matched all 24 expected output reports exactly, each 1024 bytes, with 24 successful output completions and no packet truncation. The historical short final payload did not recur. Against the saved local historical report buffer, the old capture matches after removing byte 2048, at the third report boundary. This correspondence does not identify the original cause. See [hardware trials](hardware-trials.md) and [sanitized current verification](usb-trial-verification.json).
+Use `examples/compare_usb_capture.py` for controlled payload comparisons and `tests/test_fx240.py` for framing regressions. Keep captures private and inspect only the intended LCD traffic. Never treat a small diagnostic code region as proof of a complete tear-free LCD frame.

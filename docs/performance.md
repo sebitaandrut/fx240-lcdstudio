@@ -1,33 +1,56 @@
-# Resource profiling
+# Performance and measurement limits
 
-No exhaustive memory/CPU endurance validation has been completed. Unit tests do not establish stable long-term resource consumption. The first instrumented desktop run is recorded in [desktop-profile.json](desktop-profile.json); all readings and sources in the run are synthetic, with no personal sensor paths or photos.
+Measurements below were made on **one Arch Linux/Wayland system and one FX240**. The production application remains capped at **24 FPS**. Higher rates used isolated experimental instruments, not saved application presets. They do not establish a panel maximum, universal performance, or stable operation.
 
-## Initial measurement
+## Optical observations
 
-The run used Qt Quick offscreen with software rendering, the full QML interface, Pillow rendering/JPEG encode/decode, synthetic 1 Hz sensors, and no USB device. It ran for 120.234 seconds at target 24 FPS and rendered 2,885 host preview frames. After a 10-second warmup, it measured a steady phase and a live-edit phase; the latter committed 55 renderer changes while periodically navigating all four pages. There were no worker/configuration errors, and shutdown joined the worker successfully.
+A Gray-code row and its inverse identified successive source states. The owner selected 240 FPS camera capture; files reported approximately 29.985 FPS playback metadata. Capture cadence and independent exposures were not independently established. The analysis used a fixed crop; exposure, rolling shutter, JPEG artifacts, LCD response, and temporal blending affect readability.
 
-| Measurement | Steady phase | Repeated live edits |
-| --- | --- | --- |
-| Mean process CPU, percent of one core | 11.43% | 11.53% |
-| RSS range | 109.11–112.16 MiB | 109.69–112.86 MiB |
-| Initial/final RSS medians | 111.33 / 111.50 MiB | 112.34 / 112.14 MiB |
-| Fitted RSS slope | +0.67 MiB/min | −0.002 MiB/min |
-| Open descriptors | 12 throughout | 12 throughout |
-| OS threads | 9 throughout | 9 throughout |
+| Target | IDs sent | Observed IDs, ≥1 sample | IDs with ≥2 samples |
+| --- | ---: | ---: | ---: |
+| 24 FPS | 240 | 240 | 240 |
+| 30 FPS | 300 | 300 | 294 |
+| 40 FPS | 400 | 382 | 361 |
+| 48 FPS | 480 | 440 | 411 |
+| 60 FPS | 600 | 533 | 492 |
+| 90 FPS | 900 | 542 | 433 |
 
-CPU includes the worker, QML, and measurement process threads; 100% means one fully occupied core, not the whole machine. RSS includes native Qt/Pillow/font allocations as well as Python objects. Short-term RSS fluctuations and a fitted slope do not identify or exclude a leak. The initial steady phase has a positive fitted slope even though its endpoint medians differ by only 0.17 MiB; longer measurements are necessary before drawing conclusions. These figures are host-specific and do not predict native GPU/compositor or real USB behavior.
+These counts use permissive decoding with an inverse-row check. Observed IDs were chronological; stricter confidence thresholds reduce coverage, especially at higher rates. The full confidence sensitivity and aggregate methods are retained in [evidence.json](evidence.json), not just the most favorable counts.
 
-## Repeatable longer run
+These are **diagnostic-region state observations**, not certified complete-frame FPS. Missing IDs alone do not prove LCD drops, and the approximately 53–54 observed states/s at higher targets does not identify a hardware ceiling. The initial binary-code attempt was inconclusive. Retaining 24 FPS is conservative; 30 FPS remains a candidate for later application validation.
 
-From the repository root, with desktop dependencies installed:
+## Host and preview throughput
+
+With JPEG quality 65 and content-specific report sizes, short instruments reached approximately 60 host FPS at 1 ms inter-report delay and 90 at 0.5 ms. The production 33 ms preview queue poll limited a 60 FPS instrument to approximately 31 unique swap-associated IDs/s; a 4 ms experimental poll removed that bottleneck.
+
+Host FPS counts completed processing/writes, not LCD presentation. Qt swap-associated IDs are a GUI-delivery proxy, not exact GPU texture or optical presentation IDs. An early direct-callback instrument hung during 90 FPS shutdown; it failed and was replaced with GUI-thread queued notifications. A corrected short trial completed normally, without establishing long-term stability. Complex GIFs can produce larger JPEGs and lower throughput than Focus.
+
+## Ten-minute native USB trial
+
+| Measurement | Experimental result |
+| --- | --- |
+| Settings | Target 60 FPS, quality 65, delay 1 ms, preview poll 4 ms |
+| Completed/sent/applied frames | 35,981; approximately 59.997 host FPS |
+| Reported output/configuration errors | 0; worker stopped normally |
+| RSS range | 270.25–274.17 MiB |
+| Post-warmup fitted RSS slope | Approximately +0.058 MiB/min |
+| Mean CPU | Approximately 27.49% of one core |
+| Descriptors / OS threads | 28 / 25 throughout the measured samples |
+| Distinct Qt swap-associated IDs | 31,001; 86.16% coverage |
+
+The monitor powered off or the screen locked in the final segment: USB continued but Qt swaps stopped. This is not uninterrupted ten-minute preview presentation. The workload exercised live UI settings and partly overlapped local video analysis. It predates the independent standby helper and later visual changes; these resource numbers are not a profile of the current packaged 8 px build. A small RSS slope neither identifies nor excludes a leak. Multi-hour native validation remains pending.
+
+The earlier two-minute synthetic/offscreen run is omitted here because it is a different workload and less representative. Aggregate native run context and statistics remain in [evidence.json](evidence.json); per-second traces and private recordings are excluded.
+
+## Repeating measurements
+
+`tools/benchmark_stream.py` and `tools/benchmark_gui.py` measure host/USB and native Qt activity. Both require explicit `--send` for USB and use verified identity/locking. Close other senders first; higher-rate experiments require their explicit experimental option where applicable. Use an external timeout for native instrument trials and retain failures.
+
+For a no-USB resource exercise:
 
 ```bash
 PYTHONPATH=src .venv/bin/python tools/profile_desktop.py \
-  --duration 3600 --warmup 60 --output /tmp/fx240-desktop-profile.json
+  --duration 3600 --warmup 60 --output /tmp/fx240-profile.json
 ```
 
-The tool never opens USB. It samples RSS, process CPU, descriptors, threads, frame count, and renderer revisions once per second. It navigates pages and exercises live settings in the second half. JSON contains full samples and phase summaries. This is a profiling tool, not a pass/fail leak detector. A multi-hour native-window run with actual sysfs telemetry and physical USB output, repeated start/stop, different fonts, and suspend/resume remains future validation. Run the native application separately for those observations; do not mistake this offscreen command for a physical LCD trial.
-
-## Native USB and optical extension
-
-The [2026-11-01 extended report](benchmarks/2026-11-01/README.md) supersedes the initial two-minute synthetic run as the most substantial resource measurement. It documents ten minutes of native Wayland/real-sensor/USB activity, the queue-polling preview bottleneck, isolated 60/90 FPS instruments, an instrument shutdown failure and correction, and three private optical recordings summarized numerically. It does not claim physical maximum FPS or exhaustive leak freedom.
+This offscreen synthetic tool is not a native LCD endurance test. `tools/analyze_counter_video.py` optionally decodes private diagnostic footage using the matching host trial boundaries and a calibrated crop; install `.[analysis]` only for analysis. Preserve confidence sensitivity and visibility context. Review every output before sharing, and do not equate video container FPS with physical exposures.

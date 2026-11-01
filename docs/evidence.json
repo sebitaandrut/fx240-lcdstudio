@@ -1,0 +1,589 @@
+{
+  "recorded_on": "2026-11-01",
+  "platform_scope": "Arch Linux x86_64, one FX240; other distributions and hardware revisions untested.",
+  "automated_checks": {
+    "tests_passed": 113,
+    "scope": "Current 8 px source; includes optional Qt/QML tests with desktop dependencies installed.",
+    "frozen_8px_self_test_passed": true,
+    "no_usb_self_test": true
+  },
+  "protocol_capture": {
+    "expected_frames": 2,
+    "expected_reports": 24,
+    "captured_payload_reports": 24,
+    "payload_length_counts": {
+      "1024": 24
+    },
+    "count_matches": true,
+    "content_mismatches": [],
+    "exact_match": true,
+    "capture_sha256": "66d5ad31b26db9acc4330fc979054b640b291db3d947bc19611cf6ec62724594",
+    "truncated_output_packets": 0,
+    "completion_status_counts": {
+      "0": 24
+    },
+    "scope": "Output submissions only; bus identity and optical behavior require separate verification.",
+    "checked_on": "2026-10-28",
+    "profile": {
+      "quality": 85,
+      "subsampling": 0,
+      "rotation": 180,
+      "delay_ms": 10,
+      "fps": 1
+    }
+  },
+  "optical_gray_trials": [
+    {
+      "pattern": "gray",
+      "opencv_version": "5.0.0",
+      "numpy_version": "2.5.4",
+      "method": "Fixed crop, center-patch median, contrast >=100, per-bit confidence >=0.5; Gray plus inverse-row check",
+      "video_frames_decoded": 8032,
+      "playback_fps_metadata": 29.985123167850613,
+      "capture_fps_user_declared": 240.0,
+      "capture_rate_independently_verified": false,
+      "classification": {
+        "check_failed": 116,
+        "ambiguous": 6469,
+        "valid": 1447
+      },
+      "profiles": [
+        {
+          "target_fps": 24.0,
+          "any_checked_ids": 229,
+          "confirmed_ids_two_samples": 222,
+          "first_id": 0,
+          "last_id": 239,
+          "time_span_s_at_declared_capture_rate": 9.954166666666667,
+          "confirmed_readable_state_rate_hz": 22.201758057764753,
+          "unique_id_coverage_in_observed_range": 0.925,
+          "chronological_order_valid": true,
+          "camera_samples_per_confirmed_id_median": 5.0
+        },
+        {
+          "target_fps": 60.0,
+          "any_checked_ids": 45,
+          "confirmed_ids_two_samples": 15,
+          "first_id": 253,
+          "last_id": 589,
+          "time_span_s_at_declared_capture_rate": 5.591666666666667,
+          "confirmed_readable_state_rate_hz": 2.503725782414307,
+          "unique_id_coverage_in_observed_range": 0.04451038575667656,
+          "chronological_order_valid": true,
+          "camera_samples_per_confirmed_id_median": 3
+        },
+        {
+          "target_fps": 90.0,
+          "any_checked_ids": 32,
+          "confirmed_ids_two_samples": 0
+        }
+      ],
+      "confidence_sensitivity": {
+        "0.0": [
+          {
+            "target": 24.0,
+            "checked_ids": 240,
+            "confirmed_ids": 240,
+            "first_id": 0,
+            "last_id": 239,
+            "rate_hz": 24.015072221059242,
+            "order_valid": true,
+            "coverage": 1.0
+          },
+          {
+            "target": 60.0,
+            "checked_ids": 533,
+            "confirmed_ids": 492,
+            "first_id": 241,
+            "last_id": 839,
+            "rate_hz": 49.212779285863434,
+            "order_valid": true,
+            "coverage": 0.8213689482470785
+          },
+          {
+            "target": 90.0,
+            "checked_ids": 542,
+            "confirmed_ids": 433,
+            "first_id": 840,
+            "last_id": 1739,
+            "rate_hz": 43.281152160300564,
+            "order_valid": true,
+            "coverage": 0.4811111111111111
+          }
+        ],
+        "0.2": [
+          {
+            "target": 24.0,
+            "checked_ids": 240,
+            "confirmed_ids": 234,
+            "first_id": 0,
+            "last_id": 239,
+            "rate_hz": 23.412183378689555,
+            "order_valid": true,
+            "coverage": 0.975
+          },
+          {
+            "target": 60.0,
+            "checked_ids": 515,
+            "confirmed_ids": 219,
+            "first_id": 243,
+            "last_id": 835,
+            "rate_hz": 22.094594594594593,
+            "order_valid": true,
+            "coverage": 0.36930860033726814
+          },
+          {
+            "target": 90.0,
+            "checked_ids": 485,
+            "confirmed_ids": 152,
+            "first_id": 840,
+            "last_id": 1739,
+            "rate_hz": 15.128365685660613,
+            "order_valid": true,
+            "coverage": 0.1688888888888889
+          }
+        ],
+        "0.35": [
+          {
+            "target": 24.0,
+            "checked_ids": 238,
+            "confirmed_ids": 232,
+            "first_id": 0,
+            "last_id": 239,
+            "rate_hz": 23.21122043123299,
+            "order_valid": true,
+            "coverage": 0.9666666666666667
+          },
+          {
+            "target": 60.0,
+            "checked_ids": 387,
+            "confirmed_ids": 67,
+            "first_id": 253,
+            "last_id": 835,
+            "rate_hz": 6.809974204643164,
+            "order_valid": true,
+            "coverage": 0.11492281303602059
+          },
+          {
+            "target": 90.0,
+            "checked_ids": 260,
+            "confirmed_ids": 24,
+            "first_id": 867,
+            "last_id": 1739,
+            "rate_hz": 2.372662798194713,
+            "order_valid": true,
+            "coverage": 0.027491408934707903
+          }
+        ],
+        "0.5": [
+          {
+            "target": 24.0,
+            "checked_ids": 229,
+            "confirmed_ids": 222,
+            "first_id": 0,
+            "last_id": 239,
+            "rate_hz": 22.201758057764756,
+            "order_valid": true,
+            "coverage": 0.925
+          },
+          {
+            "target": 60.0,
+            "checked_ids": 45,
+            "confirmed_ids": 15,
+            "first_id": 253,
+            "last_id": 589,
+            "rate_hz": 2.503725782414307,
+            "order_valid": true,
+            "coverage": 0.04451038575667656
+          },
+          {
+            "target": 90.0,
+            "checked_ids": 32,
+            "confirmed_ids": 0,
+            "first_id": null,
+            "last_id": null,
+            "rate_hz": null,
+            "order_valid": true,
+            "coverage": null
+          }
+        ]
+      },
+      "exact_duplicate_normalized_images": 0,
+      "limits": [
+        "Rates depend on capture FPS declaration and independent camera exposures.",
+        "A readable barcode state does not establish a complete tear-free LCD frame.",
+        "Unobserved states may reflect exposure, rolling shutter, LCD response, or decoding rejection.",
+        "This analysis matches only the supplied transmitted profile and ID ranges."
+      ],
+      "permissive_one_sample_summary": [
+        {
+          "target_fps": 24,
+          "transmitted_ids_in_profile": 240,
+          "checked_ids_one_or_more_samples": 240,
+          "capture_dependent_readable_state_rate_hz": 24.015072221059242,
+          "chronological_order_valid": true
+        },
+        {
+          "target_fps": 60,
+          "transmitted_ids_in_profile": 600,
+          "checked_ids_one_or_more_samples": 533,
+          "capture_dependent_readable_state_rate_hz": 53.3221967007726,
+          "chronological_order_valid": true
+        },
+        {
+          "target_fps": 90,
+          "transmitted_ids_in_profile": 900,
+          "checked_ids_one_or_more_samples": 542,
+          "capture_dependent_readable_state_rate_hz": 54.20162805259862,
+          "chronological_order_valid": true
+        }
+      ],
+      "interpretation": "Barcode-state observability only. Neither per-frame completeness nor exact panel maximum is established. Compare confidence sensitivity and multiple-sample support."
+    },
+    {
+      "pattern": "gray",
+      "opencv_version": "5.0.0",
+      "numpy_version": "2.5.4",
+      "method": "Fixed crop, center-patch median, contrast >=100, per-bit confidence >=0.5; Gray plus inverse-row check",
+      "video_frames_decoded": 7454,
+      "playback_fps_metadata": 29.985120075240367,
+      "capture_fps_user_declared": 240.0,
+      "capture_rate_independently_verified": false,
+      "classification": {
+        "check_failed": 438,
+        "ambiguous": 4530,
+        "valid": 2486
+      },
+      "profiles": [
+        {
+          "target_fps": 30.0,
+          "any_checked_ids": 249,
+          "confirmed_ids_two_samples": 238,
+          "first_id": 0,
+          "last_id": 299,
+          "time_span_s_at_declared_capture_rate": 9.947916666666666,
+          "confirmed_readable_state_rate_hz": 23.82408376963351,
+          "unique_id_coverage_in_observed_range": 0.7933333333333333,
+          "chronological_order_valid": true,
+          "camera_samples_per_confirmed_id_median": 4.0
+        },
+        {
+          "target_fps": 40.0,
+          "any_checked_ids": 218,
+          "confirmed_ids_two_samples": 197,
+          "first_id": 300,
+          "last_id": 699,
+          "time_span_s_at_declared_capture_rate": 9.96875,
+          "confirmed_readable_state_rate_hz": 19.661442006269592,
+          "unique_id_coverage_in_observed_range": 0.4925,
+          "chronological_order_valid": true,
+          "camera_samples_per_confirmed_id_median": 4
+        },
+        {
+          "target_fps": 48.0,
+          "any_checked_ids": 176,
+          "confirmed_ids_two_samples": 129,
+          "first_id": 702,
+          "last_id": 1174,
+          "time_span_s_at_declared_capture_rate": 9.81875,
+          "confirmed_readable_state_rate_hz": 13.036282622533419,
+          "unique_id_coverage_in_observed_range": 0.2727272727272727,
+          "chronological_order_valid": true,
+          "camera_samples_per_confirmed_id_median": 4
+        }
+      ],
+      "confidence_sensitivity": {
+        "0.0": [
+          {
+            "target": 30.0,
+            "checked_ids": 300,
+            "confirmed_ids": 294,
+            "first_id": 0,
+            "last_id": 299,
+            "rate_hz": 29.453403141361257,
+            "order_valid": true,
+            "coverage": 0.98
+          },
+          {
+            "target": 40.0,
+            "checked_ids": 382,
+            "confirmed_ids": 361,
+            "first_id": 300,
+            "last_id": 699,
+            "rate_hz": 36.10530714584204,
+            "order_valid": true,
+            "coverage": 0.9025
+          },
+          {
+            "target": 48.0,
+            "checked_ids": 440,
+            "confirmed_ids": 411,
+            "first_id": 700,
+            "last_id": 1179,
+            "rate_hz": 41.10275689223057,
+            "order_valid": true,
+            "coverage": 0.85625
+          }
+        ],
+        "0.2": [
+          {
+            "target": 30.0,
+            "checked_ids": 299,
+            "confirmed_ids": 256,
+            "first_id": 0,
+            "last_id": 299,
+            "rate_hz": 25.63350785340314,
+            "order_valid": true,
+            "coverage": 0.8533333333333334
+          },
+          {
+            "target": 40.0,
+            "checked_ids": 376,
+            "confirmed_ids": 249,
+            "first_id": 300,
+            "last_id": 699,
+            "rate_hz": 24.877742946708462,
+            "order_valid": true,
+            "coverage": 0.6225
+          },
+          {
+            "target": 48.0,
+            "checked_ids": 435,
+            "confirmed_ids": 219,
+            "first_id": 700,
+            "last_id": 1179,
+            "rate_hz": 21.854636591478698,
+            "order_valid": true,
+            "coverage": 0.45625
+          }
+        ],
+        "0.35": [
+          {
+            "target": 30.0,
+            "checked_ids": 285,
+            "confirmed_ids": 243,
+            "first_id": 0,
+            "last_id": 299,
+            "rate_hz": 24.32670157068063,
+            "order_valid": true,
+            "coverage": 0.81
+          },
+          {
+            "target": 40.0,
+            "checked_ids": 317,
+            "confirmed_ids": 203,
+            "first_id": 300,
+            "last_id": 699,
+            "rate_hz": 20.26332288401254,
+            "order_valid": true,
+            "coverage": 0.5075
+          },
+          {
+            "target": 48.0,
+            "checked_ids": 345,
+            "confirmed_ids": 145,
+            "first_id": 702,
+            "last_id": 1179,
+            "rate_hz": 14.499685336689742,
+            "order_valid": true,
+            "coverage": 0.303347280334728
+          }
+        ],
+        "0.5": [
+          {
+            "target": 30.0,
+            "checked_ids": 249,
+            "confirmed_ids": 238,
+            "first_id": 0,
+            "last_id": 299,
+            "rate_hz": 23.824083769633507,
+            "order_valid": true,
+            "coverage": 0.7933333333333333
+          },
+          {
+            "target": 40.0,
+            "checked_ids": 218,
+            "confirmed_ids": 197,
+            "first_id": 300,
+            "last_id": 699,
+            "rate_hz": 19.661442006269592,
+            "order_valid": true,
+            "coverage": 0.4925
+          },
+          {
+            "target": 48.0,
+            "checked_ids": 176,
+            "confirmed_ids": 129,
+            "first_id": 702,
+            "last_id": 1174,
+            "rate_hz": 13.036282622533419,
+            "order_valid": true,
+            "coverage": 0.2727272727272727
+          }
+        ]
+      },
+      "exact_duplicate_normalized_images": 0,
+      "limits": [
+        "Rates depend on capture FPS declaration and independent camera exposures.",
+        "A readable barcode state does not establish a complete tear-free LCD frame.",
+        "Unobserved states may reflect exposure, rolling shutter, LCD response, or decoding rejection.",
+        "This analysis matches only the supplied transmitted profile and ID ranges."
+      ],
+      "permissive_one_sample_summary": [
+        {
+          "target_fps": 30,
+          "transmitted_ids_in_profile": 300,
+          "checked_ids_one_or_more_samples": 300,
+          "capture_dependent_readable_state_rate_hz": 30.0565445026178,
+          "chronological_order_valid": true
+        },
+        {
+          "target_fps": 40,
+          "transmitted_ids_in_profile": 400,
+          "checked_ids_one_or_more_samples": 382,
+          "capture_dependent_readable_state_rate_hz": 38.21145006268282,
+          "chronological_order_valid": true
+        },
+        {
+          "target_fps": 48,
+          "transmitted_ids_in_profile": 480,
+          "checked_ids_one_or_more_samples": 440,
+          "capture_dependent_readable_state_rate_hz": 44.010025062656645,
+          "chronological_order_valid": true
+        }
+      ],
+      "interpretation": "Barcode-state observability only. Neither per-frame completeness nor exact panel maximum is established. Compare confidence sensitivity and multiple-sample support."
+    }
+  ],
+  "experimental_native_usb_soak": {
+    "python": "3.14.9",
+    "qt_platform": "wayland",
+    "screen_reported_refresh_hz": 144.0019989013672,
+    "scope": "Qt unique swaps are not monitor/LCD optical proof",
+    "experimental": true,
+    "counter": false,
+    "target_fps": 60.0,
+    "delay_ms": 1.0,
+    "quality": 65,
+    "poll_ms": 4,
+    "usb": true,
+    "duration_s": 599.791078196,
+    "generated": 35981,
+    "sent": 35981,
+    "applied": 35981,
+    "swaps": 31112,
+    "unique_swaps": 31001,
+    "output_error_frames": 0,
+    "config_error_frames": 0,
+    "host_fps": 59.99699407662604,
+    "unique_qt_swap_fps": 59.9971510349734,
+    "qt_swap_coverage": 0.8615936188543953,
+    "transmission_ms": {
+      "count": 35981,
+      "mean": 8.017747662211725,
+      "max": 12.46980900032213,
+      "p50": 8.0,
+      "p95": 8.0,
+      "p99": 9.1
+    },
+    "worker_pipeline_ms": {
+      "count": 35981,
+      "mean": 11.4576749545904,
+      "max": 24.64017399961449,
+      "p50": 11.4,
+      "p95": 12.2,
+      "p99": 13.1
+    },
+    "unique_swap_interval_ms": {
+      "count": 31000,
+      "mean": 16.667458083419287,
+      "max": 26.871677000599448,
+      "p50": 16.0,
+      "p95": 20.3,
+      "p99": 21.6
+    },
+    "steady_cpu_one_core_percent": 27.48992797234565,
+    "steady_rss_slope_mib_per_min": 0.0581344528868278,
+    "rss_mib_range": [
+      270.24609375,
+      274.171875
+    ],
+    "worker_error": null,
+    "output_error": null,
+    "config_error": null,
+    "worker_stopped": true,
+    "context": {
+      "user_confirmed": "Monitor powered off or screen locked during final segment",
+      "preview_interpretation": "Approximately 60 unique Qt swaps/s during active swaps; only 86.16% of generated IDs swapped across the entire run. No claim of uninterrupted 10-minute presentation.",
+      "concurrent_load": "Part of the run overlapped local optical video decoding; no exclusive-system load control."
+    }
+  },
+  "lifecycle": {
+    "tested_shutdown_binary_sha256": "a6a1fe75592dfe32321fdb143f08f9a43dba24f1206dfb8f539f92f14ec10537",
+    "scope": "Shutdown implementation tested before the later visual-only 8 px stroke update; no new OS lifecycle pass is inferred for the rebuilt visual variant.",
+    "desktop_autostarted_warm_reboot": {
+      "actual_os_reboot": true,
+      "launch_context": "Existing instance started by desktop autostart; not relaunched by the development environment.",
+      "user_confirmed_standby_during_reboot": true,
+      "same_installed_binary_hash_verified": true,
+      "previous_session_event_codes": [
+        "session-start",
+        "guard-started",
+        "gui-start",
+        "guard-armed",
+        "logind-shutdown",
+        "shutdown-drain-start",
+        "guard-disarmed",
+        "shutdown-output-released",
+        "sigterm-dispatched",
+        "cleanup-start",
+        "worker-drained",
+        "qt-about-to-quit",
+        "gui-loop-returned",
+        "guard-eof"
+      ],
+      "shutdown_notification_to_output_release_ms": 59.0,
+      "output_timeout_recorded": false,
+      "worker_drained": true,
+      "next_login_fallback_armed": true,
+      "scope": "One owner-observed warm reboot on Arch Linux; trace corroborates worker release and cleanup. Host timing is not an optical latency measurement."
+    },
+    "desktop_autostarted_full_shutdown": {
+      "actual_host_poweroff_and_poweron": true,
+      "launch_context": "Existing desktop-autostarted instance left running.",
+      "user_reported_requested_poweroff_standby_and_startup_check_passed": true,
+      "confirmation_scope": "Overall user confirmation of the preceding checklist; no separate answers for each startup/preferences item.",
+      "same_installed_binary_hash_verified": true,
+      "previous_session_event_codes": [
+        "session-start",
+        "guard-started",
+        "gui-start",
+        "guard-armed",
+        "logind-shutdown",
+        "shutdown-drain-start",
+        "guard-disarmed",
+        "shutdown-output-released",
+        "sigterm-dispatched",
+        "cleanup-start",
+        "worker-drained",
+        "qt-about-to-quit",
+        "gui-loop-returned",
+        "guard-eof"
+      ],
+      "shutdown_notification_to_output_release_ms": 52.0,
+      "output_timeout_recorded": false,
+      "worker_drained": true,
+      "next_login_fallback_armed": true,
+      "usb_standby_power_removal_verified": false,
+      "scope": "One owner-reported full PC shutdown/power-on on Arch Linux. No AC removal or loss of device state was verified. Host timing is not optical latency."
+    },
+    "development_launched_reboot_failed": true,
+    "independent_fallback_physical_display_loss_passed": true,
+    "isolated_notification_physical_standby_passed": true,
+    "limits": [
+      "One successful trial per OS operation; not endurance or universal shutdown proof.",
+      "Exact termination mechanism behind development-launched failures remains unproven.",
+      "Suspend/resume and verified removal of USB standby power remain untested."
+    ]
+  }
+}
