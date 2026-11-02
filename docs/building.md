@@ -32,7 +32,7 @@ The following sections describe the manual standalone build alternative.
 Use an up-to-date Arch installation with a working graphical session and graphics driver. Install the build tools and desktop runtime libraries:
 
 ```bash
-sudo pacman -Syu --needed git python python-pip binutils zlib glib2 krb5 fontconfig libglvnd libxkbcommon libxkbcommon-x11 libxcb xcb-util-cursor wayland dbus
+sudo pacman -Syu --needed git python python-pip binutils zlib glib2 krb5 fontconfig libglvnd libxkbcommon libxkbcommon-x11 libxcb libx11 xcb-util-cursor xcb-util-wm xcb-util-keysyms wayland dbus
 ```
 
 `binutils` supplies `objdump`; `glibc`, a base-system dependency, supplies `ldd`. Python development headers are part of the Arch Python package. A compiler is normally unnecessary with supported prebuilt wheels/bootloader; if pip reports a source build, install `base-devel` and investigate package/platform compatibility before proceeding. Qt/PySide and Pillow are installed in the build environment below; installing the separate system `pyside6` package is unnecessary for this recipe. The existing desktop provides a display server/compositor and appropriate GPU driver; this command does not install or configure a desktop. Arch's [Qt base dependency list](https://archlinux.org/packages/extra/x86_64/qt6-base/) is a reference for native desktop requirements.

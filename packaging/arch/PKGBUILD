@@ -8,7 +8,7 @@ arch=('x86_64')
 url='https://github.com/sebitaandrut/fx240-lcdstudio'
 license=('GPL-3.0-or-later')
 depends=('glibc' 'libgcc' 'libstdc++' 'zlib' 'glib2' 'krb5' 'fontconfig' 'libglvnd'
-         'libxkbcommon' 'libxkbcommon-x11' 'libxcb' 'xcb-util-cursor'
+         'libxkbcommon' 'libxkbcommon-x11' 'libxcb' 'libx11' 'xcb-util-cursor' 'xcb-util-wm' 'xcb-util-keysyms'
          'wayland' 'dbus' 'hicolor-icon-theme')
 makedepends=('git' 'python>=3.14' 'python<3.15' 'python-pip' 'desktop-file-utils')
 provides=('fx240-lcd-studio')
@@ -75,6 +75,17 @@ build() {
 check() {
   cd "$srcdir/fx240-lcdstudio"
   desktop-file-validate packaging/arch/org.fx240lcdstudio.desktop
+  # Offscreen smoke alone cannot detect missing native X11/Wayland libraries.
+  local plugin dependency_report
+  for plugin in "$srcdir"/build-env/lib/python*/site-packages/PySide6/Qt/plugins/platforms/libqxcb.so \
+                "$srcdir"/build-env/lib/python*/site-packages/PySide6/Qt/plugins/platforms/libqwayland*.so; do
+    [[ -f "$plugin" ]] || continue
+    dependency_report=$(ldd "$plugin") || return 1
+    if grep -q 'not found' <<< "$dependency_report"; then
+      printf '%s\n' "$dependency_report" >&2
+      return 1
+    fi
+  done
   # Synthetic sensors, offscreen QML, no HID access and no preference writes.
   env -u PYTHONPATH -u PYTHONHOME -u VIRTUAL_ENV \
     PYTHONNOUSERSITE=1 ./dist/fx240-lcd-studio self-test

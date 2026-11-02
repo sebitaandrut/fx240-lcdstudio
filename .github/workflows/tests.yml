@@ -45,7 +45,7 @@ jobs:
         run: |
           pacman -Syu --noconfirm --needed \
             git python python-pip binutils zlib glib2 krb5 fontconfig libglvnd \
-            libxkbcommon libxkbcommon-x11 libxcb xcb-util-cursor wayland dbus
+            libxkbcommon libxkbcommon-x11 libxcb libx11 xcb-util-cursor xcb-util-wm xcb-util-keysyms wayland dbus
       - uses: actions/checkout@v7
       - name: Build using the end-user instructions
         run: |
@@ -74,7 +74,7 @@ jobs:
           pacman -Syu --noconfirm --needed \
             base-devel git python python-pip desktop-file-utils hicolor-icon-theme \
             zlib glib2 krb5 fontconfig libglvnd libxkbcommon libxkbcommon-x11 \
-            libxcb xcb-util-cursor wayland dbus
+            libxcb libx11 xcb-util-cursor xcb-util-wm xcb-util-keysyms wayland dbus
       - uses: actions/checkout@v7
       - name: Build the package as an unprivileged user
         run: |
