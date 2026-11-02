@@ -801,7 +801,17 @@
         "original_open_alerts_reviewed": 21,
         "report": "docs/security-review.md",
         "special_file_and_hardlink_corrections": true,
-        "independent_audit": false
+        "independent_audit": false,
+        "tested_commit": "1773b03835e79e1a25153c0f011d3ac5087aeed1",
+        "original_locations_closed_by_analysis": 6,
+        "additional_alerts_reviewed": 3,
+        "alerts_dismissed_with_individual_rationale": 18,
+        "open_alerts_after_review": 0,
+        "tests_run": "https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41391379387",
+        "security_run": "https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41391379492",
+        "codeql_run": "https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41391379271",
+        "all_checks_passed": true,
+        "limits": "Maintainer review; dismissal is not remediation or independent certification. Concrete special-file/hardlink issues were fixed separately."
       }
     },
     "private_vulnerability_reporting_enabled": true,

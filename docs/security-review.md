@@ -43,7 +43,17 @@ The table classifies the reported injection/traversal claim after examining the 
 | #15 | Synthetic Wayland client log: fixed basename below the optional harness's explicitly chosen output directory; only synthetic events, no real HID implementation. Local artifact output is the purpose of this helper. |
 | #16 | Synthetic Wayland ready marker: fixed basename in that same test directory; not remote data or a production path. Harness logs remain private and require review before sharing. |
 
-Any follow-up CodeQL path alerts in `localfiles.py` identify the same intentional caller-selected input. The helper validates an opened descriptor and bounds reads; it does not introduce a privileged file-access service. Review new flows independently rather than automatically dismissing every occurrence of the rule.
+The follow-up analysis on `1773b03835e79e1a25153c0f011d3ac5087aeed1` automatically closed six original locations (#1–#3, #20–#22), retained fifteen, and added three. All three additions were also reviewed:
+
+| Alert | Follow-up decision |
+| --- | --- |
+| #23 | `localfiles.py` lstat: intentional caller-selected regular-file input; metadata check before opening, no privilege boundary or remote path source. |
+| #24 | `localfiles.py` open: the same path, opened no-follow/nonblocking; descriptor type/ownership/link checks as applicable, plus bounded bytes before decoding. |
+| #25 | `tests/test_localfiles.py` mocked open: synthetic replacement-race regression only. Its closure uses a `TemporaryDirectory` path and replaces that file with a FIFO to verify descriptor rejection; it is not application code handling attacker input. |
+
+These eighteen remaining injection/traversal alerts are classified as false positives for the reviewed local-app threat boundary, with individual GitHub comments. This does not classify future occurrences automatically. The [tests](https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41391379387), [security workflow](https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41391379492), and [CodeQL analysis](https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41391379271) record the follow-up checks.
+
+The follow-up CodeQL path alerts in `localfiles.py` identify the same intentional caller-selected input. The helper validates an opened descriptor and bounds reads; it does not introduce a privileged file-access service. Review new flows independently rather than automatically dismissing every occurrence of the rule.
 
 ## Validation and limits
 
