@@ -653,5 +653,20 @@
       "Exact termination mechanism behind development-launched failures remains unproven.",
       "Suspend/resume and verified removal of USB standby power remain untested."
     ]
+  },
+  "native_pacman_installation": {
+    "date": "2026-11-01",
+    "platform": "Existing Arch Linux x86_64 desktop",
+    "package_version": "0.1.0.r26.gb8c9e86-1",
+    "system_executable_owned_by_package_verified": true,
+    "owner_confirmed_installed_application_running": true,
+    "owner_overall_affirmative_to_preview_lcd_and_preferences_check": true,
+    "configuration_scope": "Owner manually deleted settings.json to start with a new configuration; this is not verification of migration of previous settings.",
+    "autostart_enabled": true,
+    "autostart_targets_system_executable_verified": true,
+    "lcd_transport_armed_in_current_session": true,
+    "clean_os_installation": false,
+    "installed_package_reboot_shutdown_suspend_retested": false,
+    "scope": "Initial native package smoke and autostart entry migration only; fresh configuration on the existing desktop, not a clean machine or a new boot lifecycle pass."
   }
 }
