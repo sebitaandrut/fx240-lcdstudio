@@ -13,7 +13,7 @@ sudo pacman -Syu --needed base-devel git
 git clone https://github.com/sebitaandrut/fx240-lcdstudio.git
 cd fx240-lcdstudio/packaging/arch
 makepkg -s
-sudo pacman -U ./*.pkg.tar.zst
+sudo pacman -U "$(makepkg --packagelist)"
 fx240-lcd-studio self-test
 ```
 
@@ -22,6 +22,8 @@ Run `makepkg` as your normal user. It fetches source and checksum-verified depen
 The package installs `/usr/bin/fx240-lcd-studio`, the `fx240` alias, a menu launcher, the approved icon, and license notices. Open **FX240 LCD STUDIO** from your application menu, or run `fx240-lcd-studio gui`. The package does not enable autostart or change USB permissions.
 
 Close any previous Studio instance before opening the installed one. To migrate an existing login entry, disable and re-enable **Start at login** from the installed application so it points to `/usr/bin/fx240-lcd-studio`. Existing preferences remain in your user configuration directory. Remove the package with `sudo pacman -R fx240-lcd-studio-git`; personal preferences and any opt-in user autostart entry are separate, so disable startup before uninstalling.
+
+The package build, installation, installed self-test, and removal passed in an [Arch CI container](https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41376359529). Native desktop/USB operation of the system-installed package on a user PC remains a separate check.
 
 The following sections describe the manual standalone build alternative.
 

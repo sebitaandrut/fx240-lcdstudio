@@ -63,6 +63,16 @@
         "Existing system Qt/graphics/session libraries and USB permissions were not re-provisioned.",
         "No HID open or personal preference writes; native display and physical LCD still require a separate check."
       ]
+    },
+    "arch_package": {
+      "url": "https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41376359529",
+      "tested_commit": "65d6c34012950187ae3e18f606158df74aa977a0",
+      "container": "archlinux:base",
+      "unprivileged_makepkg_build_passed": true,
+      "pacman_install_passed": true,
+      "installed_self_test_passed": true,
+      "pacman_removal_passed": true,
+      "scope": "Clean container package lifecycle; no native desktop or physical LCD test and no package installed on the development PC."
     }
   },
   "protocol_capture": {

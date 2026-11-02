@@ -12,3 +12,10 @@ private/
 *.gif
 *.bin
 .env*
+
+# Local makepkg sources and package outputs.
+packaging/arch/src/
+packaging/arch/pkg/
+packaging/arch/fx240-lcdstudio/
+packaging/arch/*.whl
+packaging/arch/*.pkg.tar.*
