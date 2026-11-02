@@ -1,0 +1,4 @@
+# Developer/CI security checks only; not needed to build or run Studio.
+bandit[toml]==1.9.4
+pip-audit==2.10.1
+hypothesis==6.170.14

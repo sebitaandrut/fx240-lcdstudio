@@ -29,7 +29,8 @@ def main():
              str(root/'packaging/entrypoint.py')]
     subprocess.run(command,cwd=root,env=env,check=True)
     names=('Pillow','PySide6-Essentials','shiboken6','PyInstaller','pyinstaller-hooks-contrib','altgraph','packaging','setuptools')
-    manifest={'python':platform.python_version(),'platform':platform.platform(),
+    from PySide6.QtCore import qVersion
+    manifest={'python':platform.python_version(),'qt_version':qVersion(),'platform':platform.platform(),
               'architecture':platform.machine(),'format':'onedir' if args.onedir else 'onefile',
               'dependencies':{name:importlib.metadata.version(name) for name in names}}
     (root/'build/build-environment.json').write_text(json.dumps(manifest,indent=2)+'\n')

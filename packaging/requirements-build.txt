@@ -1,11 +1,11 @@
-# Known working Python build environment on Arch Linux x86_64, 2026-11-01.
+# Hashed build environment: Arch Linux x86_64, CPython 3.14; reviewed 2026-11-02.
 # Python itself and native system libraries are documented in docs/building.md.
-pip==26.2.1
-setuptools==84.2.1
-Pillow==13.0.0
-PySide6-Essentials==6.11.3
-shiboken6==6.11.3
-PyInstaller==6.22.3
-pyinstaller-hooks-contrib==2026.9
-altgraph==0.17.5
-packaging==26.3
+pip==26.2.1 --hash=sha256:71138adf1f4ca900cdb7d289c21b7494329f2332b6d85f0e1c42108c0384ed3e
+setuptools==84.2.1 --hash=sha256:ca140b45d5325a9478f880e351484f62fef15f336462e449ca0c03c873d589c2
+Pillow==13.0.0 --hash=sha256:e91c2b1cbeae768c98752e67e717e283d68dae45717b41f2d91eaee648e37b7d
+PySide6-Essentials==6.11.3 --hash=sha256:c6a5c3b58bf55aef6e09a7de690ff6133335014ab81a7f22f56363ea08e8f6a3
+shiboken6==6.11.3 --hash=sha256:e601c957011345c741b88f661a12486f478db881d6777bdf37e3dc7a8d3387c6
+PyInstaller==6.22.3 --hash=sha256:451a4ae14b719365bf1a2f0a99dae7b3463060061c3a394c70d5264cfb439528
+pyinstaller-hooks-contrib==2026.9 --hash=sha256:fb3e67dd64122561724c48ad0366ac9e8c16e638b63bf7d85de03bf3fdbf06c3
+altgraph==0.17.5 --hash=sha256:f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597
+packaging==26.3 --hash=sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c

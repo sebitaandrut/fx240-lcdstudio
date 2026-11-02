@@ -2,8 +2,8 @@
   "recorded_on": "2026-11-01",
   "platform_scope": "Arch Linux x86_64, one FX240; other distributions and hardware revisions untested.",
   "automated_checks": {
-    "tests_passed": 114,
-    "scope": "Current source with hidraw path hardening and desktop dependencies; includes optional Qt/QML checks.",
+    "tests_passed": 121,
+    "scope": "Current source with media/preferences bounds, explicit self-test checks under optimization, and desktop dependencies.",
     "frozen_8px_self_test_passed": true,
     "no_usb_self_test": true,
     "github_actions": {
@@ -781,5 +781,44 @@
       "existing_frozen_installations_require_rebuild": true
     }
   },
-  "last_updated_on": "2026-11-02"
+  "last_updated_on": "2026-11-02",
+  "security_controls": {
+    "date": "2026-11-02",
+    "codeql": {
+      "default_setup_enabled": true,
+      "languages": [
+        "actions",
+        "python"
+      ],
+      "query_suite": "extended",
+      "threat_model": "remote_and_local",
+      "initial_analysis_run": "https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41384544258",
+      "initial_open_alerts": 17,
+      "independent_triage_completed": false,
+      "note": "Initial local-source alerts concern user-directed paths and an offline capture command. Context review is required; successful analysis is not a finding-free verdict."
+    },
+    "private_vulnerability_reporting_enabled": true,
+    "secret_scanning_enabled": true,
+    "secret_push_protection_enabled": true,
+    "github_secret_alerts_open_at_review": 0,
+    "local_bandit": {
+      "runtime_and_packaging_any_severity_passed": true,
+      "developer_tools_medium_or_higher_passed": true,
+      "low_severity_developer_tool_notices_require_context_review": true
+    },
+    "known_advisory_checks": {
+      "hashed_build_pins_passed": true,
+      "security_tool_environment_passed": true,
+      "native_qt_cpp_coverage_complete": false
+    },
+    "property_checks": {
+      "properties": 4,
+      "max_examples_per_property": 100,
+      "deterministic": true,
+      "real_usb_opened": false,
+      "result": "passed",
+      "scope": "Framing, rejected device paths, malformed private preferences, small GIFs and truncation; not exhaustive native fuzzing."
+    },
+    "independent_security_audit_completed": false
+  }
 }

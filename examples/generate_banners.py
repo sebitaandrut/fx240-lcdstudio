@@ -63,9 +63,12 @@ def main():
         image.fill(Qt.GlobalColor.transparent)
         painter=QPainter(image)
         renderer=QSvgRenderer(QByteArray(svg.encode()))
-        assert renderer.isValid()
+        if not renderer.isValid():
+            painter.end()
+            raise RuntimeError("Invalid banner SVG")
         renderer.render(painter);painter.end()
-        assert image.save(str(destination/f'{name}.png'))
+        if not image.save(str(destination/f'{name}.png')):
+            raise RuntimeError('Could not save banner PNG')
     print('Rendered three SVG/PNG banner concepts from the original GUI mark.')
 
 

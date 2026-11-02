@@ -8,6 +8,7 @@ import argparse
 import collections
 import hashlib
 import json
+import shutil
 import subprocess
 from pathlib import Path
 from fx240.media import encode, load
@@ -33,6 +34,24 @@ def compare(payloads, reports, frames):
     }
 
 
+def tshark_command(capture, address):
+    capture = Path(capture).resolve(strict=True)
+    if not capture.is_file():
+        raise ValueError('Capture input must be a regular file')
+    if type(address) is not int or not 1 <= address <= 127:
+        raise ValueError('Invalid USB address')
+    executable = shutil.which('tshark')
+    if executable is None:
+        raise RuntimeError('tshark is required for offline capture analysis')
+    fields = ['usb.urb_type', 'usbhid.data', 'usb.capdata', 'usb.urb_status', 'frame.len', 'frame.cap_len']
+    command = [executable, '-r', str(capture), '-Y',
+               f'usb.device_address == {address} && usb.endpoint_address.direction == 0 && usb.endpoint_address.number != 0',
+               '-T', 'fields']
+    for field in fields:
+        command.extend(['-e', field])
+    return command
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('capture', type=Path)
@@ -46,12 +65,7 @@ def main():
         parser.error('Invalid address or frame count')
     image = load(args.image)[0][0]
     reports = build_reports(encode(image, args.quality, args.rotation))
-    fields = ['usb.urb_type', 'usbhid.data', 'usb.capdata', 'usb.urb_status', 'frame.len', 'frame.cap_len']
-    command = ['tshark', '-r', str(args.capture), '-Y',
-               f'usb.device_address == {args.address} && usb.endpoint_address.direction == 0 && usb.endpoint_address.number != 0',
-               '-T', 'fields']
-    for field in fields:
-        command.extend(['-e', field])
+    command = tshark_command(args.capture, args.address)
     output = subprocess.check_output(command, text=True, timeout=60)
     payloads, completion_statuses = [], []
     truncated_packets = 0

@@ -31,7 +31,7 @@ from PySide6.QtCore import QTimer
 from fx240.gui import create_engine,dispose_engine
 from fx240.shutdown import ShutdownMonitor
 app=QApplication([]);app.setQuitOnLastWindowClosed(False)
-assert app.platformName()=='wayland'
+if app.platformName()!='wayland':raise RuntimeError('Owned trial requires the Wayland platform')
 def factory(settings,**kwargs):return Session(settings,transport_factory=lambda path:Device(),**kwargs)
 engine,bridge=create_engine(app,Settings(device='/dev/fake'),session_factory=factory,standby_guard=guard,provider=lambda:[Metric('ct','CPU synthetic',45,'C','synthetic')])
 monitor=ShutdownMonitor(app,bridge,bus=Bus(),manager=Manager(),install_signals=True,trace=trace)

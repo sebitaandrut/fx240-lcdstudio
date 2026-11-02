@@ -8,6 +8,9 @@ import tempfile
 from .session import Settings
 
 
+MAX_PREFERENCE_BYTES = 64 * 1024
+
+
 class Preferences:
     def __init__(self,path=None):
         base=os.environ.get('XDG_CONFIG_HOME') or Path.home()/'.config'
@@ -23,7 +26,11 @@ class Preferences:
         defaults=Settings()
         ui={'language':'es','theme':'dark'}
         try:
-            data=json.loads(self.path.read_text())
+            with self.path.open('rb') as stream:
+                payload=stream.read(MAX_PREFERENCE_BYTES+1)
+            if len(payload)>MAX_PREFERENCE_BYTES:
+                raise ValueError('Saved preferences exceed the 64 KiB limit')
+            data=json.loads(payload)
             if not isinstance(data,dict) or data.get('version')!=1:
                 raise ValueError('Unsupported preferences format')
             values=data.get('display',{})
@@ -60,7 +67,7 @@ class Preferences:
                         self.warning='Some saved preferences were invalid and have been reset'
         except FileNotFoundError:
             pass
-        except (OSError,ValueError,TypeError) as error:
+        except (OSError,ValueError,TypeError,RecursionError) as error:
             self.load_error=str(error)
             self.warning='Saved preferences could not be loaded; defaults are in use'
         return defaults,ui

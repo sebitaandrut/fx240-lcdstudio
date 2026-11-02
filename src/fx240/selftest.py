@@ -6,6 +6,11 @@ from pathlib import Path
 import sys
 
 
+def require(condition, message):
+    if not condition:
+        raise RuntimeError(message)
+
+
 def run():
     # Select before QApplication construction; no display server is needed.
     os.environ['QT_QPA_PLATFORM']='offscreen'
@@ -31,17 +36,17 @@ def run():
     def inspect():
         try:
             window=engine.rootObjects()[0]
-            assert window.title()=='FX240 LCD STUDIO'
-            assert not window.grabWindow().isNull()
-            assert bridge.session.frames>2
-            assert bridge.sensorRows[0]['target']=='45.1°C'
-            assert window.findChild(QObject,'brandIcon').property('implicitWidth')>0
-            assert (root/'assets/fonts/Outfit.ttf').is_file()
+            require(window.title()=='FX240 LCD STUDIO', 'Unexpected application title')
+            require(not window.grabWindow().isNull(), 'Window capture is unavailable')
+            require(bridge.session.frames>2, 'No rendered frame sequence')
+            require(bridge.sensorRows[0]['target']=='45.1°C', 'Unexpected synthetic LCD target')
+            require(window.findChild(QObject,'brandIcon').property('implicitWidth')>0, 'Brand icon did not load')
+            require((root/'assets/fonts/Outfit.ttf').is_file(), 'Bundled font is missing')
             for name in ('dark','light','fallback'):
-                assert QSvgRenderer(str(root/f'assets/branding/tray-lcd-{name}.svg')).isValid()
+                require(QSvgRenderer(str(root/f'assets/branding/tray-lcd-{name}.svg')).isValid(), 'Invalid tray artwork')
             for page in range(4):
                 window.setProperty('page',page);app.processEvents()
-                assert not window.grabWindow().isNull()
+                require(not window.grabWindow().isNull(), 'Window capture is unavailable')
         except Exception as error:errors.append(str(error) or type(error).__name__)
         bridge.stop()
     def complete():

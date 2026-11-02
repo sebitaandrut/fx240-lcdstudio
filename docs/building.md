@@ -52,7 +52,7 @@ python3 -m venv .venv-build
 .venv-build/bin/python tools/build_binary.py
 ```
 
-`packaging/requirements-build.txt` records the working Python dependency versions, including build tooling. Use a separate environment rather than installing these versions into system Python. Python itself is not pinned by pip: use the recorded Python version when reproducing this build. The manifest helps reproduce the recipe, but does not promise byte-for-byte identical binaries. The declared source minimum is Python 3.11; this packaging trial only validates Python 3.14.9.
+`packaging/requirements-build.txt` records the working Python dependency versions and wheel SHA-256 hashes for Arch x86_64/CPython 3.14, including build tooling. Use a separate environment rather than installing these versions into system Python. Python itself is not pinned by pip: use the recorded Python version when reproducing this build. The manifest helps reproduce the recipe, but does not promise byte-for-byte identical binaries. The declared source minimum is Python 3.11; this packaging trial only validates Python 3.14.9.
 
 A fresh clone of the public repository was built on the existing Arch development host using a new environment and uncached dependency downloads. Installation, `pip check`, the build, and installed/frozen self-tests passed. The standalone check temporarily made the source and build environment unavailable. This does not replace a clean OS/VM installation. The `arch-build` CI job also exercises this user recipe in an empty Arch container, without uploading the binary. See [validation](validation.md).
 

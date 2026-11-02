@@ -18,7 +18,7 @@ Sensor support depends on Linux drivers; unavailable readings show `N/A`. Propri
 
 This reverse-engineered hardware support is **experimental**. No independent security audit or hardware-safety certification has been completed; passing tests does not guarantee freedom from vulnerabilities or safe behavior on another device revision. Use only the intended FX240 LCD. Matching USB IDs alone do not establish compatibility.
 
-The implemented device commands upload LCD images; there are no pump, fan, RGB, voltage, clock-control, or firmware-flashing features. Sensors are read-only. The sender restricts access to `/dev/hidrawN`, checks USB identity, and takes a cooperative lock. Run the app as a normal user with access only to the correct LCD interface. Treat telemetry as informational, use trusted media/fonts, and keep dependencies updated. See [validation limits](docs/validation.md) and [privacy review](docs/privacy-review.md).
+The implemented device commands upload LCD images; there are no pump, fan, RGB, voltage, clock-control, or firmware-flashing features. Sensors are read-only. The sender restricts access to `/dev/hidrawN`, checks USB identity, and takes a cooperative lock. Run the app as a normal user with access only to the correct LCD interface. Treat telemetry as informational, use trusted media/fonts, and keep dependencies updated. See the [security policy and private reporting](SECURITY.md), [validation limits](docs/validation.md), and [privacy review](docs/privacy-review.md).
 
 ## Get started
 

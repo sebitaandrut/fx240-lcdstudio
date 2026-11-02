@@ -1,0 +1,35 @@
+name: security
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  python-security:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Install isolated security tooling
+        run: |
+          python -m pip install -r packaging/requirements-security.txt
+          python -m pip install Pillow==13.0.0
+      - name: Check runtime and packaging code
+        run: bandit -r src packaging
+      - name: Check developer tools for medium and high severity findings
+        run: bandit -r tools examples --severity-level medium
+      - name: Check pinned build dependencies against known advisories
+        run: pip-audit --require-hashes --disable-pip -r packaging/requirements-build.txt
+      - name: Check security tooling and its installed dependencies
+        run: pip-audit
+      - name: Exercise bounded malformed inputs without USB
+        run: python tools/security_properties.py
+        env:
+          PYTHONPATH: src

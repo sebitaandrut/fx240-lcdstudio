@@ -54,6 +54,9 @@ jobs:
           .venv-build/bin/python -m pip install --no-deps --no-build-isolation .
           .venv-build/bin/python -m pip check
           .venv-build/bin/python tools/build_binary.py
+          .venv-build/bin/python tools/inventory_binary.py \
+            --binary dist/fx240-lcd-studio --manifest build/build-environment.json \
+            --output "$RUNNER_TEMP/fx240-build-inventory.json"
       - name: Check standalone executable without the build environment
         run: |
           runtime_dir=$(mktemp -d)

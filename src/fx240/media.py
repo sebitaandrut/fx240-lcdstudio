@@ -1,10 +1,22 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Image/GIF composition and JPEG encoding, independent of transport."""
 import io
+from pathlib import Path
+import struct
 from PIL import Image, ImageOps
 
 
+MAX_SOURCE_PIXELS = 16_000_000
+MAX_FILE_BYTES = 64 * 1024 * 1024
+
+
+def check_size(image):
+    if image.width * image.height > MAX_SOURCE_PIXELS:
+        raise ValueError('Source image exceeds the 16 megapixel limit')
+
+
 def canvas(image):
+    check_size(image)
     image = image.convert("RGBA")
     image = ImageOps.contain(image, (240, 240), Image.Resampling.LANCZOS)
     result = Image.new("RGBA", (240, 240), (0, 0, 0, 255))
@@ -21,14 +33,24 @@ def encode(image, quality=85, rotation=180):
 
 
 def load(path, max_frames=1000):
+    path = Path(path)
+    if not path.is_file():
+        raise ValueError('Media input must be a regular file')
+    if path.stat().st_size > MAX_FILE_BYTES:
+        raise ValueError('Media input exceeds the 64 MiB limit')
     frames = []
-    with Image.open(path) as source:
-        if getattr(source, "n_frames", 1) > max_frames:
-            raise ValueError("Too many frames; limit is 1000")
-        for i in range(getattr(source, "n_frames", 1)):
-            source.seek(i)  # Pillow applies GIF disposal/composition.
-            duration = source.info.get("duration", 100)
-            if not isinstance(duration, (int, float)) or duration <= 0:
-                duration = 100
-            frames.append((canvas(source.copy()), duration / 1000))
+    try:
+        with Image.open(path) as source:
+            check_size(source)
+            if getattr(source, "n_frames", 1) > max_frames:
+                raise ValueError("Too many frames; limit is 1000")
+            for i in range(getattr(source, "n_frames", 1)):
+                source.seek(i)  # Pillow applies GIF disposal/composition.
+                check_size(source)
+                duration = source.info.get("duration", 100)
+                if not isinstance(duration, (int, float)) or duration <= 0:
+                    duration = 100
+                frames.append((canvas(source.copy()), duration / 1000))
+    except (IndexError, EOFError, struct.error, Image.DecompressionBombError) as error:
+        raise ValueError('Invalid, truncated, or oversized image/GIF data') from error
     return frames
