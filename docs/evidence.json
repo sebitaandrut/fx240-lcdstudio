@@ -666,7 +666,17 @@
     "autostart_targets_system_executable_verified": true,
     "lcd_transport_armed_in_current_session": true,
     "clean_os_installation": false,
-    "installed_package_reboot_shutdown_suspend_retested": false,
-    "scope": "Initial native package smoke and autostart entry migration only; fresh configuration on the existing desktop, not a clean machine or a new boot lifecycle pass."
+    "scope": "Initial native package smoke with fresh settings and one successful warm-reboot checklist on the existing Arch desktop; not a clean-machine or endurance claim.",
+    "warm_reboot_trial": {
+      "date": "2026-11-01",
+      "package_version": "0.1.0.r26.gb8c9e86-1",
+      "owner_overall_confirmed_standby_tray_startup_output_and_new_preferences_check": true,
+      "previous_session_worker_release_and_cleanup_verified": true,
+      "next_login_lcd_transport_armed": true,
+      "autostart_targets_system_executable_verified": true,
+      "scope": "One overall owner confirmation of the requested reboot checklist, corroborated by event traces; no separately timed optical or resource measurement."
+    },
+    "full_poweroff_retested_with_package": false,
+    "suspend_resume_tested_with_package": false
   }
 }
