@@ -35,3 +35,31 @@ jobs:
       - name: Check native Qt imports
         run: python -c "from PySide6 import QtGui, QtWidgets, QtQuick, QtSvg, QtDBus"
       - run: python -m unittest discover -s tests -v
+
+  arch-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container: archlinux:base
+    steps:
+      - name: Install documented Arch build dependencies
+        run: |
+          pacman -Syu --noconfirm --needed \
+            git python python-pip binutils zlib glib2 krb5 fontconfig libglvnd \
+            libxkbcommon libxkbcommon-x11 libxcb xcb-util-cursor wayland dbus
+      - uses: actions/checkout@v7
+      - name: Build using the end-user instructions
+        run: |
+          python3 -m venv .venv-build
+          .venv-build/bin/python -m pip install --no-cache-dir -r packaging/requirements-build.txt
+          .venv-build/bin/python -m pip install --no-deps --no-build-isolation .
+          .venv-build/bin/python -m pip check
+          .venv-build/bin/python tools/build_binary.py
+      - name: Check standalone executable without the build environment
+        run: |
+          runtime_dir=$(mktemp -d)
+          cp dist/fx240-lcd-studio "$runtime_dir/"
+          mv .venv-build "$runtime_dir/build-environment"
+          cd "$runtime_dir"
+          env -u PYTHONPATH -u PYTHONHOME -u VIRTUAL_ENV \
+            PYTHONNOUSERSITE=1 ./fx240-lcd-studio self-test
+          ./fx240-lcd-studio --help

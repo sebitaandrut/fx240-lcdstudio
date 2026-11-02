@@ -21,6 +21,8 @@ Use a short imperative subject with a type prefix:
 
 Use the body for motivation, relevant tradeoffs, and validation results when needed. Clearly distinguish host timing, simulated checks, USB captures, and human observations of the physical display. Do not present a render, test count, or host frame rate as proof of optical refresh behavior.
 
+The [user build guide](docs/building.md) makes the full suite optional for end users. Contributors should run the relevant regression checks, and CI continues to run the complete suite.
+
 ## Before committing
 
 1. Review the actual changed files and diff.

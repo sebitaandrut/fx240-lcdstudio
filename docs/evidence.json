@@ -17,6 +17,52 @@
       ],
       "runner": "ubuntu-latest",
       "scope": "Automated software tests only; no physical LCD, sensor, native desktop or packaged-build compatibility claim for Ubuntu."
+    },
+    "fresh_repository_build": {
+      "date": "2026-11-01",
+      "source_repository": "https://github.com/sebitaandrut/fx240-lcdstudio",
+      "source_commit": "89c36efb03e704a1b0b537e4d86a79f8c0b8288f",
+      "platform": "Existing Arch Linux x86_64 development host",
+      "fresh_clone": true,
+      "new_virtualenv_without_system_site_packages": true,
+      "dependency_downloads_without_pip_cache": true,
+      "pinned_dependencies_installed": true,
+      "pip_check_passed": true,
+      "installed_entrypoint_self_test": {
+        "application": "FX240 LCD STUDIO",
+        "frozen": false,
+        "qml_loaded": true,
+        "frames": 20,
+        "hid_open_attempts": 0,
+        "preferences_store_enabled": false,
+        "errors": []
+      },
+      "frozen_build_passed": true,
+      "binary_sha256": "9f39ed7e2ce0843a0fd8a1d3a9398045c34fedf952d361ef57f38c21330111dd",
+      "standalone_runtime_check": {
+        "source_and_build_environment_temporarily_unavailable": true,
+        "working_directory_outside_source": true,
+        "python_environment_variables_unset": true,
+        "python_site_packages_disabled": true,
+        "help_passed": true,
+        "self_test": {
+          "application": "FX240 LCD STUDIO",
+          "frozen": true,
+          "qml_loaded": true,
+          "frames": 20,
+          "hid_open_attempts": 0,
+          "preferences_store_enabled": false,
+          "errors": []
+        }
+      },
+      "full_suite_required_by_user_build": false,
+      "native_gui_or_real_usb_tested_in_this_trial": false,
+      "clean_os_or_vm_tested": false,
+      "limits": [
+        "Fresh repository/environment on the existing Arch host, not a clean OS installation.",
+        "Existing system Qt/graphics/session libraries and USB permissions were not re-provisioned.",
+        "No HID open or personal preference writes; native display and physical LCD still require a separate check."
+      ]
     }
   },
   "protocol_capture": {

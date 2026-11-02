@@ -10,6 +10,7 @@
 | HID packets | Prototype comparison matched 240 frames; a controlled two-frame USB capture matched 24 expected reports exactly. |
 | Physical content | Images, GIF movement/counter, circular telemetry layout, CPU/GPU target agreement, live edits, Outfit, and the 8 px arc/comet were confirmed visually. |
 | Packaged application | Frozen GUI/USB smoke passed on the development machine. The 8 px executable also passed a no-USB self-test. |
+| Repository build | A fresh public clone, empty Python environment, uncached dependencies, install, build, and standalone self-test passed on the existing Arch host. The `arch-build` CI job checks the user recipe in a minimal Arch container; neither case establishes a clean native desktop/VM or physical USB installation. |
 | Preferences and tray | Restarted/minimized operation and saved settings passed initial owner checks. |
 | Reboot and full shutdown | One warm reboot and one full shutdown/power-on passed standby with the desktop-autostarted instance; traces corroborated output release and cleanup. These lifecycle trials preceded the visual-only 8 px rebuild. |
 | FPS and resources | The application remains capped at 24 FPS. Experimental host/optical trials and a ten-minute USB run are summarized in [performance](performance.md). |

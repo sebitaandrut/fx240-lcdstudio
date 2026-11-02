@@ -9,7 +9,7 @@ The build packages Python, the application, Qt/QML, Pillow, Outfit, icons, and t
 Use an up-to-date Arch installation with a working graphical session and graphics driver. Install the build tools and desktop runtime libraries:
 
 ```bash
-sudo pacman -Syu --needed python python-pip binutils zlib fontconfig libglvnd libxkbcommon libxkbcommon-x11 libxcb xcb-util-cursor wayland dbus
+sudo pacman -Syu --needed git python python-pip binutils zlib glib2 krb5 fontconfig libglvnd libxkbcommon libxkbcommon-x11 libxcb xcb-util-cursor wayland dbus
 ```
 
 `binutils` supplies `objdump`; `glibc`, a base-system dependency, supplies `ldd`. Python development headers are part of the Arch Python package. A compiler is normally unnecessary with supported prebuilt wheels/bootloader; if pip reports a source build, install `base-devel` and investigate package/platform compatibility before proceeding. Qt/PySide and Pillow are installed in the build environment below; installing the separate system `pyside6` package is unnecessary for this recipe. The existing desktop provides a display server/compositor and appropriate GPU driver; this command does not install or configure a desktop. Arch's [Qt base dependency list](https://archlinux.org/packages/extra/x86_64/qt6-base/) is a reference for native desktop requirements.
@@ -18,17 +18,20 @@ All development trials used Arch Linux, Python 3.14.9, Qt/PySide 6.12.0, Pillow 
 
 ## 2. Create an isolated build environment
 
-Obtain the project source and open a terminal in its root directory, where `pyproject.toml` is located. No published repository URL is assumed yet.
+Clone the public repository and build inside a dedicated environment:
 
 ```bash
+git clone https://github.com/sebitaandrut/fx240-lcdstudio.git
+cd fx240-lcdstudio
 python3 -m venv .venv-build
 .venv-build/bin/python -m pip install -r packaging/requirements-build.txt
 .venv-build/bin/python -m pip install --no-deps --no-build-isolation .
-.venv-build/bin/python -m unittest discover -s tests -v
 .venv-build/bin/python tools/build_binary.py
 ```
 
 `packaging/requirements-build.txt` records the working Python dependency versions, including build tooling. Use a separate environment rather than installing these versions into system Python. Python itself is not pinned by pip: use the recorded Python version when reproducing this build. The manifest helps reproduce the recipe, but does not promise byte-for-byte identical binaries. The declared source minimum is Python 3.11; this packaging trial only validates Python 3.14.9.
+
+A fresh clone of the public repository was built on the existing Arch development host using a new environment and uncached dependency downloads. Installation, `pip check`, the build, and installed/frozen self-tests passed. The standalone check temporarily made the source and build environment unavailable. This does not replace a clean OS/VM installation. The `arch-build` CI job also exercises this user recipe in an empty Arch container, without uploading the binary. See [validation](validation.md).
 
 The normal application needs Pillow and, for the GUI, PySide6 Essentials (which supplies Qt Quick, Widgets, DBus, and SVG). NumPy/OpenCV are optional video-analysis dependencies and are not needed for the application or executable build. Tk, PyQt6, usbmon, Wireshark, and root privileges are not required for building or running the GUI. USB access still requires appropriate local permissions.
 
@@ -63,6 +66,16 @@ The executable uses the same preference file as the source app, at `$XDG_CONFIG_
 Run `./dist/fx240-lcd-studio gui --start-minimized` to try minimized startup. Without a tray host, the window remains accessible through the taskbar. For OS shutdown/reboot validation, leave the desktop-autostarted instance running: development-launched instances failed standby, while initial autostarted warm-reboot and full-shutdown trials passed. The exact termination difference is unproven. See [validation and limits](validation.md) and the [freedesktop autostart specification](https://specifications.freedesktop.org/autostart/latest/). Suspend/resume and repeatability remain pending.
 
 Packaging does not grant access to `/dev/hidrawN`. Identify the LCD interface and configure access for your distribution; device numbering can change. The transport validates identity and takes a cooperative lock. Do not run the whole GUI as root to bypass access errors. See [the protocol](protocol.md) and [usage](desktop.md) for output behavior.
+
+## Optional developer checks
+
+Users building the application can use the packaged `self-test` above and then check the native interface/LCD. Running the full test suite is not required to build or use Studio. Contributors should run it after code changes; GitHub Actions runs it automatically, including tests for development/benchmark tools. The suite uses synthetic USB transports and does not transmit to the LCD.
+
+```bash
+.venv-build/bin/python -m unittest discover -s tests -v
+```
+
+A successful self-test or test suite does not establish physical LCD behavior, clean-machine compatibility, or long-term stability.
 
 ## Troubleshooting and unverified platforms
 
