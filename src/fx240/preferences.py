@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import tempfile
 from .session import Settings
+from .localfiles import read_regular
 
 
 MAX_PREFERENCE_BYTES = 64 * 1024
@@ -26,10 +27,7 @@ class Preferences:
         defaults=Settings()
         ui={'language':'es','theme':'dark'}
         try:
-            with self.path.open('rb') as stream:
-                payload=stream.read(MAX_PREFERENCE_BYTES+1)
-            if len(payload)>MAX_PREFERENCE_BYTES:
-                raise ValueError('Saved preferences exceed the 64 KiB limit')
+            payload=read_regular(self.path,MAX_PREFERENCE_BYTES,private=True)
             data=json.loads(payload)
             if not isinstance(data,dict) or data.get('version')!=1:
                 raise ValueError('Unsupported preferences format')

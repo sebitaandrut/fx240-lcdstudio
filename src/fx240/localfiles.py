@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Bounded local file reads; caller-selected paths are not a privilege boundary."""
+import os
+from pathlib import Path
+import stat
+
+
+def read_regular(path, limit, *, private=False):
+    """Reject special files/leaf symlinks; validate the opened descriptor as well.
+
+    Parents belong to the launching user's configuration or explicit selection.
+    This is not isolation from an attacker already controlling that user's account.
+    """
+    path = Path(path)
+    before = path.lstat()
+    if not stat.S_ISREG(before.st_mode):
+        raise ValueError('Input must be a regular file, not a symbolic link or special file')
+    fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        opened = os.fstat(fd)
+        if not stat.S_ISREG(opened.st_mode):
+            raise ValueError('Input must be a regular file')
+        if private and (opened.st_uid != os.getuid() or opened.st_nlink != 1):
+            raise ValueError('Private input must be owned by the current user and have one link')
+        if opened.st_size > limit:
+            raise ValueError('Input exceeds the configured byte limit')
+        with os.fdopen(fd, 'rb', closefd=False) as stream:
+            payload = stream.read(limit + 1)
+        if len(payload) > limit:
+            raise ValueError('Input exceeds the configured byte limit')
+        return payload
+    finally:
+        os.close(fd)

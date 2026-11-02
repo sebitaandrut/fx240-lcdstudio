@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Minimal circular telemetry theme with time-based motion and cached typography."""
 from functools import lru_cache
+import io
 import math
 import colorsys
 import re
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from .telemetry import collect
+from .localfiles import read_regular
 
 SCALE = 2
 MINT = (115, 223, 193)
@@ -15,12 +17,18 @@ ARC_BOX = (17*SCALE,17*SCALE,223*SCALE,223*SCALE)
 ARC_WIDTH = 8*SCALE
 WHITE = (237, 244, 245)
 MUTED = (165, 182, 187)
+MAX_FONT_BYTES = 16 * 1024 * 1024
+
+
+def load_font(path, size):
+    # A saved/custom font is local input too: never hand a FIFO to FreeType.
+    return ImageFont.truetype(io.BytesIO(read_regular(path,MAX_FONT_BYTES)),size)
 
 
 def resolve_font(path=None):
     if path is not None:
         # Validate explicit choices instead of silently substituting another font.
-        ImageFont.truetype(str(path), 12)
+        load_font(path, 12)
         return str(path)
     for candidate in (str(Path(__file__).parent/'assets/fonts/Outfit.ttf'),
                       '/usr/share/fonts/noto/NotoSans-Regular.ttf',
@@ -32,7 +40,7 @@ def resolve_font(path=None):
 
 @lru_cache(maxsize=32)
 def font(path, size, weight=400):
-    face = ImageFont.truetype(path, size*SCALE) if path else ImageFont.load_default(size=size*SCALE)
+    face = load_font(path, size*SCALE) if path else ImageFont.load_default(size=size*SCALE)
     try:
         axes = face.get_variation_axes()
     except (OSError, AttributeError):

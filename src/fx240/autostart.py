@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+from .localfiles import read_regular
 
 MARKER = 'X-FX240-LCD-STUDIO-Managed=true'
 
@@ -33,8 +34,12 @@ class Autostart:
         for arg in self.command:desktop_string(arg)
 
     def _read(self):
-        if self.path.is_symlink():raise OSError('Startup entry is a symbolic link; it was not modified')
-        return self.path.read_text() if self.path.exists() else ''
+        try:
+            return read_regular(self.path,65536,private=True).decode('utf-8')
+        except FileNotFoundError:
+            return ''
+        except (ValueError,UnicodeError) as error:
+            raise OSError('Startup entry is not a valid private regular file; it was not modified') from error
 
     @property
     def enabled(self):

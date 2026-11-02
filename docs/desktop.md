@@ -56,3 +56,5 @@ fx240 gif /path/to/animation.gif --overlay --device /dev/hidrawN --send --durati
 Use `fx240 --help` for orientation, timing, encoding, font, and sensor options. CLI defaults are independent of saved GUI preferences. No administrator privileges are needed for simulation; do not run the GUI as root to bypass USB access errors.
 
 CLI media input is limited to regular files up to 64 MiB, source frames up to 16 megapixels, and at most 1,000 frames. Invalid/truncated media is rejected rather than treated as a successful playback. Saved preferences are limited to 64 KiB; malformed or overly nested data falls back to defaults with a notice. These bounds reduce resource exposure but do not sandbox native decoders.
+
+Local media and font inputs must be regular files selected by their actual path (leaf symlinks/special files are rejected). Font snapshots are limited to 16 MiB. See [security review](security-review.md) for the file-handling boundary.

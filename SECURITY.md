@@ -22,6 +22,8 @@ An independent reviewer should pin a commit and examine HID selection/identity/l
 
 See [validation](docs/validation.md) and [privacy review](docs/privacy-review.md) for the evidence and its limits. No personal recordings or local configurations are included in the repository; authorized Git attribution (including the chosen email) and the public GitHub account remain public. Personal development-environment data is excluded.
 
+See the [CodeQL alert review](docs/security-review.md) for per-alert decisions, corrections, tests, and trust boundaries.
+
 ## Reproduce the checks
 
 In a separate developer environment, install `packaging/requirements-security.txt` and Pillow 13.0.0, then run the commands in `.github/workflows/security.yml`. The build requirements contain platform-specific wheel hashes for Arch x86_64/CPython 3.14; these hashes are also verified by the PKGBUILD. These checks are optional for end users.

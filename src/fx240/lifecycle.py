@@ -22,7 +22,8 @@ class LifecycleTrace:
         try:
             self.path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
             fd=os.open(self.path,os.O_WRONLY|os.O_APPEND|os.O_CREAT|os.O_NOFOLLOW|os.O_CLOEXEC|os.O_NONBLOCK,0o600)
-            if not stat.S_ISREG(os.fstat(fd).st_mode):return
+            opened=os.fstat(fd)
+            if not stat.S_ISREG(opened.st_mode) or opened.st_uid!=os.getuid() or opened.st_nlink!=1:return
             os.fchmod(fd,0o600)
             if os.fstat(fd).st_size>=65536:return
             data=json.dumps({'event':event,'seconds':round(time.monotonic()-self.started,3)},separators=(',',':')).encode()+b'\n'

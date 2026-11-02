@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Image/GIF composition and JPEG encoding, independent of transport."""
 import io
-from pathlib import Path
 import struct
 from PIL import Image, ImageOps
+from .localfiles import read_regular
 
 
 MAX_SOURCE_PIXELS = 16_000_000
@@ -33,14 +33,13 @@ def encode(image, quality=85, rotation=180):
 
 
 def load(path, max_frames=1000):
-    path = Path(path)
-    if not path.is_file():
-        raise ValueError('Media input must be a regular file')
-    if path.stat().st_size > MAX_FILE_BYTES:
-        raise ValueError('Media input exceeds the 64 MiB limit')
+    try:
+        payload=read_regular(path,MAX_FILE_BYTES)
+    except ValueError as error:
+        raise ValueError('Media input must be a regular file of at most 64 MiB') from error
     frames = []
     try:
-        with Image.open(path) as source:
+        with Image.open(io.BytesIO(payload)) as source:
             check_size(source)
             if getattr(source, "n_frames", 1) > max_frames:
                 raise ValueError("Too many frames; limit is 1000")

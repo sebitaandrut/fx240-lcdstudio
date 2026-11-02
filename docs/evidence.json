@@ -2,7 +2,7 @@
   "recorded_on": "2026-11-01",
   "platform_scope": "Arch Linux x86_64, one FX240; other distributions and hardware revisions untested.",
   "automated_checks": {
-    "tests_passed": 121,
+    "tests_passed": 129,
     "scope": "Current source with media/preferences bounds, explicit self-test checks under optimization, and desktop dependencies.",
     "frozen_8px_self_test_passed": true,
     "no_usb_self_test": true,
@@ -795,7 +795,14 @@
       "initial_analysis_run": "https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41384544258",
       "initial_open_alerts": 17,
       "independent_triage_completed": false,
-      "note": "Initial local-source alerts concern user-directed paths and an offline capture command. Context review is required; successful analysis is not a finding-free verdict."
+      "note": "Initial local-source alerts concern user-directed paths and an offline capture command. Context review is required; successful analysis is not a finding-free verdict.",
+      "follow_up_review": {
+        "date": "2026-11-02",
+        "original_open_alerts_reviewed": 21,
+        "report": "docs/security-review.md",
+        "special_file_and_hardlink_corrections": true,
+        "independent_audit": false
+      }
     },
     "private_vulnerability_reporting_enabled": true,
     "secret_scanning_enabled": true,

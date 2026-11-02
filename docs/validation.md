@@ -6,7 +6,7 @@
 
 | Area | Result and scope |
 | --- | --- |
-| Automated checks | 121 tests passed on the current source, including input limits and rejection of unrelated device paths before opening them, with desktop dependencies installed. Synthetic transports and sensors do not establish hardware behavior. |
+| Automated checks | 129 tests passed on the current source, including input limits and rejection of unrelated device paths before opening them, with desktop dependencies installed. Synthetic transports and sensors do not establish hardware behavior. |
 | HID packets | Prototype comparison matched 240 frames; a controlled two-frame USB capture matched 24 expected reports exactly. |
 | Physical content | Images, GIF movement/counter, circular telemetry layout, CPU/GPU target agreement, live edits, Outfit, and the 8 px arc/comet were confirmed visually. |
 | Packaged application | Frozen GUI/USB smoke passed on the development machine. The 8 px executable also passed a no-USB self-test. |
