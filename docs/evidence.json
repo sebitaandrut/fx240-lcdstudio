@@ -2,8 +2,8 @@
   "recorded_on": "2026-11-01",
   "platform_scope": "Arch Linux x86_64, one FX240; other distributions and hardware revisions untested.",
   "automated_checks": {
-    "tests_passed": 113,
-    "scope": "Current 8 px source; includes optional Qt/QML tests with desktop dependencies installed.",
+    "tests_passed": 114,
+    "scope": "Current source with hidraw path hardening and desktop dependencies; includes optional Qt/QML checks.",
     "frozen_8px_self_test_passed": true,
     "no_usb_self_test": true,
     "github_actions": {
@@ -73,7 +73,9 @@
       "installed_self_test_passed": true,
       "pacman_removal_passed": true,
       "scope": "Clean container package lifecycle; no native desktop or physical LCD test and no package installed on the development PC."
-    }
+    },
+    "tests_checked_on": "2026-11-02",
+    "tested_qt_version": "6.11.3"
   },
   "protocol_capture": {
     "expected_frames": 2,
@@ -694,5 +696,90 @@
         "repeated_cycles_validated": false
       }
     }
-  }
+  },
+  "security_review": {
+    "date": "2026-11-02",
+    "independent_security_audit_completed": false,
+    "hardware_safety_certified": false,
+    "reviewed_boundaries": [
+      "Read-only sysfs telemetry",
+      "Image-upload HID reports only; no pump/fan/RGB/voltage/clock control or firmware flashing implemented",
+      "Hidraw path restriction before open, then USB identity check and cooperative lock",
+      "Runtime application code has no analytics or automatic upload client"
+    ],
+    "dependency_advisory_check": {
+      "service": "OSV querybatch",
+      "packages": [
+        {
+          "package": "pip",
+          "version": "26.2.1",
+          "advisory_ids": [],
+          "incomplete": false
+        },
+        {
+          "package": "setuptools",
+          "version": "84.2.1",
+          "advisory_ids": [],
+          "incomplete": false
+        },
+        {
+          "package": "Pillow",
+          "version": "13.0.0",
+          "advisory_ids": [],
+          "incomplete": false
+        },
+        {
+          "package": "PySide6-Essentials",
+          "version": "6.11.3",
+          "advisory_ids": [],
+          "incomplete": false
+        },
+        {
+          "package": "shiboken6",
+          "version": "6.11.3",
+          "advisory_ids": [],
+          "incomplete": false
+        },
+        {
+          "package": "PyInstaller",
+          "version": "6.22.3",
+          "advisory_ids": [],
+          "incomplete": false
+        },
+        {
+          "package": "pyinstaller-hooks-contrib",
+          "version": "2026.9",
+          "advisory_ids": [],
+          "incomplete": false
+        },
+        {
+          "package": "altgraph",
+          "version": "0.17.5",
+          "advisory_ids": [],
+          "incomplete": false
+        },
+        {
+          "package": "packaging",
+          "version": "26.3",
+          "advisory_ids": [],
+          "incomplete": false
+        }
+      ],
+      "scope": "Only the exact pinned PyPI package/version entries; no assertion of complete native, Qt, Python or OS coverage, and no absence-of-vulnerabilities guarantee."
+    },
+    "regression_check": "Reject unrelated device paths before os.open; full local suite passed 114 tests.",
+    "limits": "Functional checks, privacy scans and advisory queries are not a security certification or a guarantee against damage on other devices.",
+    "upstream_qt_advisory": {
+      "id": "CVE-2026-105924",
+      "source": "https://www.qt.io/blog/security-advisory-cve-2026-105924",
+      "previous_bundled_qt_version": "6.12.0",
+      "affected_flow": "Untrusted CBOR-to-JSON conversion",
+      "application_exposure_review": "No application flow accepting untrusted CBOR identified; not a non-exploitability proof.",
+      "selected_fixed_qt_pyside_version": "6.11.3",
+      "local_tests_with_selected_version_passed": 114,
+      "qt_6_12_1_available_on_pypi_at_review": false,
+      "existing_frozen_installations_require_rebuild": true
+    }
+  },
+  "last_updated_on": "2026-11-02"
 }

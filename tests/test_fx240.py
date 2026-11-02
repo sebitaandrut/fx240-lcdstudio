@@ -52,11 +52,19 @@ class TransportTests(unittest.TestCase):
             def ioctl(fd, code, info, mutate): info[:] = struct.pack('IHH', *identity)
             with patch.object(transport.os, 'open', return_value=12), patch.object(transport.os,'fstat') as st, patch.object(transport.stat,'S_ISCHR',return_value=True), patch.object(transport.fcntl,'ioctl',side_effect=ioctl), patch.object(transport.fcntl,'flock'), patch.object(transport.os,'close') as close:
                 if accepted:
-                    with transport.Hidraw('/dev/fake'): pass
+                    with transport.Hidraw('/dev/hidraw99'): pass
                 else:
                     with self.assertRaises(RuntimeError):
-                        with transport.Hidraw('/dev/fake'): pass
+                        with transport.Hidraw('/dev/hidraw99'): pass
                 close.assert_called_once_with(12)
+
+    def test_unrelated_device_paths_rejected_before_open(self):
+        for path in ('/dev/watchdog', '/dev/ttyS0', '/tmp/hidraw0', '/dev/hidraw',
+                     '/dev/hidraw0/../watchdog', '/dev/hidraw0\n', b'/dev/hidraw0'):
+            with self.subTest(path=path), patch.object(transport.os, 'open') as opened:
+                with self.assertRaises(ValueError):
+                    with transport.Hidraw(path): pass
+                opened.assert_not_called()
 
     def test_invalid_report_no_write(self):
         device = transport.Hidraw('/dev/fake'); device.fd = 12

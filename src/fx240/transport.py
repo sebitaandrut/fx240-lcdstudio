@@ -3,6 +3,7 @@
 import fcntl
 import math
 import os
+import re
 import stat
 import struct
 import time
@@ -18,7 +19,11 @@ class Hidraw:
         self.fd = None
 
     def __enter__(self):
-        fd = os.open(self.path, os.O_WRONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        path = os.fspath(self.path)
+        # Reject unrelated character devices before opening them can have effects.
+        if not isinstance(path, str) or re.fullmatch(r'/dev/hidraw[0-9]+', path) is None:
+            raise ValueError('Select a /dev/hidrawN LCD interface')
+        fd = os.open(path, os.O_WRONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
         try:
             if not stat.S_ISCHR(os.fstat(fd).st_mode):
                 raise RuntimeError("A hidraw character device is required")

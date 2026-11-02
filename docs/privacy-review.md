@@ -1,4 +1,4 @@
-# Pre-publication privacy review — 2026-11-01
+# Privacy and security review boundaries
 
 ## Scope and approach
 
@@ -8,7 +8,7 @@ Git author/committer attribution is deliberately retained at the owner's request
 
 ## Checks and observations
 
-- No maintainer-specific identity or home-directory match was found in the scanned source, reports, archive contents, or inspected executable contents. The checks used local identity strings in memory; those strings are not included in this report.
+- No private maintainer home paths, device identifiers, or credentials were identified in the reviewed project content. Public GitHub attribution and repository URLs are intentional; matching those against local identity strings is not classified as a private-data leak. The scanner compares private tokens in memory and does not include them in its reports.
 - Credential signatures, email addresses, home paths, private network addresses, MAC-like values, UUIDs, sensitive file types, and PNG text/EXIF chunks were screened as review candidates. Candidates are not automatically treated as either real secrets or harmless values.
 - The observed font email/copyright metadata belongs to the unmodified upstream Outfit font. Its required notices remain intact. Third-party dependency candidates were examined separately rather than deleting upstream copyright/license information.
 - Frozen dependency candidates include public examples, protocol/file-format constants, generic TLS key-format markers, upstream build paths, and incidental byte-pattern matches. Native candidate entries were compared against installed dependency files; all matched byte for byte except the generated standard-library ZIP, which was inspected as an archive. No maintainer-specific identity or home-path match was found in those entries. Short hostname comparisons also produced generic-word coincidences in unmodified native dependencies; those are not records collected from this PC. Machine/boot IDs and interface identifiers were compared in memory where readable; optional network enumeration may be unavailable in restricted environments.
@@ -35,6 +35,14 @@ From the repository root:
 
 The executable inspection needs the build extra/PyInstaller. Repeat `--artifact` for a wheel or source ZIP. Reports contain candidate categories and locations, never matched credentials or identity strings. Exit code 1 means candidates need review; upstream font/dependency notices can legitimately trigger it. Do not publish raw reports automatically, because filenames and paths added in future work may themselves be private.
 
-Before each publication, inspect the exact files and Git refs to be pushed and the actual release archives, not only the checkout. Ignore rules are a convenience, not a privacy guarantee. Keep private captures, environments, settings, raw logs, and unreviewed screenshots outside publication inputs. Rerun this review after any new hardware logs, media, dependency updates, or packaging changes. No repository or media publication has been performed by this review.
+Before each publication, inspect the exact files and Git refs to be pushed and the actual release archives, not only the checkout. Ignore rules are a convenience, not a privacy guarantee. Keep private captures, environments, settings, raw logs, and unreviewed screenshots outside publication inputs. Rerun this review after any new hardware logs, media, dependency updates, or packaging changes. The source repository is now public; personal media and raw private trial logs have not been included.
 
 Intermediate trial reports were consolidated into current-state guides and aggregate evidence. Originals are retained in a private local archive outside the repository. Earlier Git commits still contain their previous versions; this cleanup does not rewrite history or erase data. No personal media was added to that history.
+
+## Security scope
+
+Privacy scanning looks for accidentally shared information; it does not establish runtime security or hardware safety. Functional tests and code review also do not establish absence of vulnerabilities. No independent security audit, full fuzzing campaign, or hardware-safety certification has been performed.
+
+On 2026-11-02, an OSV batch query for the nine exact PyPI versions pinned in `packaging/requirements-build.txt` returned no advisory matches. Only package names and versions were submitted. This is a point-in-time database result, not a clean bill of health: unreported issues, Python itself, native/system libraries, and Qt advisories tracked outside the PyPI entries are not covered comprehensively. Updating a frozen package requires rebuilding it to update its bundled components. The [aggregate evidence](evidence.json) records this limited check.
+
+Upstream review also identified [CVE-2026-105924](https://www.qt.io/blog/security-advisory-cve-2026-105924) in Qt 6.12.0, despite the empty PyPI advisory query. Qt describes a crash in untrusted CBOR-to-JSON conversion and lists 6.11.3 as fixed. No application flow processing untrusted CBOR was identified in this review; that is not proof of non-exploitability. The build pins and PKGBUILD now select PySide6/shiboken6 6.11.3, and source dependencies exclude 6.12.0. Existing frozen installations retain their embedded version until rebuilt. Other Qt/system components still need ongoing advisory monitoring.

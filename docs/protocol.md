@@ -15,7 +15,7 @@ This unofficial profile was reconstructed from the existing FX240 HID prototype 
 
 The padded message is split into 1024-byte payloads. Each Linux `os.write` receives `00 + payload` (1025 bytes). The leading byte follows hidraw's report-number convention and is excluded from the DRA length. See the [kernel hidraw documentation](https://docs.kernel.org/hid/hidraw.html); the convention alone does not establish this device's complete descriptor.
 
-The sender verifies USB bus 3, VID `0x2000`, and PID `0x3000` using `HIDIOCGRAWINFO`, rejects regular files/symlinks, and takes a cooperative lock. Matching IDs do not establish compatibility with every interface or revision. The default rotation is 180 degrees and remains configurable.
+Before opening a device, the sender rejects paths other than `/dev/hidrawN`. It then verifies USB bus 3, VID `0x2000`, and PID `0x3000` using `HIDIOCGRAWINFO`, rejects regular files/symlinks, and takes a cooperative lock. Matching IDs do not establish compatibility with every interface or revision. The default rotation is 180 degrees and remains configurable.
 
 ## Verification and limits
 

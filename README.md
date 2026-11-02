@@ -14,6 +14,12 @@ An experimental native Linux application for the **ID-COOLING FX240 LCD**, built
 
 Sensor support depends on Linux drivers; unavailable readings show `N/A`. Proprietary NVIDIA/NVML support is not implemented.
 
+## Safety and security
+
+This reverse-engineered hardware support is **experimental**. No independent security audit or hardware-safety certification has been completed; passing tests does not guarantee freedom from vulnerabilities or safe behavior on another device revision. Use only the intended FX240 LCD. Matching USB IDs alone do not establish compatibility.
+
+The implemented device commands upload LCD images; there are no pump, fan, RGB, voltage, clock-control, or firmware-flashing features. Sensors are read-only. The sender restricts access to `/dev/hidrawN`, checks USB identity, and takes a cooperative lock. Run the app as a normal user with access only to the correct LCD interface. Treat telemetry as informational, use trusted media/fonts, and keep dependencies updated. See [validation limits](docs/validation.md) and [privacy review](docs/privacy-review.md).
+
 ## Get started
 
 With Python 3.11+ and the native Qt libraries available, run from the source directory:
@@ -28,7 +34,7 @@ The GUI starts preview and physical output automatically when one matching LCD i
 
 ## Status
 
-This is an **experimental baseline**, not a stable release. The application is capped at **24 FPS**; higher host throughput is not proof of complete physical LCD frames. Packaged operation and desktop-autostarted reboot/shutdown passed initial hardware checks. Suspend/resume, prolonged stability, repeated lifecycle trials, and clean installation remain pending. See [validation and limits](docs/validation.md).
+This is an **experimental baseline**, not a stable release. The application is capped at **24 FPS**; higher host throughput is not proof of complete physical LCD frames. Packaged operation and desktop-autostarted reboot/shutdown passed initial hardware checks. Initial suspend/resume checks also passed owner observation. Prolonged stability, repeated lifecycle trials, and a clean native desktop installation remain pending. See [validation and limits](docs/validation.md).
 
 ## Documentation
 
