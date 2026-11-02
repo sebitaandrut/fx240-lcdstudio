@@ -11,7 +11,7 @@
 | Physical content | Images, GIF movement/counter, circular telemetry layout, CPU/GPU target agreement, live edits, Outfit, and the 8 px arc/comet were confirmed visually. |
 | Packaged application | Frozen GUI/USB smoke passed on the development machine. The 8 px executable also passed a no-USB self-test. |
 | Repository build | A fresh public clone, empty Python environment, uncached dependencies, install, build, and standalone self-test passed on the existing Arch host. The `arch-build` CI job checks the user recipe in a minimal Arch container; neither case establishes a clean native desktop/VM or physical USB installation. |
-| Arch package | Build/install/self-test/removal passed in a clean Arch CI container. The owner subsequently confirmed native operation of the pacman-installed package on the existing Arch desktop with a newly created configuration. The login entry targets `/usr/bin/fx240-lcd-studio`. One subsequent warm-reboot checklist passed by overall owner confirmation, corroborated by worker cleanup and next-login output arming. Full shutdown and suspend/resume with this package remain pending. |
+| Arch package | Build/install/self-test/removal passed in a clean Arch CI container. The owner subsequently confirmed native operation of the pacman-installed package on the existing Arch desktop with a newly created configuration. The login entry targets `/usr/bin/fx240-lcd-studio`. One subsequent warm-reboot checklist passed by overall owner confirmation, corroborated by worker cleanup and next-login output arming. An initial suspend/resume success was then owner-reported, with trace output release/rearm observed. Repeated cycles, paused-output behavior, and full shutdown with this package remain pending. |
 | Preferences and tray | Restarted/minimized operation and saved settings passed initial owner checks. |
 | Reboot and full shutdown | One warm reboot and one full shutdown/power-on passed standby with the desktop-autostarted instance; traces corroborated output release and cleanup. These lifecycle trials preceded the visual-only 8 px rebuild. |
 | FPS and resources | The application remains capped at 24 FPS. Experimental host/optical trials and a ten-minute USB run are summarized in [performance](performance.md). |
@@ -25,7 +25,7 @@ The worker is asked to pause on logind shutdown preparation, with a bounded wait
 
 GUI mode keeps a bounded private event trace at `$XDG_STATE_HOME/fx240-linux/shutdown.jsonl`, defaulting to `~/.local/state/fx240-linux/shutdown.jsonl`. It contains only allowlisted event codes and relative seconds, with mode 0600 and an approximately 64 KiB limit. It contains no selected device, sensor value, identifier, or arbitrary error text. Output release is not optical proof; the hardware confirmations above are separate observations.
 
-No removal of USB standby power or complete loss of device state was verified. No OS suspend/resume, reconnect recovery, or multi-hour stability pass is claimed.
+No removal of USB standby power or complete loss of device state was verified. An initial packaged suspend/resume success is owner-reported; the trace does not independently identify the OS sleep event. Repeated suspend cycles, reconnect recovery, and multi-hour stability remain unverified.
 
 ## Repeat software checks
 

@@ -666,7 +666,7 @@
     "autostart_targets_system_executable_verified": true,
     "lcd_transport_armed_in_current_session": true,
     "clean_os_installation": false,
-    "scope": "Initial native package smoke with fresh settings and one successful warm-reboot checklist on the existing Arch desktop; not a clean-machine or endurance claim.",
+    "scope": "Native package smoke with fresh settings, one confirmed warm-reboot checklist, and an initial owner-reported suspend/resume success on the existing Arch desktop; not a clean-machine or endurance claim.",
     "warm_reboot_trial": {
       "date": "2026-11-01",
       "package_version": "0.1.0.r26.gb8c9e86-1",
@@ -677,6 +677,16 @@
       "scope": "One overall owner confirmation of the requested reboot checklist, corroborated by event traces; no separately timed optical or resource measurement."
     },
     "full_poweroff_retested_with_package": false,
-    "suspend_resume_tested_with_package": false
+    "suspend_resume_tested_with_package": true,
+    "suspend_resume_trial": {
+      "date": "2026-11-01",
+      "owner_reported_initial_success": true,
+      "confirmation_scope": "Overall reply to the suggested suspend/resume trial; individual standby and resume checklist items and cycle count were not collected separately.",
+      "latest_trace_session_active": true,
+      "trace_output_release_then_rearm_observed": true,
+      "trace_limit": "The event trace does not record PrepareForSleep; release/rearm alone cannot distinguish suspend from manual output control.",
+      "repeated_cycles_validated": false,
+      "manually_paused_output_case_validated": false
+    }
   }
 }

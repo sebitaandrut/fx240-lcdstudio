@@ -34,7 +34,7 @@ Minimize or **Hide to tray** keeps rendering and physical output active. Restore
 
 Enable **Settings → Start at login → Minimized in tray** to install a per-user desktop autostart entry. Keep the executable/environment in a permanent location. It starts after graphical login, not before login. Disable and re-enable startup if the executable moves.
 
-Standby is artwork recreated in code, not a recovered vendor bitmap or firmware reset. The application coordinates logind shutdown/sleep preparation and uses a separate fallback for abrupt graphical connection loss. Power loss, forced termination, a blocked driver, or another sender can prevent standby. Reboot/shutdown passed initial trials with desktop autostart; development-launched instances failed during reboot. Suspend/resume and automatic recovery after USB errors remain unverified. See [validation](validation.md).
+Standby is artwork recreated in code, not a recovered vendor bitmap or firmware reset. The application coordinates logind shutdown/sleep preparation and uses a separate fallback for abrupt graphical connection loss. Power loss, forced termination, a blocked driver, or another sender can prevent standby. Reboot/shutdown passed initial trials with desktop autostart; development-launched instances failed during reboot. An initial packaged suspend/resume success was owner-reported; repeated cycles, the manually paused case, and automatic recovery after USB errors remain unverified. See [validation](validation.md).
 
 ## CLI media and telemetry
 
