@@ -6,7 +6,7 @@ The current code is an experimental baseline. See [validation](validation.md) fo
 
 - Repeated reboot/shutdown and suspend/resume, including paused output and inaccessible/missing tray cases.
 - One-hour and multi-hour native USB/resource runs, with live settings and monitor visibility recorded.
-- Reconnection/error recovery, clean-machine build/installation, and public CI.
+- Reconnection/error recovery and clean-machine build/installation; keep the now-passing public CI green.
 - Additional distribution/hardware checks before extending compatibility claims.
 - Final source privacy review and dependency/notice review before binary redistribution.
 

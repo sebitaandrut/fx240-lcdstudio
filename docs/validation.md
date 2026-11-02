@@ -13,7 +13,7 @@
 | Preferences and tray | Restarted/minimized operation and saved settings passed initial owner checks. |
 | Reboot and full shutdown | One warm reboot and one full shutdown/power-on passed standby with the desktop-autostarted instance; traces corroborated output release and cleanup. These lifecycle trials preceded the visual-only 8 px rebuild. |
 | FPS and resources | The application remains capped at 24 FPS. Experimental host/optical trials and a ten-minute USB run are summarized in [performance](performance.md). |
-| Publication checks | Source/history/archive candidate scans and dependency metadata were reviewed; this is not a formal security audit. GitHub CI is prepared but has not run. |
+| Publication checks | Source/history/archive candidate scans and dependency metadata were reviewed; this is not a formal security audit. [GitHub Actions passed](https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41365473570) for Python 3.11/3.13 core jobs and a Python 3.13 offscreen Qt/QML job on Ubuntu runners; this is software CI, not Ubuntu hardware validation. |
 
 ## Lifecycle limits
 
@@ -40,7 +40,7 @@ Without the desktop extra, optional Qt checks may be skipped. For a built execut
 - Repeated suspend/resume cycles, including a manually paused LCD that must stay paused after wake.
 - One-hour and multi-hour native runs with real USB/sensors, live edits, tray use, and monitor visibility recorded.
 - Repeated reboot/shutdown using the final executable, plus device reconnection and error recovery.
-- Clean installation/build, additional hardware/distributions, and public CI.
+- Clean installation/build and additional hardware/distributions; keep software CI passing.
 - Exact-source publication review and dependency/license review for any binary release.
 
 Record host timing, USB completion, Qt presentation proxies, and physical observation separately. Keep raw captures, videos, screenshots, local settings, and native logs private unless explicitly reviewed for sharing.

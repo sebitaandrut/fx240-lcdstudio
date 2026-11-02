@@ -5,7 +5,19 @@
     "tests_passed": 113,
     "scope": "Current 8 px source; includes optional Qt/QML tests with desktop dependencies installed.",
     "frozen_8px_self_test_passed": true,
-    "no_usb_self_test": true
+    "no_usb_self_test": true,
+    "github_actions": {
+      "url": "https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41365473570",
+      "tested_commit": "de68591c5cdc26e65d3c1e5199358b4eb41339bf",
+      "conclusion": "success",
+      "jobs": [
+        "unit (3.11)",
+        "unit (3.13)",
+        "desktop (Python 3.13, offscreen Qt/QML)"
+      ],
+      "runner": "ubuntu-latest",
+      "scope": "Automated software tests only; no physical LCD, sensor, native desktop or packaged-build compatibility claim for Ubuntu."
+    }
   },
   "protocol_capture": {
     "expected_frames": 2,
