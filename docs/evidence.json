@@ -686,7 +686,13 @@
       "trace_output_release_then_rearm_observed": true,
       "trace_limit": "The event trace does not record PrepareForSleep; release/rearm alone cannot distinguish suspend from manual output control.",
       "repeated_cycles_validated": false,
-      "manually_paused_output_case_validated": false
+      "manually_paused_output_case_validated": true,
+      "paused_output_observation": {
+        "date": "2026-11-01",
+        "owner_reported_success": true,
+        "scope": "Owner confirmed the suggested case: suspend while LCD output is manually paused and retain paused/standby state after wake. No separate timed USB recording was collected.",
+        "repeated_cycles_validated": false
+      }
     }
   }
 }
