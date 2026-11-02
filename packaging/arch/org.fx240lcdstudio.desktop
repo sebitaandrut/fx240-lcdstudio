@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=FX240 LCD STUDIO
+Comment=Customize the FX240 LCD and display CPU/GPU telemetry
+Comment[es]=Personaliza el LCD FX240 y muestra datos de CPU y GPU
+Exec=fx240-lcd-studio gui
+TryExec=fx240-lcd-studio
+Icon=org.fx240lcdstudio
+Terminal=false
+Categories=System;Monitor;
+StartupNotify=true

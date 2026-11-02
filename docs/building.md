@@ -4,6 +4,27 @@
 
 The build packages Python, the application, Qt/QML, Pillow, Outfit, icons, and their bundled notices into a Linux executable using PyInstaller. Running that executable does not require activating a virtual environment or separately installing Python. This is a frozen application, not ahead-of-time compilation of all Python logic. It still needs the host's graphics/session libraries and compatible system ABI. In particular, PyInstaller does not bundle glibc; a binary built on a newer distribution may fail on an older one. Building locally is the recommended initial workflow. See [PyInstaller operating mode](https://pyinstaller.org/en/stable/operating-mode.html) and [Linux portability notes](https://pyinstaller.org/en/stable/usage.html#making-gnu-linux-apps-forward-compatible).
 
+## Install with pacman using PKGBUILD
+
+For a system-managed local installation on Arch x86_64:
+
+```bash
+sudo pacman -Syu --needed base-devel git
+git clone https://github.com/sebitaandrut/fx240-lcdstudio.git
+cd fx240-lcdstudio/packaging/arch
+makepkg -s
+sudo pacman -U ./*.pkg.tar.zst
+fx240-lcd-studio self-test
+```
+
+Run `makepkg` as your normal user. It fetches source and checksum-verified dependency wheels, then builds offline in an isolated environment. The recipe currently targets CPython 3.14 and x86_64; Python is a build dependency, not a runtime requirement of the installed standalone executable. This local `-git` package follows the repository's current main branch; it is not an AUR publication or a stable release. Binary redistribution still requires the dependency/license review.
+
+The package installs `/usr/bin/fx240-lcd-studio`, the `fx240` alias, a menu launcher, the approved icon, and license notices. Open **FX240 LCD STUDIO** from your application menu, or run `fx240-lcd-studio gui`. The package does not enable autostart or change USB permissions.
+
+Close any previous Studio instance before opening the installed one. To migrate an existing login entry, disable and re-enable **Start at login** from the installed application so it points to `/usr/bin/fx240-lcd-studio`. Existing preferences remain in your user configuration directory. Remove the package with `sudo pacman -R fx240-lcd-studio-git`; personal preferences and any opt-in user autostart entry are separate, so disable startup before uninstalling.
+
+The following sections describe the manual standalone build alternative.
+
 ## 1. Prepare Arch Linux
 
 Use an up-to-date Arch installation with a working graphical session and graphics driver. Install the build tools and desktop runtime libraries:

@@ -1,0 +1,110 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Local source-build recipe; no AUR or prebuilt binary release is implied.
+pkgname=fx240-lcd-studio-git
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Native Linux LCD studio for the ID-COOLING FX240 (experimental)'
+arch=('x86_64')
+url='https://github.com/sebitaandrut/fx240-lcdstudio'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'libgcc' 'libstdc++' 'zlib' 'glib2' 'krb5' 'fontconfig' 'libglvnd'
+         'libxkbcommon' 'libxkbcommon-x11' 'libxcb' 'xcb-util-cursor'
+         'wayland' 'dbus' 'hicolor-icon-theme')
+makedepends=('git' 'python>=3.14' 'python<3.15' 'python-pip' 'desktop-file-utils')
+provides=('fx240-lcd-studio')
+conflicts=('fx240-lcd-studio' 'fx240-linux')
+# Stripping a PyInstaller one-file ELF can damage its appended runtime archive.
+options=('!strip' '!debug')
+
+# The Pillow wheel targets CPython 3.14; other wheels are ABI-compatible/pure Python.
+# Refresh URLs/hashes with packaging/requirements-build.txt when updating versions.
+source=('fx240-lcdstudio::git+https://github.com/sebitaandrut/fx240-lcdstudio.git#branch=main'
+        'pip-26.2.1-py3-none-any.whl::https://files.pythonhosted.org/packages/f3/6e/1736e5b4ae2b778ef2f81c47d797de9f891d4d8acb047a24ca37a60294dd/pip-26.2.1-py3-none-any.whl'
+        'setuptools-84.2.1-py3-none-any.whl::https://files.pythonhosted.org/packages/ef/55/6dc6d6bb953bdfc52519a0059592c52b6e3b8ad51cf8256dffceb55b0610/setuptools-84.2.1-py3-none-any.whl'
+        'pillow-13.0.0-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl::https://files.pythonhosted.org/packages/1d/f2/1371707ce438ba9a43f9d24089828494ec6f9396e28cd7903aa704dd6306/pillow-13.0.0-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl'
+        'pyside6_essentials-6.12.0-cp310-abi3-manylinux_2_34_x86_64.whl::https://files.pythonhosted.org/packages/7b/3c/7597d8dcb36aa8315427635ec6ec9d850ffbad4ce78b9118ac854889f2d3/pyside6_essentials-6.12.0-cp310-abi3-manylinux_2_34_x86_64.whl'
+        'shiboken6-6.12.0-cp310-abi3-manylinux_2_34_x86_64.whl::https://files.pythonhosted.org/packages/49/c2/a04fa003b4360e99d8e3fc2829abacf37396ace63ea1cd616402209ec7c6/shiboken6-6.12.0-cp310-abi3-manylinux_2_34_x86_64.whl'
+        'pyinstaller-6.22.3-py3-none-manylinux2014_x86_64.whl::https://files.pythonhosted.org/packages/7b/b6/dd21d61fc5e25377be24eabf13e99e4e46548a5abe2bf7b15d8b3d9cc74a/pyinstaller-6.22.3-py3-none-manylinux2014_x86_64.whl'
+        'pyinstaller_hooks_contrib-2026.9-py3-none-any.whl::https://files.pythonhosted.org/packages/93/fe/ded0e20de0580257d97dbabb4db7ab4d96ad8ade7d41149e66308057cf52/pyinstaller_hooks_contrib-2026.9-py3-none-any.whl'
+        'altgraph-0.17.5-py2.py3-none-any.whl::https://files.pythonhosted.org/packages/a9/ba/000a1996d4308bc65120167c21241a3b205464a2e0b58deda26ae8ac21d1/altgraph-0.17.5-py2.py3-none-any.whl'
+        'packaging-26.3-py3-none-any.whl::https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl'
+)
+noextract=(
+  'pip-26.2.1-py3-none-any.whl'
+  'setuptools-84.2.1-py3-none-any.whl'
+  'pillow-13.0.0-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl'
+  'pyside6_essentials-6.12.0-cp310-abi3-manylinux_2_34_x86_64.whl'
+  'shiboken6-6.12.0-cp310-abi3-manylinux_2_34_x86_64.whl'
+  'pyinstaller-6.22.3-py3-none-manylinux2014_x86_64.whl'
+  'pyinstaller_hooks_contrib-2026.9-py3-none-any.whl'
+  'altgraph-0.17.5-py2.py3-none-any.whl'
+  'packaging-26.3-py3-none-any.whl'
+)
+sha256sums=('SKIP'
+            '71138adf1f4ca900cdb7d289c21b7494329f2332b6d85f0e1c42108c0384ed3e'
+            'ca140b45d5325a9478f880e351484f62fef15f336462e449ca0c03c873d589c2'
+            'e91c2b1cbeae768c98752e67e717e283d68dae45717b41f2d91eaee648e37b7d'
+            '16f4b5e41daf49235ae048458243da9efe5f3d8040f9cc5aa454ce69893d3bd9'
+            '3bde565bb0890044b5c7f63808adddede5abc241e9395a2bfed61919884d6240'
+            '451a4ae14b719365bf1a2f0a99dae7b3463060061c3a394c70d5264cfb439528'
+            'fb3e67dd64122561724c48ad0366ac9e8c16e638b63bf7d85de03bf3fdbf06c3'
+            'f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597'
+            'd7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c'
+)
+
+pkgver() {
+  cd "$srcdir/fx240-lcdstudio"
+  local version
+  version=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+  printf '%s.r%s.g%s' "$version" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd "$srcdir/fx240-lcdstudio"
+  python -m venv "$srcdir/build-env"
+  export PIP_CONFIG_FILE=/dev/null
+  export PIP_NO_INDEX=1
+  export PYTHONNOUSERSITE=1
+  unset PYTHONPATH PYTHONHOME VIRTUAL_ENV
+  "$srcdir/build-env/bin/python" -m pip install --no-cache-dir --no-deps \
+    --find-links="$srcdir" -r packaging/requirements-build.txt
+  "$srcdir/build-env/bin/python" -m pip install --no-deps --no-build-isolation .
+  "$srcdir/build-env/bin/python" tools/build_binary.py
+}
+
+check() {
+  cd "$srcdir/fx240-lcdstudio"
+  desktop-file-validate packaging/arch/org.fx240lcdstudio.desktop
+  # Synthetic sensors, offscreen QML, no HID access and no preference writes.
+  env -u PYTHONPATH -u PYTHONHOME -u VIRTUAL_ENV \
+    PYTHONNOUSERSITE=1 ./dist/fx240-lcd-studio self-test
+}
+
+package() {
+  cd "$srcdir/fx240-lcdstudio"
+  install -Dm755 dist/fx240-lcd-studio "$pkgdir/usr/bin/fx240-lcd-studio"
+  ln -s fx240-lcd-studio "$pkgdir/usr/bin/fx240"
+  install -Dm644 packaging/arch/org.fx240lcdstudio.desktop \
+    "$pkgdir/usr/share/applications/org.fx240lcdstudio.desktop"
+  install -Dm644 src/fx240/assets/branding/tray-lcd-fallback.svg \
+    "$pkgdir/usr/share/icons/hicolor/scalable/apps/org.fx240lcdstudio.svg"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 NOTICE.md "$pkgdir/usr/share/licenses/$pkgname/NOTICE.md"
+  install -Dm644 src/fx240/assets/fonts/OFL.txt \
+    "$pkgdir/usr/share/licenses/$pkgname/Outfit-OFL.txt"
+  install -Dm644 src/fx240/assets/icons/LICENSE.txt \
+    "$pkgdir/usr/share/licenses/$pkgname/Lucide-LICENSE.txt"
+  # Retain upstream wheel notices alongside the executable's embedded assets.
+  local metadata
+  for metadata in "$srcdir"/build-env/lib/python*/site-packages/*.dist-info; do
+    if [[ -d "$metadata/licenses" ]]; then
+      install -dm755 "$pkgdir/usr/share/licenses/$pkgname/third-party/$(basename "$metadata")"
+      cp -r "$metadata/licenses" \
+        "$pkgdir/usr/share/licenses/$pkgname/third-party/$(basename "$metadata")/"
+    fi
+  done
+  local qt_licenses="$srcdir/build-env/lib/python3.14/site-packages/PySide6/Qt/licenses"
+  if [[ -d "$qt_licenses" ]]; then
+    cp -r "$qt_licenses" "$pkgdir/usr/share/licenses/$pkgname/Qt"
+  fi
+}

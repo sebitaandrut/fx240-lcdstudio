@@ -24,7 +24,7 @@ python3 -m venv .venv
 .venv/bin/fx240 gui
 ```
 
-The GUI starts preview and physical output automatically when one matching LCD is accessible. Close other senders first. **Stop display** leaves a recreated standby image while the preview continues. Follow the [build guide](docs/building.md) for Arch dependencies, USB permissions, and your own executable.
+The GUI starts preview and physical output automatically when one matching LCD is accessible. Close other senders first. **Stop display** leaves a recreated standby image while the preview continues. For a pacman-managed Arch installation, use the [PKGBUILD instructions](docs/building.md#install-with-pacman-using-pkgbuild). The same guide covers native dependencies, USB permissions, and manual executable builds.
 
 ## Status
 

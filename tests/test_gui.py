@@ -179,6 +179,7 @@ engine,bridge=create_engine(app,Settings(),provider=lambda:[])
 window=engine.rootObjects()[0]
 assert window.title()=='FX240 LCD STUDIO'
 assert app.applicationName()=='FX240 LCD STUDIO'
+assert app.desktopFileName()=='org.fx240lcdstudio'
 assert not app.windowIcon().isNull()
 assert window.findChild(QObject,'brandIcon')
 choice=window.findChild(QObject,'cometStyleControl')

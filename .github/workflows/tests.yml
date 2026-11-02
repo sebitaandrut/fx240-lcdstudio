@@ -63,3 +63,37 @@ jobs:
           env -u PYTHONPATH -u PYTHONHOME -u VIRTUAL_ENV \
             PYTHONNOUSERSITE=1 ./fx240-lcd-studio self-test
           ./fx240-lcd-studio --help
+
+  arch-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container: archlinux:base
+    steps:
+      - name: Install package build and runtime dependencies
+        run: |
+          pacman -Syu --noconfirm --needed \
+            base-devel git python python-pip desktop-file-utils hicolor-icon-theme \
+            zlib glib2 krb5 fontconfig libglvnd libxkbcommon libxkbcommon-x11 \
+            libxcb xcb-util-cursor wayland dbus
+      - uses: actions/checkout@v7
+      - name: Build the package as an unprivileged user
+        run: |
+          useradd --create-home packager
+          install -d -o packager -g packager /tmp/fx240-package
+          install -m644 packaging/arch/PKGBUILD /tmp/fx240-package/PKGBUILD
+          runuser -u packager -- sh -c 'cd /tmp/fx240-package && makepkg --noconfirm --cleanbuild'
+      - name: Install and check the package
+        run: |
+          pacman -U --noconfirm /tmp/fx240-package/*.pkg.tar.zst
+          desktop-file-validate /usr/share/applications/org.fx240lcdstudio.desktop
+          test -f /usr/share/icons/hicolor/scalable/apps/org.fx240lcdstudio.svg
+          test -f /usr/share/licenses/fx240-lcd-studio-git/NOTICE.md
+          runuser -u packager -- /usr/bin/fx240-lcd-studio self-test
+          runuser -u packager -- /usr/bin/fx240 --help
+      - name: Check package removal
+        run: |
+          pacman -R --noconfirm fx240-lcd-studio-git
+          test ! -e /usr/bin/fx240-lcd-studio
+          test ! -e /usr/bin/fx240
+          test ! -e /usr/share/applications/org.fx240lcdstudio.desktop
+          test ! -e /usr/share/icons/hicolor/scalable/apps/org.fx240lcdstudio.svg

@@ -405,6 +405,7 @@ class Bridge(QObject):
 def create_engine(app, settings, provider=None, preferences=None, application=None, session_factory=Session, autostart=None, start_minimized=False, standby_guard=None):
     app.setApplicationName(APP_NAME)
     app.setApplicationDisplayName(APP_NAME)
+    app.setDesktopFileName('org.fx240lcdstudio')
     app.setWindowIcon(application_icon())
     QQuickStyle.setStyle("Basic")
     bridge = Bridge(settings,provider=provider,preferences=preferences,application=application,session_factory=session_factory,autostart=autostart,start_minimized=start_minimized,standby_guard=standby_guard)
