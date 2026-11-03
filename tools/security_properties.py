@@ -16,6 +16,8 @@ from PIL import Image, UnidentifiedImageError
 from fx240.media import load
 from fx240.preferences import Preferences
 from fx240.protocol import build_reports
+from fx240.scene import parse_scene,scene_json
+from fx240.profiles import validate_library
 from fx240.transport import Hidraw
 
 PROPERTY = settings(max_examples=100, deadline=None, database=None, derandomize=True)
@@ -30,7 +32,9 @@ preference_payload = st.one_of(json_value, st.fixed_dictionaries({
     'version': st.sampled_from([0, 1, 2, None, '1']),
     'display': st.one_of(json_value, st.dictionaries(st.sampled_from([
         'fps', 'quality', 'delay_ms', 'rotation', 'font_weight', 'comet_speed',
-        'accent', 'comet_style', 'temperature_decimals', 'temperature_unit', 'device'
+        'accent', 'comet_style', 'temperature_decimals', 'temperature_unit', 'device',
+        'animation', 'background_dim', 'layout_mode', 'scene_json', 'draft_scene_json',
+        'profile_id', 'draft_profile_id', 'draft_name'
     ]), scalar, max_size=8)),
     'application': st.one_of(json_value, st.fixed_dictionaries({
         'language': scalar, 'theme': scalar
@@ -69,6 +73,28 @@ class InputProperties(unittest.TestCase):
             settings_value.validate()
             self.assertIn(application['language'], ('en', 'es'))
             self.assertIn(application['theme'], ('dark', 'light'))
+
+    @PROPERTY
+    @given(json_value)
+    def test_scene_metadata_never_opens_files(self,value):
+        with patch('fx240.localfiles.os.open') as opened:
+            try:
+                scene=parse_scene(json.dumps(value))
+            except ValueError:
+                pass
+            else:
+                self.assertLessEqual(len(scene['layers']),16)
+                self.assertEqual(parse_scene(scene_json(scene)),scene)
+            opened.assert_not_called()
+
+    @PROPERTY
+    @given(json_value)
+    def test_profile_metadata_never_opens_assets(self,value):
+        with patch('fx240.localfiles.os.open') as opened:
+            try:library=validate_library(value)
+            except ValueError:pass
+            else:self.assertLessEqual(len(library['profiles']),8)
+            opened.assert_not_called()
 
     @PROPERTY
     @given(st.integers(1, 24), st.integers(1, 24), st.integers(1, 4),

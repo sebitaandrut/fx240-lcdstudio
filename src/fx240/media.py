@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Image/GIF composition and JPEG encoding, independent of transport."""
 import io
+import math
 import struct
 from PIL import Image, ImageOps
 from .localfiles import read_regular
@@ -47,7 +48,7 @@ def load(path, max_frames=1000):
                 source.seek(i)  # Pillow applies GIF disposal/composition.
                 check_size(source)
                 duration = source.info.get("duration", 100)
-                if not isinstance(duration, (int, float)) or duration <= 0:
+                if not isinstance(duration, (int, float)) or not math.isfinite(duration) or duration <= 0:
                     duration = 100
                 frames.append((canvas(source.copy()), duration / 1000))
     except (IndexError, EOFError, struct.error, Image.DecompressionBombError) as error:

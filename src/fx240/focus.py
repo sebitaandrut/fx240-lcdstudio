@@ -1,57 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Minimal circular telemetry theme with time-based motion and cached typography."""
-from functools import lru_cache
-import io
 import math
 import colorsys
 import re
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from .telemetry import collect
-from .localfiles import read_regular
 
-SCALE = 2
+from .typography import SCALE,font,resolve_font,load_font
 MINT = (115, 223, 193)
 ARC_BASE = (52, 122, 104)
 ARC_BOX = (17*SCALE,17*SCALE,223*SCALE,223*SCALE)
 ARC_WIDTH = 8*SCALE
 WHITE = (237, 244, 245)
 MUTED = (165, 182, 187)
-MAX_FONT_BYTES = 16 * 1024 * 1024
-
-
-def load_font(path, size):
-    # A saved/custom font is local input too: never hand a FIFO to FreeType.
-    return ImageFont.truetype(io.BytesIO(read_regular(path,MAX_FONT_BYTES)),size)
-
-
-def resolve_font(path=None):
-    if path is not None:
-        # Validate explicit choices instead of silently substituting another font.
-        load_font(path, 12)
-        return str(path)
-    for candidate in (str(Path(__file__).parent/'assets/fonts/Outfit.ttf'),
-                      '/usr/share/fonts/noto/NotoSans-Regular.ttf',
-                      '/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf'):
-        if Path(candidate).is_file():
-            return candidate
-    return None
-
-
-@lru_cache(maxsize=32)
-def font(path, size, weight=400):
-    face = load_font(path, size*SCALE) if path else ImageFont.load_default(size=size*SCALE)
-    try:
-        axes = face.get_variation_axes()
-    except (OSError, AttributeError):
-        return face
-    values = []
-    for axis in axes:
-        name = axis['name']
-        value = weight if name == b'Weight' else size if name == b'Optical size' else axis['default']
-        values.append(max(axis['minimum'], min(axis['maximum'], value)))
-    face.set_variation_by_axes(values)
-    return face
 
 
 def ease(value):
@@ -117,15 +79,30 @@ def active_arc_mask(size, progress):
     return mask
 
 
-def draw_active_arc(image, elapsed, progress, accent=MINT, style="accent"):
+def draw_active_arc(image, elapsed, progress, accent=MINT, style="accent", animation="comet"):
     """Keep the round comet centered on the rounded active stroke."""
     mask = active_arc_mask(image.size,progress)
     layer = Image.new('RGB',image.size,arc_color(accent))
     draw = ImageDraw.Draw(layer)
-    for left,right,color in comet_segments(elapsed,progress,accent,style):
+    segments = comet_segments(elapsed,progress,accent,style) if animation == 'comet' else []
+    if animation == 'pulse':
+        strength = .65 + .35*(.5+.5*math.sin(elapsed*math.tau/3))
+        pulse_color = accent if style == 'accent' else tuple(round(c*255) for c in colorsys.hsv_to_rgb((elapsed/6)%1,.75,1))
+        layer.paste(tuple(round(c*strength) for c in pulse_color),(0,0,*image.size))
+    elif animation in ('orbit','none'):
+        layer.paste(accent,(0,0,*image.size))
+    for left,right,color in segments:
         # Overlapping circular caps give the head and fading tail a soft silhouette.
         round_arc(draw,left,right,color)
     image.paste(layer,(0,0),mask)
+    if animation == 'orbit':
+        draw = ImageDraw.Draw(image)
+        for offset in (0,.5):
+            angle = 135+270*((elapsed/4+offset)%1)
+            color = accent if style == 'accent' else tuple(round(c*255) for c in colorsys.hsv_to_rgb((elapsed/6+offset)%1,.75,1))
+            x,y = arc_point(angle)
+            radius = (ARC_WIDTH-1)/2
+            draw.ellipse((x-radius,y-radius,x+radius,y+radius),fill=color)
 
 
 def readings(metrics, keys=None):
@@ -151,7 +128,7 @@ def frequency(value):
 
 
 class Focus:
-    def __init__(self, fps=24, keys=None, font_path=None, provider=None, arc_range=(0,100), font_weight=350, temperature_decimals=0, comet_speed=1.0, accent="#73dfc1", comet_style="accent", temperature_unit="C"):
+    def __init__(self, fps=24, keys=None, font_path=None, provider=None, arc_range=(0,100), font_weight=350, temperature_decimals=0, comet_speed=1.0, accent="#73dfc1", comet_style="accent", temperature_unit="C", animation="comet", background_path=None, background_dim=.65):
         if not 0 < fps <= 24:
             raise ValueError('Focus FPS must be greater than zero and at most 24')
         if not all(math.isfinite(x) for x in arc_range) or arc_range[1] <= arc_range[0]:
@@ -166,6 +143,11 @@ class Focus:
         if comet_style not in ('accent','rainbow'):
             raise ValueError('Unknown comet style')
         self.comet_style = comet_style
+        if animation not in ('comet','orbit','pulse','none'):
+            raise ValueError('Unknown animation')
+        self.animation = animation
+        from .background import Background
+        self.background = Background(background_path,background_dim)
         self.comet_speed = comet_speed
         self.comet_offset = 0.0
         if temperature_unit not in ('C','F'):
@@ -233,9 +215,10 @@ class Focus:
         self.arc_to = 0 if new_values[0] is None else max(0,min(1,(new_values[0]-low)/(high-low)))
         self.changed_at = elapsed
         self.sampled_at = elapsed
-        self.static = Image.new('RGB', (240*SCALE,240*SCALE), 'black')
+        self.static = Image.new('RGBA', (240*SCALE,240*SCALE), (0,0,0,0))
         draw = ImageDraw.Draw(self.static)
-        draw.ellipse((3*SCALE,3*SCALE,237*SCALE,237*SCALE), fill=(8,11,14))
+        if not self.background.enabled:
+            draw.ellipse((3*SCALE,3*SCALE,237*SCALE,237*SCALE), fill=(8,11,14))
         round_arc(draw,135,405,(28,42,46))
         self.text(draw,(120,49),'CPU',14,MUTED)
         self.text(draw,(120,146),frequency(new_values[1]),18,self.accent)
@@ -252,11 +235,15 @@ class Focus:
             self.sample(elapsed)
         elif elapsed-self.sampled_at >= 1:
             self.sample(elapsed)
-        image = self.static.copy()
+        if self.background.enabled:
+            image = self.background.frame(elapsed).resize((240*SCALE,240*SCALE),Image.Resampling.LANCZOS)
+            image.paste(self.static,(0,0),self.static)
+        else:
+            image = self.static.convert('RGB')
         draw = ImageDraw.Draw(image)
         progress = self.arc_value(elapsed)
         if self.values[0] is not None and progress > 0:
-            draw_active_arc(image,self.comet_time(elapsed),progress,self.accent,self.comet_style)
+            draw_active_arc(image,self.comet_time(elapsed),progress,self.accent,self.comet_style,self.animation)
             draw = ImageDraw.Draw(image)
         # Numeric readings switch atomically; only the decorative arc interpolates.
         self.draw_temperature(draw,self.values[0])

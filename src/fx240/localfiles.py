@@ -5,6 +5,13 @@ from pathlib import Path
 import stat
 
 
+def config_home():
+    """Ignore relative XDG paths so runtime data cannot land in the working tree."""
+    home=Path.home()/'.config'
+    selected=Path(os.environ.get('XDG_CONFIG_HOME') or home)
+    return selected if selected.is_absolute() else home
+
+
 def read_regular(path, limit, *, private=False):
     """Reject special files/leaf symlinks; validate the opened descriptor as well.
 

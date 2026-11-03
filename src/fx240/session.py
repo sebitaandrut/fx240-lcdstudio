@@ -28,11 +28,29 @@ class Settings:
     comet_speed: float = 1.0
     accent: str = "#73dfc1"
     comet_style: str = "accent"
+    animation: str = "comet"
+    background_path: str | None = None
+    background_dim: float = .65
     temperature_decimals: int = 1
     temperature_unit: str = "C"
+    layout_mode: str = "focus"
+    scene_json: str = ""
+    profile_id: str = ""
+    draft_scene_json: str = ""
+    draft_profile_id: str = ""
+    draft_name: str = ""
     device: str | None = None
 
     def validate(self):
+        if self.layout_mode not in ("focus","editor"):raise ValueError("Unknown layout mode")
+        from .scene import parse_scene
+        parse_scene(self.scene_json)
+        parse_scene(self.draft_scene_json)
+        from .scene import plain
+        if not plain(self.draft_name,32):raise ValueError('Invalid draft name')
+        import re
+        for identifier in (self.profile_id,self.draft_profile_id):
+            if not isinstance(identifier,str) or (identifier and re.fullmatch(r'profile-[1-9][0-9]{0,6}',identifier) is None):raise ValueError('Invalid profile identifier')
         if not 0 < self.fps <= 24 or not math.isfinite(self.fps):
             raise ValueError('FPS must be between 0 and 24')
         if not 1 <= self.quality <= 95 or not 0 <= self.delay_ms <= 100:
@@ -44,6 +62,12 @@ class Settings:
         accent_rgb(self.accent)
         if self.comet_style not in ('accent','rainbow'):
             raise ValueError('Unknown comet style')
+        if self.animation not in ('comet','orbit','pulse','none'):
+            raise ValueError('Unknown animation')
+        if not math.isfinite(self.background_dim) or not 0 <= self.background_dim <= .9:
+            raise ValueError('Background dimming must be between 0 and 0.9')
+        if self.background_path is not None and not isinstance(self.background_path,str):
+            raise ValueError('Background must be a local file')
         if self.rotation not in (0,90,180,270):
             raise ValueError('Invalid rotation')
         if not 100 <= self.font_weight <= 900 or self.temperature_decimals not in (0,1):
@@ -99,6 +123,7 @@ class Session:
         self.frames = 0
         self.last_frame = None
         self.config_error = None
+        self._request_sequence = 0
         self.config_revision = 0
         self._update_lock = threading.Lock()
         self._suspend_reasons = set()
@@ -136,7 +161,9 @@ class Session:
         if send and not settings.device:
             raise ValueError('Select a device before starting LCD output')
         with self._update_lock:
-            self._pending_config = (settings,send)
+            self._request_sequence += 1
+            self._pending_config = (settings,send,self._request_sequence)
+            return self._request_sequence
 
     def suspend(self, sleeping, reason='sleep'):
         # Independent notifications must not resume each other's paused output.
@@ -147,6 +174,18 @@ class Session:
                 if not self.suspended.is_set():self.output_released.clear()
                 self.suspended.set()
             else:self.suspended.clear()
+
+    def make_theme(self,config):
+        factory=self.theme_factory
+        options={}
+        if config.layout_mode=='editor':
+            from .scene import SceneRenderer
+            factory=SceneRenderer;options['scene_json']=config.scene_json
+        return factory(config.fps,font_path=config.font_path,font_weight=config.font_weight,
+                       temperature_decimals=config.temperature_decimals,temperature_unit=config.temperature_unit,
+                       comet_speed=config.comet_speed,accent=config.accent,comet_style=config.comet_style,
+                       animation=config.animation,background_path=config.background_path,background_dim=config.background_dim,
+                       provider=self.snapshot.sample,**options)
 
     def run(self):
         config = self.settings
@@ -169,11 +208,10 @@ class Session:
             self.output_released.set()
 
         try:
-            theme = self.theme_factory(config.fps,font_path=config.font_path,font_weight=config.font_weight,
-                          temperature_decimals=config.temperature_decimals,temperature_unit=config.temperature_unit,comet_speed=config.comet_speed,accent=config.accent,comet_style=config.comet_style,
-                          provider=self.snapshot.sample)
+            theme = self.make_theme(config)
             start = time.monotonic()
             target = start
+            request_id = 0
             while not self.stop_event.is_set():
                 if self.stop_event.wait(max(0,target-time.monotonic())):
                     break
@@ -186,15 +224,11 @@ class Session:
                     pending = self._pending_config
                     self._pending_config = None
                 if pending is not None:
-                    candidate,send = pending
+                    candidate,send,request_id = pending
                     try:
                         if device is not None and candidate.device != config.device:
                             raise ValueError('Pause LCD output before changing its device')
-                        replacement = self.theme_factory(candidate.fps,font_path=candidate.font_path,
-                            font_weight=candidate.font_weight,
-                            temperature_decimals=candidate.temperature_decimals,temperature_unit=candidate.temperature_unit,comet_speed=candidate.comet_speed,
-                            accent=candidate.accent,comet_style=candidate.comet_style,
-                            provider=self.snapshot.sample)
+                        replacement = self.make_theme(candidate)
                         # Preserve the decorative arc position and animation clock.
                         elapsed = time.monotonic()-start
                         replacement.inherit_motion(theme,elapsed)
@@ -253,7 +287,7 @@ class Session:
                               'frames':self.frames,'transmission_ms':tx,'reports':len(reports),
                               'pipeline_ms':(finished-began)*1000,
                               'sent':sent,'output_error':self.output_error,'config_error':self.config_error,
-                              'config_revision':self.config_revision,'elapsed':finished-start})
+                              'config_revision':self.config_revision,'configuration':config,'config_request_id':request_id,'elapsed':finished-start})
                 target = max(target+1/config.fps,time.monotonic())
         except Exception as error:
             self.error = str(error)

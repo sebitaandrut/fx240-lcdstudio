@@ -19,3 +19,7 @@ packaging/arch/pkg/
 packaging/arch/fx240-lcdstudio/
 packaging/arch/*.whl
 packaging/arch/*.pkg.tar.*
+
+# Private runtime settings, including user-chosen media/font references.
+settings.json
+profiles.json
