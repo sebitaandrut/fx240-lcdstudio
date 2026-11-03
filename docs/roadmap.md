@@ -13,8 +13,7 @@ The current code is an experimental baseline. See [validation](validation.md) fo
 ## Planned features
 
 - A live, persistent stroke-width control; the approved current base is **8 LCD pixels**.
-- Additional time-based animations and a Dual CPU/GPU layout.
-- Named profiles.
-- A scene model and on-demand editor for image/GIF layers, text, and sensor fields, with circular safe bounds and persistent scene files.
+- Additional animation styles and a Dual CPU/GPU layout.
+- Profile import/export with explicit asset/privacy boundaries.
 
-Image/GIF playback already exists through the CLI; the desktop editor does not. Keep each feature separate from transport and sensor sampling, and measure its rendering cost before selecting defaults.
+The desktop editor, local named profiles, and bounded long-GIF playback are implemented. Keep each feature separate from transport and sensor sampling, and measure its rendering cost before selecting defaults.

@@ -40,7 +40,9 @@ A local commit does not authorize publishing. Creating a GitHub repository, addi
 | Qt/QML interface and application controller | `src/fx240/qml/`, `gui.py`, `i18n.py` |
 | Worker, live configuration, and frame events | `src/fx240/session.py` |
 | Telemetry collection | `src/fx240/telemetry.py` |
-| Focus rendering, media, and overlays | `src/fx240/focus.py`, `media.py`, `overlay.py`, `dashboard.py` |
+| Focus rendering, media, and overlays | `src/fx240/focus.py`, `media.py`, `background.py`, `gifstream.py`, `overlay.py`, `dashboard.py` |
+| Composition schema, editing, and private profiles | `src/fx240/scene.py`, `editor.py`, `workspace.py`, `livepreview.py`, `profiles.py` |
+| Local fonts, asset browsing, and circular preview | `src/fx240/typography.py`, `systemfonts.py`, `filebrowser.py`, `preview.py` |
 | HID framing and verified transport | `src/fx240/protocol.py`, `transport.py` |
 | Preferences, tray, and login startup | `src/fx240/preferences.py`, `tray.py`, `autostart.py` |
 | Sleep/shutdown coordination and standby fallback | `src/fx240/sleep.py`, `shutdown.py`, `guard.py`, `idle.py`, `lifecycle.py` |

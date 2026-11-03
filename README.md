@@ -9,7 +9,8 @@ An experimental native Linux application for the **ID-COOLING FX240 LCD**, built
 - Focus dashboard with CPU/GPU temperatures and frequencies, Outfit typography, and an animated comet.
 - Live colors, rainbow effect, animation speed, fonts, precision, and Celsius/Fahrenheit.
 - Dark/light interface, English/Spanish, saved settings, tray support, and opt-in login startup.
-- Image/GIF playback and telemetry overlays through the CLI. A desktop editor is planned.
+- A drag-and-drop composition editor for local images/GIFs, text, CPU/GPU readings, and optional arcs.
+- Named designs, live LCD trials before saving, and automatic bounded playback for longer GIFs.
 - A locally built executable that runs without an activated Python environment.
 
 Sensor support depends on Linux drivers; unavailable readings show `N/A`. Proprietary NVIDIA/NVML support is not implemented.
@@ -34,7 +35,7 @@ The GUI starts preview and physical output automatically when one matching LCD i
 
 ## Status
 
-This is an **experimental baseline**, not a stable release. The application is capped at **24 FPS**; higher host throughput is not proof of complete physical LCD frames. Packaged operation and desktop-autostarted reboot/shutdown passed initial hardware checks. Initial suspend/resume checks also passed owner observation. Prolonged stability, repeated lifecycle trials, and a clean native desktop installation remain pending. See [validation and limits](docs/validation.md).
+Version **0.2.0 remains experimental**, not a stable release. The application is capped at **24 FPS**; higher host throughput is not proof of complete physical LCD frames. Packaged operation and desktop-autostarted reboot/shutdown passed initial hardware checks. Initial suspend/resume checks also passed owner observation, including saved long-GIF profiles and temporary editor trials. A 30-minute GIF run showed stable proportional memory and resource counts; multi-hour stability, repeated lifecycle trials, and a clean native desktop installation remain pending. See [validation and limits](docs/validation.md).
 
 ## Documentation
 
@@ -46,6 +47,7 @@ This is an **experimental baseline**, not a stable release. The application is c
 | Tested behavior and remaining checks | [Validation](docs/validation.md) |
 | FPS, resource measurements, and evidence limits | [Performance](docs/performance.md) |
 | Privacy and publication boundaries | [Privacy review](docs/privacy-review.md) |
+| Version changes | [Changelog](CHANGELOG.md) |
 | Planned work | [Roadmap](docs/roadmap.md) |
 
 For code structure, tests, and commit conventions, see [Contributing](CONTRIBUTING.md). Code, documentation, and commits are in English. Development combined **AI assistance** with hands-on hardware testing.
