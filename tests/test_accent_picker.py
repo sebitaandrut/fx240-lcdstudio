@@ -14,7 +14,7 @@ import os
 os.environ['QT_QPA_PLATFORM']='offscreen'
 os.environ['QT_QUICK_BACKEND']='software'
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtCore import QObject,QPointF,Qt,QTimer,QMetaObject
+from PySide6.QtCore import QObject,QPoint,QPointF,Qt,QTimer,QMetaObject
 from PySide6.QtTest import QTest
 from fx240.gui import create_engine,dispose_engine
 from fx240.session import Settings
@@ -30,9 +30,15 @@ def click(item,x=None,y=None):
 def run():
     try:
         count=len(app.topLevelWindows())
+        window.setProperty('page',0);app.processEvents()
+        scroll=window.findChild(QObject,'pageScroll').property('contentItem')
+        anchor=window.findChild(QObject,'customAccentButton')
+        scroll.setProperty('contentY',max(0,anchor.mapToScene(QPointF(0,0)).y()-140))
+        app.processEvents()
         custom=window.findChild(QObject,'customAccentButton')
         for theme in (0,1):
             window.findChild(QObject,'appThemeControl').setProperty('currentIndex',theme)
+            QTest.qWait(40)
             click(custom)
             app.processEvents()
             picker=window.findChild(QObject,'accentPicker')
@@ -62,16 +68,20 @@ def run():
             assert not picker.property('visible')
         # Outside click dismisses the same in-window popup.
         click(custom)
-        QTest.mouseClick(window,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier,window.findChild(QObject,'framePreview').mapToScene(QPointF(100,100)).toPoint())
+        QTest.mouseClick(window,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier,QPoint(10,10))
         assert not picker.property('visible')
-    except Exception as e:errors.append(repr(e))
+    except Exception:
+        import traceback
+        errors.append(traceback.format_exc())
     QTimer.singleShot(400,finish)
 def finish():
     try:
         assert bridge.session is worker and not worker.stop_event.is_set()
         assert worker.settings.accent==window.property('lcdAccent').name()
         assert not bridge.errorMessage
-    except Exception as e:errors.append(repr(e))
+    except Exception:
+        import traceback
+        errors.append(traceback.format_exc())
     bridge.stop();QTimer.singleShot(150,app.quit)
 QTimer.singleShot(300,run)
 app.exec()

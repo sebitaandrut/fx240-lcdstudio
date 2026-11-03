@@ -15,7 +15,7 @@ def run():
     # Select before QApplication construction; no display server is needed.
     os.environ['QT_QPA_PLATFORM']='offscreen'
     os.environ['QT_QUICK_BACKEND']='software'
-    from PySide6.QtCore import QTimer,QObject
+    from PySide6.QtCore import QTimer,QObject,QMetaObject
     from PySide6.QtWidgets import QApplication
     from PySide6.QtSvg import QSvgRenderer
     from .gui import create_engine,dispose_engine
@@ -44,9 +44,24 @@ def run():
             require((root/'assets/fonts/Outfit.ttf').is_file(), 'Bundled font is missing')
             for name in ('dark','light','fallback'):
                 require(QSvgRenderer(str(root/f'assets/branding/tray-lcd-{name}.svg')).isValid(), 'Invalid tray artwork')
-            for page in range(4):
+            for page in range(5):
                 window.setProperty('page',page);app.processEvents()
                 require(not window.grabWindow().isNull(), 'Window capture is unavailable')
+            require(window.findChild(QObject,'editorCanvas') is not None, 'Editor canvas did not load')
+            require(bridge.workspace.model.rowCount()==5, 'Default composition did not load')
+            # Exercise the packaged registered QML type without listing user files.
+            import tempfile,time
+            with tempfile.TemporaryDirectory(prefix='fx240-picker-check-') as folder:
+                picker=window.findChild(QObject,'mediaAssetPicker')
+                picker.setProperty('initialPath',folder)
+                QMetaObject.invokeMethod(picker,'open')
+                browser=picker.findChild(QObject,'assetBrowser')
+                deadline=time.monotonic()+2
+                while browser.busy and time.monotonic()<deadline:
+                    app.processEvents();time.sleep(.005)
+                require(picker.property('visible') and not browser.busy, 'Asset picker could not open')
+                require(browser.folder==folder and not browser.entries, 'Asset picker did not use the synthetic folder')
+                QMetaObject.invokeMethod(picker,'close')
         except Exception as error:errors.append(str(error) or type(error).__name__)
         bridge.stop()
     def complete():

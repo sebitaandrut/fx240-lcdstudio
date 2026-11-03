@@ -2,21 +2,27 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
 
 ApplicationWindow {
     id: window
-    width: 1000; height: 650
-    minimumWidth: 1000; minimumHeight: 650
+    width: 1200; height: 800
+    minimumWidth: 1200; minimumHeight: 760
     visible: !bridge.startMinimized; title: bridge.applicationName
     color: backgroundColor
     property int page: 0
+    onPageChanged: {
+        if (page!==4 && bridge.livePreview.active) { page=4; bridge.livePreview.requestEnd(); return }
+        bridge.workspace.setVisible(page===4)
+    }
     property color lcdAccent: bridge.initialAccent
     onLcdAccentChanged: queueSettings()
     property bool ready: false
     Component.onCompleted: ready=true
     Timer { id: settingsDebounce; interval: 200; onTriggered: bridge.applySettings(window.configuration()) }
     function tr(text) { return bridge.translate(text,bridge.language) }
+    property string backgroundPath: bridge.initialBackground
+    readonly property var animationKeys: ["comet","orbit","pulse","none"]
+
     function queueSettings() { if (ready) settingsDebounce.restart() }
     readonly property bool lightTheme: appTheme.currentIndex===1
     readonly property color backgroundColor: lightTheme ? "#eef2f4" : "#0e1216"
@@ -35,20 +41,22 @@ ApplicationWindow {
     font.family: outfit.name; font.pixelSize: 14; font.weight: Font.Normal
     font.variableAxes: ({"wght":400})
     palette.window: backgroundColor; palette.windowText: ink; palette.base: controlColor; palette.text: ink
+    palette.alternateBase: panel; palette.mid: edge; palette.dark: edge; palette.light: controlColor;
+    palette.toolTipBase: panel; palette.toolTipText: ink; palette.placeholderText: muted;
     palette.button: controlColor; palette.buttonText: ink
     palette.highlight: selection; palette.highlightedText: ink
     onClosing: function(close) { close.accepted = bridge.requestClose() }
 
     function configuration() {
         return {fps:fps.value,quality:quality.value,delay:delay.text,
-                font:fontPath.text,weight:weight.value,cometSpeed:cometSpeed.value,accent:lcdAccent.toString(),cometStyle:cometStyle.currentIndex===1 ? "rainbow" : "accent",temperatureUnit:temperatureUnit.currentIndex===1 ? "F" : "C",decimals:decimals.checked,device:device.currentText}
+                animation:animationKeys[animation.currentIndex],background:backgroundPath,backgroundDim:backgroundDim.value,font:fontPath.text,weight:weight.value,cometSpeed:cometSpeed.value,accent:lcdAccent.toString(),cometStyle:cometStyle.currentIndex===1 ? "rainbow" : "accent",temperatureUnit:temperatureUnit.currentIndex===1 ? "F" : "C",decimals:decimals.checked,device:device.currentText}
     }
     function valueAt(index) { return bridge.sensorRows.length > index ? bridge.sensorRows[index].target : "N/A" }
     function changeProfile(index) {
         if (index === 0) { fps.value=24; quality.value=65; delay.text="2" }
         if (index === 1) { fps.value=5; quality.value=85; delay.text="10" }
     }
-    component Caption: Label { color: window.muted; font.pixelSize: 14 }
+    component Caption: Label { textFormat: Text.PlainText; color: window.muted; font.pixelSize: 14 }
     component Rule: Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: window.edge }
     component SvgIcon: Image {
         property string name: "monitor"
@@ -64,7 +72,7 @@ ApplicationWindow {
         contentItem: RowLayout {
             spacing: 12
             SvgIcon { name: parent.parent.iconName; role: parent.parent.selected ? "accent" : "muted"; opacity: parent.parent.enabled ? 1 : .4 }
-            Label { text: parent.parent.text; color: parent.parent.selected ? window.accent : window.muted; opacity: parent.parent.enabled ? 1 : .4; Layout.fillWidth: true }
+            Label { textFormat: Text.PlainText; text: parent.parent.text; color: parent.parent.selected ? window.accent : window.muted; opacity: parent.parent.enabled ? 1 : .4; Layout.fillWidth: true }
         }
         leftPadding: 13; rightPadding: 13
         background: Rectangle { radius: 9; color: parent.selected ? window.selection : parent.hovered ? window.hoverColor : "transparent" }
@@ -77,15 +85,16 @@ ApplicationWindow {
         contentItem: RowLayout {
             spacing: 8
             SvgIcon { name: parent.parent.iconName; role: parent.parent.primary ? "action" : "muted"; opacity: parent.parent.enabled ? 1 : .35 }
-            Label { text: parent.parent.text; color: parent.parent.primary ? "#08271e" : window.ink; opacity: parent.parent.enabled ? 1 : .4; horizontalAlignment: Text.AlignHCenter; Layout.fillWidth: true }
+            Label { textFormat: Text.PlainText; text: parent.parent.text; color: parent.parent.primary ? "#08271e" : window.ink; opacity: parent.parent.enabled ? 1 : .4; horizontalAlignment: Text.AlignHCenter; Layout.fillWidth: true }
         }
         background: Rectangle { radius: 9; color: parent.primary ? window.primaryFill : window.controlColor; opacity: parent.enabled ? 1 : .35; border.color: window.edge; border.width: parent.primary ? 0 : 1 }
     }
     component Choice: ComboBox {
         id: choice
+        property bool translated: true
         implicitHeight: 32
         background: Rectangle { color: window.controlColor; radius: 7; border.color: window.edge }
-        contentItem: Text { text: window.tr(choice.displayText); font: choice.font; color: window.ink; verticalAlignment: Text.AlignVCenter; leftPadding: 12; rightPadding: 30; elide: Text.ElideRight }
+        contentItem: Text { text: choice.translated ? window.tr(choice.displayText) : choice.displayText; textFormat: Text.PlainText; font: choice.font; color: window.ink; verticalAlignment: Text.AlignVCenter; leftPadding: 12; rightPadding: 30; elide: Text.ElideRight }
         indicator: Text { x: choice.width-25; y: (choice.height-height)/2; text: "⌄"; font.pixelSize: 16; color: window.muted }
         delegate: ItemDelegate {
             required property var modelData
@@ -93,11 +102,11 @@ ApplicationWindow {
             width: choice.width-8; height: 32
             highlighted: choice.highlightedIndex===index
             background: Rectangle { radius: 5; color: parent.highlighted ? window.selection : parent.hovered ? window.hoverColor : "transparent" }
-            contentItem: Text { text: window.tr(parent.modelData); color: parent.highlighted ? window.accent : window.ink; font: choice.font; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
+            contentItem: Text { text: choice.translated ? window.tr(parent.modelData) : parent.modelData; textFormat: Text.PlainText; color: parent.highlighted ? window.accent : window.ink; font: choice.font; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
         }
         popup: Popup {
             objectName: choice.objectName+"Popup"
-            y: choice.height+5; width: choice.width; padding: 4
+            y: choice.height+5; width: choice.width; padding: 4; margins: 12
             implicitHeight: Math.min(contentItem.implicitHeight+8,240)
             background: Rectangle { color: window.panel; radius: 9; border.color: window.edge }
             contentItem: ListView {
@@ -134,15 +143,16 @@ ApplicationWindow {
         }
     }
     component SensorCard: Rectangle {
+        id: sensorCard
         property string componentName: "CPU"
         property string degrees: "N/A"
         property string clock: "N/A"
-        Layout.fillWidth: true; implicitHeight: 68; radius: 13; color: window.panel; border.color: window.edge
+        Layout.fillWidth: true; implicitHeight: width<220 ? 92 : 68; radius: 13; color: window.panel; border.color: window.edge
         ColumnLayout { anchors.fill: parent; anchors.margins: 12; spacing: 3
             Caption { text: parent.parent.componentName; font.letterSpacing: 1 }
-            RowLayout { Label { text: parent.parent.parent.degrees; color: window.ink; font.pixelSize: 26 }
-                Item { Layout.fillWidth: true }
-                Caption { text: parent.parent.parent.clock; font.pixelSize: 14 }
+            GridLayout { columns: sensorCard.width<220 ? 1 : 2; Layout.fillWidth: true; rowSpacing: 0
+                Label { textFormat: Text.PlainText; text: sensorCard.degrees; color: window.ink; font.pixelSize: 26; Layout.fillWidth: true }
+                Caption { text: sensorCard.clock; font.pixelSize: 14 }
             }
         }
     }
@@ -201,7 +211,7 @@ ApplicationWindow {
         contentItem: ColumnLayout {
             spacing: 10
             RowLayout {
-                Label { text: window.tr("Custom accent"); color: window.ink; font.pixelSize: 17 }
+                Label { textFormat: Text.PlainText; text: window.tr("Custom accent"); color: window.ink; font.pixelSize: 17 }
                 Item { Layout.fillWidth: true }
                 SmallButton { text: window.tr("Done"); onClicked: accentPicker.close() }
             }
@@ -271,12 +281,12 @@ ApplicationWindow {
         x: (window.width-width)/2; y: (window.height-height)/2
         Connections { target: bridge; function onChanged() { if (preferenceDialog.visible && !bridge.preferenceNotice) preferenceDialog.close() } }
         title: window.tr("Preferences notice")
-        header: Label { text: preferenceDialog.title; color: window.ink; font.pixelSize: 18; leftPadding: 20; rightPadding: 20; topPadding: 18; bottomPadding: 8 }
+        header: Label { textFormat: Text.PlainText; text: preferenceDialog.title; color: window.ink; font.pixelSize: 18; leftPadding: 20; rightPadding: 20; topPadding: 18; bottomPadding: 8 }
         palette.window: window.panel; palette.windowText: window.ink
         background: Rectangle { color: window.panel; radius: 12; border.color: window.edge }
         contentItem: ColumnLayout { spacing: 16
             ScrollView { Layout.fillWidth: true; Layout.preferredHeight: Math.min(300,detailsText.implicitHeight); contentWidth: availableWidth
-                TextArea { id: detailsText; text: bridge.preferenceDetails; readOnly: true; selectByMouse: true; wrapMode: TextEdit.Wrap; color: window.ink; background: Item {} }
+                TextArea { textFormat: TextEdit.PlainText; id: detailsText; text: bridge.preferenceDetails; readOnly: true; selectByMouse: true; wrapMode: TextEdit.Wrap; color: window.ink; background: Item {} }
             }
             RowLayout {
                 Item { Layout.fillWidth: true }
@@ -285,10 +295,15 @@ ApplicationWindow {
             }
         }
     }
-    FileDialog {
-        id: fontDialog; title: window.tr("Choose a TrueType font"); nameFilters: ["TrueType fonts (*.ttf)"]
-        onAccepted: fontPath.text=decodeURIComponent(selectedFile.toString().replace(/^file:\/\//,""))
+    AssetPicker {
+        id: fontDialog; objectName: "fontAssetPicker"; studio: window; kind: "font"; initialPath: fontPath.text
+        onSelected: function(file) { fontPath.text=bridge.localPath(file) }
     }
+    AssetPicker {
+        id: backgroundDialog; objectName: "backgroundAssetPicker"; studio: window; initialPath: window.backgroundPath
+        onSelected: function(file) { window.backgroundPath=bridge.localPath(file); window.queueSettings() }
+    }
+
 
     RowLayout {
         anchors.fill: parent; spacing: 0
@@ -304,7 +319,7 @@ ApplicationWindow {
                     }
                 }
                 Item { Layout.preferredHeight: 26 }
-                NavButton { text: window.tr("Display"); iconName: "monitor"; selected: window.page===0; onClicked: window.page=0 }
+                NavButton { text: window.tr("Appearance"); iconName: "monitor"; selected: window.page===0 || window.page===4; onClicked: window.page=0 }
                 NavButton { text: window.tr("Sensors"); iconName: "activity"; selected: window.page===1; onClicked: window.page=1 }
                 Item { Layout.fillHeight: true }
                 NavButton { text: window.tr("Diagnostics"); iconName: "chart-line"; selected: window.page===2; onClicked: window.page=2 }
@@ -318,106 +333,178 @@ ApplicationWindow {
             Layout.fillWidth: true; Layout.fillHeight: true; Layout.margins: 20; spacing: 12
             RowLayout {
                 ColumnLayout { spacing: 4
-                    Label { text: window.tr(["Display studio","Sensors","Diagnostics","Settings"][window.page]); color: window.ink; font.pixelSize: 26 }
-                    Caption { text: window.tr(["Personalize the content on your LCD.","The selected CPU and GPU readings.","Inspect the same sample and frame used by output.","Device, typography and transmission profile."][window.page]) }
+                    Label { textFormat: Text.PlainText; text: window.tr(["Appearance","Sensors","Diagnostics","Settings","Appearance"][window.page]); color: window.ink; font.pixelSize: 26 }
+                    Caption { text: window.tr(["Your designs and their appearance, in one workspace.","The selected CPU and GPU readings.","Inspect the same sample and frame used by output.","Language, startup and transmission settings.","Arrange your own LCD composition."][window.page]) }
                 }
                 Item { Layout.fillWidth: true }
                 SmallButton { text: window.tr("Hide to tray"); visible: bridge.trayAvailable; onClicked: bridge.minimizeToTray() }
                 Choice { id: appTheme; objectName: "appThemeControl"; model: ["Dark","Light"]; currentIndex: bridge.uiTheme==="light" ? 1 : 0; onCurrentIndexChanged: { if (window.ready) bridge.setUiTheme(currentIndex===1 ? "light" : "dark") } Layout.preferredWidth: 110; Accessible.name: window.tr("Application theme") }
             }
             ScrollView {
-                id: pageScroll
+                id: pageScroll; objectName: "pageScroll"
                 Layout.fillWidth: true; Layout.fillHeight: true
                 contentWidth: availableWidth
                 StackLayout {
                 width: pageScroll.availableWidth
-                height: window.page===0 ? 464 : window.page===3 ? settingsPane.implicitHeight : 580
+                height: window.page===4 ? Math.max(460,pageScroll.availableHeight) : window.page===0 ? Math.max(520,pageScroll.availableHeight) : window.page===3 ? settingsPane.implicitHeight : 580
                 currentIndex: window.page
-                ColumnLayout {
-                    spacing: 12
-                    RowLayout {
-                        Layout.fillWidth: true; Layout.fillHeight: true; spacing: 16
+                GridLayout {
+                    id: appearanceWorkspace; objectName: "appearanceWorkspace"
+                    columns: bridge.activeContentIndex===0 ? 3 : 2; columnSpacing: 12; rowSpacing: 12
+                    Rectangle {
+                        Layout.preferredWidth: 184; Layout.fillHeight: true
+                        radius: 16; color: window.panel; border.color: window.edge
+                        ColumnLayout {
+                            anchors.fill: parent; anchors.margins: 14; spacing: 12
+                            Label { text: window.tr("Designs"); color: window.ink; font.pixelSize: 20 }
+                            Caption { text: window.tr("Built-in and saved"); wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                            ListView {
+                                id: designs; objectName: "designLibrary"
+                                Layout.fillWidth: true; Layout.fillHeight: true; clip: true; spacing: 6
+                                model: bridge.contentLabels
+                                delegate: Button {
+                                    required property string modelData
+                                    required property int index
+                                    width: designs.width; height: 52
+                                    contentItem: Label { text: parent.modelData; textFormat: Text.PlainText; color: parent.index===bridge.activeContentIndex ? window.accent : window.ink; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
+                                    background: Rectangle { radius: 8; color: parent.index===bridge.activeContentIndex ? window.selection : parent.hovered ? window.hoverColor : window.controlColor }
+                                    onClicked: bridge.selectContent(index)
+                                }
+                            }
+                            Caption { text: bridge.profileNotice; visible: text.length>0; color: window.errorColor; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                        }
+                    }
+                    ColumnLayout {
+                        Layout.fillWidth: true; Layout.fillHeight: true; spacing: 12
                         Rectangle {
-                            Layout.preferredWidth: 344; Layout.minimumWidth: 344; Layout.maximumWidth: 344; Layout.preferredHeight: 384; Layout.maximumHeight: 384; Layout.alignment: Qt.AlignTop
-                            radius: 17; color: window.panel; border.color: window.edge
-                            ColumnLayout { anchors.fill: parent; anchors.margins: 16; spacing: 8
-                                RowLayout { Caption { text: window.tr("LIVE PREVIEW"); font.pixelSize: 14; font.letterSpacing: 1.5 } Item { Layout.fillWidth: true } Caption { text: "240 × 240" } }
-                                Image { objectName: "framePreview"; source: bridge.previewUrl; cache: false; smooth: true; fillMode: Image.PreserveAspectFit; Layout.preferredWidth: 300; Layout.preferredHeight: 300; Layout.alignment: Qt.AlignHCenter }
+                            Layout.fillWidth: true; Layout.fillHeight: true; radius: 17; color: window.panel; border.color: window.edge
+                            ColumnLayout { anchors.fill: parent; anchors.margins: 16; spacing: 12
+                                RowLayout {
+                                    Label { text: window.tr("Preview"); color: window.accent; font.pixelSize: 16 }
+                                    Item { Layout.fillWidth: true }
+                                    SmallButton { objectName: "openEditorButton"; text: window.tr("Editor"); onClicked: { window.page=4; bridge.editActive() } }
+                                }
+                                Caption { text: bridge.activeContentName; Layout.alignment: Qt.AlignHCenter }
                                 Item { Layout.fillHeight: true }
+                                Image { objectName: "framePreview"; source: bridge.previewUrl; cache: false; smooth: true; fillMode: Image.PreserveAspectFit; Layout.preferredWidth: Math.min(320,parent.width); Layout.preferredHeight: width; Layout.alignment: Qt.AlignHCenter }
+                                Item { Layout.fillHeight: true }
+                                Caption { text: "240 × 240"; Layout.alignment: Qt.AlignHCenter }
                             }
                         }
+                        RowLayout { Layout.fillWidth: true; spacing: 10
+                            SensorCard { componentName: "CPU"; degrees: window.valueAt(0); clock: window.valueAt(1) }
+                            SensorCard { componentName: "GPU"; degrees: window.valueAt(2); clock: window.valueAt(3) }
+                        }
+                    }
+                    ColumnLayout {
+                        objectName: "focusInspector"; visible: bridge.activeContentIndex===0
+                        Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.preferredWidth: Math.max(310,Math.min(420,window.width*.28)); Layout.maximumWidth: 420; Layout.fillHeight: true
                         Rectangle {
-                            Layout.fillWidth: true; Layout.preferredHeight: 384; Layout.maximumHeight: 384; Layout.alignment: Qt.AlignTop; radius: 17; color: window.panel; border.color: window.edge
-                            ColumnLayout { anchors.fill: parent; anchors.margins: 20; spacing: 12
-                                RowLayout {
-                                    Label { text: window.tr("Appearance"); color: window.ink; font.pixelSize: 20 }
+                            visible: bridge.activeContentIndex===0; Layout.fillWidth: true; Layout.fillHeight: true; Layout.alignment: Qt.AlignTop; radius: 17; color: window.panel; border.color: window.edge
+                            ScrollView { id: appearanceScroll; objectName: "focusPropertiesScroll"; rightPadding: 14
+                            anchors.fill: parent; anchors.margins: 18; clip: true
+                            contentWidth: availableWidth
+                            ColumnLayout { objectName: "focusPropertiesContent"; width: appearanceScroll.availableWidth; spacing: 12
+                                RowLayout { Layout.fillWidth: true;
+                                    Label { textFormat: Text.PlainText; text: window.tr("Customize Focus"); color: window.ink; font.pixelSize: 20 }
                                     Item { Layout.fillWidth: true }
-                                    Caption { text: "Focus"; color: window.accent }
+
                                 }
                                 Rule {}
                                 Caption { text: window.tr("LCD accent") }
-                                RowLayout { spacing: 10
+                                RowLayout { Layout.fillWidth: true; spacing: 8
+                                Flow { objectName: "accentPalette"; Layout.fillWidth: true; Layout.minimumWidth: 0; spacing: 8
                                     Repeater { model: ["#73dfc1","#68b5ff","#ac8aff","#ff83b5","#ffb86b","#f1f5f9"]
                                         delegate: Button {
                                             required property string modelData
-                                            implicitWidth: 26; implicitHeight: 26
+                                            objectName: "accentSwatch-"+modelData
+                                            implicitWidth: 22; implicitHeight: 32
                                             Accessible.name: window.tr("LCD accent ")+modelData
-                                            background: Rectangle { radius: 13; color: parent.modelData; border.width: window.lcdAccent.toString()===parent.modelData ? 3 : 0; border.color: window.lightTheme ? "#243139" : "#ffffff" }
+                                            background: Rectangle { width: 22; height: 22; anchors.centerIn: parent; radius: 11; color: parent.modelData; border.width: window.lcdAccent.toString()===parent.modelData ? 3 : 0; border.color: window.lightTheme ? "#243139" : "#ffffff" }
                                             onClicked: window.lcdAccent=modelData
                                             ToolTip.visible: hovered; ToolTip.text: modelData.toUpperCase()
                                         }
                                     }
-                                    Item { Layout.fillWidth: true }
-                                    SmallButton { id: customAccent; objectName: "customAccentButton"; text: window.tr("Custom"); onClicked: accentPicker.open() }
                                 }
-                                RowLayout {
-                                    Caption { text: window.tr("Comet") }
-                                    Item { Layout.fillWidth: true }
-                                    Choice { id: cometStyle; objectName: "cometStyleControl"; model: ["Accent","Rainbow"]; currentIndex: bridge.initialCometStyle==="rainbow" ? 1 : 0; Layout.preferredWidth: 150; onCurrentIndexChanged: window.queueSettings() }
+                                    SmallButton { id: customAccent; objectName: "customAccentButton"; text: window.tr("Custom"); Layout.minimumWidth: 0; Layout.preferredWidth: Math.min(150,appearanceScroll.availableWidth*.48); Layout.alignment: Qt.AlignVCenter; onClicked: accentPicker.open() }
                                 }
-                                RowLayout { spacing: 12
+                                RowLayout { Layout.fillWidth: true;
+                                    Caption { text: window.tr("Animation") }
+                                    Item { Layout.fillWidth: true }
+                                    Choice { id: animation; objectName: "animationControl"; model: ["Comet","Orbit","Pulse","Static"]; currentIndex: Math.max(0,window.animationKeys.indexOf(bridge.initialAnimation)); Layout.minimumWidth: 0; Layout.preferredWidth: Math.min(150,appearanceScroll.availableWidth*.48); onActivated: window.queueSettings() }
+                                }
+                                RowLayout { Layout.fillWidth: true;
+                                    Caption { text: window.tr("Effect color") }
+                                    Item { Layout.fillWidth: true }
+                                    Choice { id: cometStyle; objectName: "cometStyleControl"; enabled: animation.currentIndex!==3; model: ["Accent","Rainbow"]; currentIndex: bridge.initialCometStyle==="rainbow" ? 1 : 0; Layout.minimumWidth: 0; Layout.preferredWidth: Math.min(150,appearanceScroll.availableWidth*.48); onCurrentIndexChanged: window.queueSettings() }
+                                }
+                                RowLayout { Layout.fillWidth: true; spacing: 12
                                     Caption { text: window.tr("Speed") }
                                     Slider {
                                         id: cometSpeed; objectName: "cometSpeedControl"
+                                        enabled: animation.currentIndex!==3
                                         from: 0.25; to: 3; stepSize: 0.25; value: bridge.initialCometSpeed
-                                        Layout.fillWidth: true; implicitHeight: 24
+                                        Layout.fillWidth: true; Layout.minimumWidth: 30; implicitHeight: 24
                                         onValueChanged: window.queueSettings(); Accessible.name: window.tr("Comet speed")
                                         background: Rectangle { x: cometSpeed.leftPadding; y: cometSpeed.topPadding+cometSpeed.availableHeight/2-2; width: cometSpeed.availableWidth; height: 4; radius: 2; color: window.edge
                                             Rectangle { width: parent.width*cometSpeed.visualPosition; height: 4; radius: 2; color: window.accent }
                                         }
                                         handle: Rectangle { x: cometSpeed.leftPadding+cometSpeed.visualPosition*(cometSpeed.availableWidth-width); y: cometSpeed.topPadding+(cometSpeed.availableHeight-height)/2; width: 14; height: 14; radius: 7; color: window.ink }
                                     }
-                                    Label { text: cometSpeed.value.toFixed(2)+"×"; color: window.ink; Layout.preferredWidth: 48; horizontalAlignment: Text.AlignRight }
+                                    Label { textFormat: Text.PlainText; text: cometSpeed.value.toFixed(2)+"×"; color: window.ink; Layout.preferredWidth: 48; horizontalAlignment: Text.AlignRight }
                                 }
-                                RowLayout {
+                                RowLayout { Layout.fillWidth: true;
                                     InfoLabel { text: window.tr("Units"); help: "Raw sensor temperatures remain Celsius. Display conversion affects the LCD, preview, and target readings only." }
                                     Item { Layout.fillWidth: true }
-                                    Choice { id: temperatureUnit; objectName: "temperatureUnitControl"; model: ["°C","°F"]; currentIndex: bridge.initialTemperatureUnit==="F" ? 1 : 0; Layout.preferredWidth: 150; onCurrentIndexChanged: window.queueSettings() }
+                                    Choice { id: temperatureUnit; objectName: "temperatureUnitControl"; model: ["°C","°F"]; currentIndex: bridge.initialTemperatureUnit==="F" ? 1 : 0; Layout.minimumWidth: 0; Layout.preferredWidth: Math.min(150,appearanceScroll.availableWidth*.48); onCurrentIndexChanged: window.queueSettings() }
                                 }
                                 Rule {}
-                                RowLayout {
+                                RowLayout { Layout.fillWidth: true;
                                     Caption { text: window.tr("Temperature") }
                                     Item { Layout.fillWidth: true }
-                                    Choice { id: decimals; objectName: "decimalControl"; property bool checked: currentIndex===1; model: ["Whole degrees","1 decimal"]; currentIndex: bridge.initialDecimals ? 1 : 0; Layout.preferredWidth: 150; onCurrentIndexChanged: window.queueSettings() }
+                                    Choice { id: decimals; objectName: "decimalControl"; property bool checked: currentIndex===1; model: ["Whole degrees","1 decimal"]; currentIndex: bridge.initialDecimals ? 1 : 0; Layout.minimumWidth: 0; Layout.preferredWidth: Math.min(150,appearanceScroll.availableWidth*.48); onCurrentIndexChanged: window.queueSettings() }
                                 }
-                                RowLayout { Caption { text: window.tr("Typeface") } Item { Layout.fillWidth: true } Label { text: (fontPath.text ? fontPath.text.split('/').pop().replace('.ttf','') : "Outfit")+" · "+weight.value; color: window.ink; elide: Text.ElideRight; Layout.maximumWidth: 150 } }
-                                Item { Layout.fillHeight: true }
+                                GridLayout { columns: 1; Layout.fillWidth: true; rowSpacing: 8
+                            InfoLabel { text: window.tr("Installed fonts"); help: "Discover local scalable TTF/OTF fonts by family and style. Nothing is uploaded. Collections are not listed." }
+                            RowLayout { Layout.fillWidth: true;
+                                FontPicker { studio: window; objectName: "systemFontControl"; model: bridge.systemFontLabels; Layout.fillWidth: true; displayText: currentIndex>0 ? currentText : fontPath.text ? window.tr("Custom font file") : window.tr("Bundled Outfit (default)"); onActivated: function(index) { fontPath.text=bridge.systemFontPath(index) } }
+                                SmallButton { text: "↻"; Accessible.name: window.tr("Refresh"); implicitWidth: 32; enabled: !bridge.fontDiscoveryBusy; onClicked: bridge.refreshSystemFonts() }
+                            }
+                            Caption { text: bridge.fontNotice; visible: text.length>0; wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.columnSpan: 1 }
+                            InfoLabel { text: window.tr("Typeface file"); help: "Use a local TrueType font or leave this empty for bundled Outfit. A missing font is rejected without interrupting output." }
+                            RowLayout { Layout.fillWidth: true; TextField { color: window.ink; placeholderTextColor: window.muted; background: Rectangle { radius: 7; color: window.controlColor; border.color: window.edge } id: fontPath; Layout.minimumWidth: 0; Layout.preferredWidth: 120; onTextChanged: window.queueSettings(); text: bridge.initialFont; placeholderText: window.tr("Bundled Outfit (default)"); Layout.fillWidth: true } SmallButton { text: window.tr("Browse…"); onClicked: fontDialog.open() } }
+                            InfoLabel { text: window.tr("Variable font weight"); help: "Changes the weight of variable fonts from 100 to 900. Static fonts keep their original weight." }
+                            StudioNumber { studio: window; id: weight; enabled: bridge.globalFontInfo.variable===true; objectName: "weightControl"; onValueChanged: window.queueSettings(); from: 100; to: 900; stepSize: 50; value: bridge.initialWeight; editable: true; Layout.fillWidth: true }
+                                }
+
+                                Rule {}
+                                RowLayout { Layout.fillWidth: true;
+                                    InfoLabel { text: window.tr("Background"); help: "Local image or GIF behind the readings. Up to 120 frames; files stay on this computer." }
+                                    Item { Layout.fillWidth: true }
+                                    SmallButton { objectName: "backgroundChoose"; text: window.tr(window.backgroundPath ? "Change…" : "Choose…"); onClicked: backgroundDialog.open() }
+                                    SmallButton { text: window.tr("Clear"); enabled: window.backgroundPath.length>0; onClicked: { window.backgroundPath=""; window.queueSettings() } }
+                                }
+                                RowLayout { Layout.fillWidth: true;
+                                    Caption { text: window.tr("Dimming") }
+                                    Slider { id: backgroundDim; objectName: "backgroundDimControl"; from: 0; to: 0.9; stepSize: .05; value: bridge.initialBackgroundDim; Layout.fillWidth: true; enabled: window.backgroundPath.length>0; onMoved: window.queueSettings() }
+                                    Caption { text: Math.round(backgroundDim.value*100)+"%"; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight }
+                                }
+                        Caption { visible: bridge.globalFontInfo.variable!==true; text: window.tr("Static font: select an installed style to change its weight."); wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                            }
                             }
                         }
-                    }
-                    RowLayout { Layout.fillWidth: true; spacing: 16
-                        SensorCard { componentName: "CPU"; degrees: window.valueAt(0); clock: window.valueAt(1) }
-                        SensorCard { componentName: "GPU"; degrees: window.valueAt(2); clock: window.valueAt(3) }
+
+
                     }
                 }
                 Rectangle {
                     radius: 17; color: window.panel; border.color: window.edge
                     ColumnLayout { anchors.fill: parent; anchors.margins: 24; spacing: 18
-                        Label { text: window.tr("Selected readings"); color: window.ink; font.pixelSize: 22 }
+                        Label { textFormat: Text.PlainText; text: window.tr("Selected readings"); color: window.ink; font.pixelSize: 22 }
                         Caption { text: window.tr("Labels and sources are shown exactly as supplied by Linux. Sensor selection is automatic in this version."); wrapMode: Text.Wrap; Layout.fillWidth: true }
                         Repeater { model: bridge.sensorRows
                             delegate: ColumnLayout { required property var modelData; Layout.fillWidth: true; spacing: 8
-                                RowLayout { Label { text: window.tr(modelData.label); color: window.ink; font.pixelSize: 17 } Item { Layout.fillWidth: true } Label { text: modelData.target; color: window.accent; font.pixelSize: 26 } }
+                                RowLayout { Label { textFormat: Text.PlainText; text: window.tr(modelData.label); color: window.ink; font.pixelSize: 17 } Item { Layout.fillWidth: true } Label { textFormat: Text.PlainText; text: modelData.target; color: window.accent; font.pixelSize: 26 } }
                                 Caption { text: window.tr(modelData.source); wrapMode: Text.WrapAnywhere; Layout.fillWidth: true }
                                 Rule {}
                             }
@@ -429,14 +516,14 @@ ApplicationWindow {
                 Rectangle {
                     radius: 17; color: window.panel; border.color: window.edge
                     ColumnLayout { anchors.fill: parent; anchors.margins: 24; spacing: 18
-                        Label { text: window.tr("Sensor comparison"); color: window.ink; font.pixelSize: 22 }
+                        Label { textFormat: Text.PlainText; text: window.tr("Sensor comparison"); color: window.ink; font.pixelSize: 22 }
                         Caption { text: bridge.sampleLabel; wrapMode: Text.Wrap; Layout.fillWidth: true }
                         RowLayout { Caption { text: window.tr("SENSOR"); Layout.fillWidth: true } Caption { text: window.tr("RAW SAMPLE"); Layout.preferredWidth: 160 } Caption { text: window.tr("LCD TARGET"); Layout.preferredWidth: 120 } }
                         Repeater { model: bridge.sensorRows
                             delegate: RowLayout { required property var modelData; Layout.fillWidth: true
-                                Label { text: window.tr(modelData.label); color: window.ink; Layout.fillWidth: true }
-                                Label { text: modelData.raw; color: window.ink; Layout.preferredWidth: 160 }
-                                Label { text: modelData.target; color: window.accent; font.pixelSize: 20; Layout.preferredWidth: 120 }
+                                Label { textFormat: Text.PlainText; text: window.tr(modelData.label); color: window.ink; Layout.fillWidth: true }
+                                Label { textFormat: Text.PlainText; text: modelData.raw; color: window.ink; Layout.preferredWidth: 160 }
+                                Label { textFormat: Text.PlainText; text: modelData.target; color: window.accent; font.pixelSize: 20; Layout.preferredWidth: 120 }
                             }
                         }
                         Rule {}
@@ -455,7 +542,7 @@ ApplicationWindow {
                     ColumnLayout {
                         id: settingsContent
                         anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top; anchors.margins: 24; spacing: 16
-                        Label { text: window.tr("General settings"); color: window.ink; font.pixelSize: 22 }
+                        Label { textFormat: Text.PlainText; text: window.tr("General settings"); color: window.ink; font.pixelSize: 22 }
                         Caption { text: window.tr("Changes are saved automatically.") }
                         GridLayout { columns: 2; Layout.fillWidth: true; columnSpacing: 20; rowSpacing: 12
                             InfoLabel { text: window.tr("Language"); help: "Choose the interface language. Sensor labels and paths from Linux are not translated." }
@@ -464,25 +551,21 @@ ApplicationWindow {
                             Choice { objectName: "autostartControl"; model: [window.tr("Disabled"),window.tr("Minimized in tray")]; currentIndex: bridge.autostartEnabled ? 1 : 0; enabled: bridge.autostartSupported; onActivated: function(index) { bridge.setAutostart(index===1) }; Layout.fillWidth: true }
                             InfoLabel { text: window.tr("Output preset"); help: "Presets adjust frame rate, JPEG quality, and report delay together. Custom values remain available below." }
                             Choice { model: ["Smooth · 24 FPS","Conservative · 5 FPS","Custom"]; currentIndex: fps.value===24 && quality.value===65 && Number(delay.text)===2 ? 0 : fps.value===5 && quality.value===85 && Number(delay.text)===10 ? 1 : 2; onActivated: function(index) { window.changeProfile(index) }; Layout.fillWidth: true }
-                            InfoLabel { text: window.tr("Typeface file"); help: "Use a local TrueType font or leave this empty for bundled Outfit. A missing font is rejected without interrupting output." }
-                            RowLayout { TextField { id: fontPath; onTextChanged: window.queueSettings(); text: bridge.initialFont; placeholderText: window.tr("Bundled Outfit (default)"); Layout.fillWidth: true } SmallButton { text: window.tr("Browse…"); onClicked: fontDialog.open() } }
-                            InfoLabel { text: window.tr("Variable font weight"); help: "Changes the weight of variable fonts from 100 to 900. Static fonts keep their original weight." }
-                            SpinBox { id: weight; objectName: "weightControl"; onValueChanged: window.queueSettings(); from: 100; to: 900; stepSize: 50; value: bridge.initialWeight; editable: true; Layout.fillWidth: true }
                         }
-                        Rule {}
                         SmallButton { objectName: "advancedToggle"; text: advancedSettings.visible ? window.tr("Hide advanced settings") : window.tr("Show advanced settings"); onClicked: advancedSettings.visible=!advancedSettings.visible }
                         GridLayout { id: advancedSettings; objectName: "advancedSettings"; visible: false; columns: 2; Layout.fillWidth: true; columnSpacing: 20; rowSpacing: 12
-                            InfoLabel { text: window.tr("LCD device"); help: "The USB device must match FX240 identity. Pause LCD output before changing it. Device paths are rediscovered at startup." }
+                            InfoLabel { text: "LCD device"; help: "The USB device must match FX240 identity. Pause LCD output before changing it. Device paths are rediscovered at startup." }
                             RowLayout { Choice { id: device; enabled: !bridge.sending; onActivated: window.queueSettings(); objectName: "deviceControl"; model: bridge.devices; Component.onCompleted: { if (bridge.initialDevice) currentIndex=find(bridge.initialDevice) } Layout.fillWidth: true } SmallButton { text: window.tr("Refresh"); onClicked: bridge.refreshDevices() } }
-                            InfoLabel { text: window.tr("Frame rate"); help: "Limits generated frames per second, up to 24. This does not measure the physical LCD refresh rate." }
-                            SpinBox { id: fps; onValueChanged: window.queueSettings(); objectName: "fpsControl"; from: 1; to: 24; value: bridge.initialFps; editable: true; Layout.fillWidth: true }
-                            InfoLabel { text: window.tr("JPEG quality"); help: "Higher quality can increase image detail and USB payload size. Range: 1 to 95." }
-                            SpinBox { id: quality; onValueChanged: window.queueSettings(); from: 1; to: 95; value: bridge.initialQuality; editable: true; Layout.fillWidth: true }
-                            InfoLabel { text: window.tr("Inter-report delay (ms)"); help: "Pause between HID reports in milliseconds. Lower values may improve transmission time but require hardware validation." }
-                            TextField { id: delay; onTextChanged: window.queueSettings(); text: bridge.initialDelay; Layout.fillWidth: true }
+                            InfoLabel { text: "Frame rate"; help: "Limits generated frames per second, up to 24. This does not measure the physical LCD refresh rate." }
+                            StudioNumber { studio: window; id: fps; onValueChanged: window.queueSettings(); objectName: "fpsControl"; from: 1; to: 24; value: bridge.initialFps; editable: true; Layout.fillWidth: true }
+                            InfoLabel { text: "JPEG quality"; help: "Higher quality can increase image detail and USB payload size. Range: 1 to 95." }
+                            StudioNumber { studio: window; id: quality; onValueChanged: window.queueSettings(); from: 1; to: 95; value: bridge.initialQuality; editable: true; Layout.fillWidth: true }
+                            InfoLabel { text: "Inter-report delay (ms)"; help: "Pause between HID reports in milliseconds. Lower values may improve transmission time but require hardware validation." }
+                            TextField { color: window.ink; background: Rectangle { radius: 7; color: window.controlColor; border.color: window.edge } id: delay; onTextChanged: window.queueSettings(); text: bridge.initialDelay; Layout.fillWidth: true }
                         }
                     }
                 }
+                EditorPane { studio: window }
             }
             }
             Rectangle {

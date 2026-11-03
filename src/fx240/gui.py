@@ -4,41 +4,16 @@ from dataclasses import replace
 from pathlib import Path
 import queue
 import sys
-from PySide6.QtCore import QObject, Property, Signal, Slot, QTimer, QUrl, QSize, QCoreApplication, QEvent, QRectF
-from PySide6.QtGui import QGuiApplication, QImage, QPainter, QPainterPath
+import threading
+from PySide6.QtCore import QObject, Property, Signal, Slot, QTimer, QUrl, QCoreApplication, QEvent
 from PySide6.QtQml import QQmlApplicationEngine
-from PySide6.QtQuick import QQuickImageProvider
 from PySide6.QtQuickControls2 import QQuickStyle
 from .dashboard import default_metrics
 from .focus import temperature
 from .session import Session, Settings, find_devices
 from .i18n import translate, runtime_text
 from .branding import APP_NAME, application_icon
-
-
-class FrameProvider(QQuickImageProvider):
-    def __init__(self):
-        super().__init__(QQuickImageProvider.ImageType.Image)
-        self.image = QImage(240,240,QImage.Format.Format_RGB888)
-        self.image.fill('#080b0e')
-
-    def update(self, image):
-        rgb = image.convert('RGB')
-        frame = QImage(rgb.tobytes(),rgb.width,rgb.height,rgb.width*3,QImage.Format.Format_RGB888).copy()
-        self.image = QImage(rgb.width,rgb.height,QImage.Format.Format_ARGB32_Premultiplied)
-        self.image.fill(0)
-        painter = QPainter(self.image)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        clip = QPainterPath()
-        clip.addEllipse(QRectF(3,3,234,234))
-        painter.setClipPath(clip)
-        painter.drawImage(0,0,frame)
-        painter.end()
-
-    def requestImage(self, identifier, size, requested_size):
-        size.setWidth(self.image.width())
-        size.setHeight(self.image.height())
-        return self.image.copy()
+from .preview import FrameProvider
 
 
 def diagnostic_rows(event):
@@ -70,9 +45,30 @@ class Bridge(QObject):
     frameChanged = Signal()
     sensorsChanged = Signal()
     devicesChanged = Signal()
+    fontsChanged = Signal()
+    fontDiscoveryFinished = Signal(object,str)
+    profilesChanged = Signal()
 
     def __init__(self, settings, provider=None, session_factory=Session, image_provider=None, preferences=None, application=None, autostart=None, start_minimized=False, standby_guard=None):
         super().__init__()
+        from .profiles import ProfileStore
+        path=getattr(preferences,'path',None)
+        self._profiles=ProfileStore(Path(path).parent/'profiles.json') if isinstance(path,(str,Path)) else ProfileStore(memory=True)
+        if not settings.draft_scene_json and settings.scene_json and not settings.profile_id:
+            settings=replace(settings,draft_scene_json=settings.scene_json)
+        self._profile_notice=''
+        profile=self._profiles.get(settings.profile_id)
+        if profile:
+            try:
+                from .scene import SceneRenderer
+                SceneRenderer(scene_json=profile['scene'],font_path=settings.font_path,provider=lambda:[])
+                settings=replace(settings,layout_mode='editor',scene_json=profile['scene'])
+            except (OSError,ValueError):
+                settings=replace(settings,layout_mode='focus',scene_json='',profile_id='')
+                self._profile_notice='Active profile could not be loaded; using Focus'
+        else:
+            if settings.profile_id:self._profile_notice='Active profile no longer exists; using Focus'
+            settings=replace(settings,layout_mode='focus',scene_json='',profile_id='')
         self.settings = settings
         self.standby_guard = standby_guard
         self.autostart = autostart
@@ -101,6 +97,23 @@ class Bridge(QObject):
         self.images = image_provider if image_provider is not None else FrameProvider()
         self.session = None
         self._devices = find_devices()
+        self._system_fonts = []
+        self._font_notice = ''
+        self._font_busy = False
+        self.fontDiscoveryFinished.connect(self._acceptFonts)
+        self._latest_metrics=[]
+        from .workspace import EditorWorkspace
+        self._workspace=EditorWorkspace(settings,self._profiles,lambda:self.settings,lambda:self._latest_metrics,
+                                        lambda:self._system_fonts,lambda:self._language)
+        from .livepreview import LiveDraftPreview
+        self._live_preview=LiveDraftPreview(self)
+        self._workspace.validated.connect(self._live_preview.validated)
+        self._workspace.draftChanged.connect(self.save_timer.start)
+        self._workspace.libraryChanged.connect(self.profilesChanged)
+        self._workspace.libraryChanged.connect(self.changed)
+        self._workspace.profileSaved.connect(self._profileSaved)
+        self._workspace.profileDeleted.connect(self._profileDeleted)
+        self._workspace.activationRequested.connect(self.activateProfile)
         self._status = 'Ready — preview only'
         self._error = ''
         self._rows = []
@@ -153,6 +166,8 @@ class Bridge(QObject):
             self.languageChanged.emit()
             self.changed.emit()
             self.sensorsChanged.emit()
+            self.fontsChanged.emit()
+            self._workspace.changed.emit()
             self.save_timer.start()
 
     @Slot(str)
@@ -168,7 +183,7 @@ class Bridge(QObject):
         if self.preferences is None:
             return
         try:
-            self.preferences.save(self.settings,self._language,self._ui_theme)
+            self.preferences.save(self._workspace.preferences(self.settings),self._language,self._ui_theme)
             self._preference_notice = ''
             self._preference_issues=[]
             self._preference_detail=''
@@ -214,6 +229,7 @@ class Bridge(QObject):
             lines.extend(['',tr('Configuration file')+': '+str(self.preferences.path)])
         names={'fps':'Frame rate','quality':'JPEG quality','delay_ms':'Inter-report delay (ms)',
                'font_path':'Typeface file','font_weight':'Variable font weight','accent':'LCD accent',
+               'animation':'Animation','background_path':'Background','background_dim':'Dimming',
                'comet_style':'Comet','comet_speed':'Comet speed','temperature_unit':'Units',
                'temperature_decimals':'Temperature','rotation':'Rotation','language':'Language','theme':'Application theme'}
         for issue in self._preference_issues:
@@ -265,6 +281,101 @@ class Bridge(QObject):
     def initialAccent(self): return self.settings.accent
     @Property(str, constant=True)
     def initialCometStyle(self): return self.settings.comet_style
+    @Property(QObject,constant=True)
+    def workspace(self):return self._workspace
+    @Property(QObject,constant=True)
+    def livePreview(self):return self._live_preview
+    @Property(str,notify=changed)
+    def layoutMode(self):return self.settings.layout_mode
+    @Property('QStringList',notify=profilesChanged)
+    def contentLabels(self):return ['Focus']+[item['name'] for item in self._profiles.profiles]
+    @Property(int,notify=changed)
+    def activeContentIndex(self):
+        return next((index+1 for index,item in enumerate(self._profiles.profiles) if item['id']==self.settings.profile_id),0)
+    @Property(str,notify=changed)
+    def activeContentName(self):
+        item=self._profiles.get(self.settings.profile_id)
+        return item['name'] if item else 'Focus'
+    @Property(str,notify=changed)
+    def activeProfileId(self):return self.settings.profile_id
+    @Property(str,notify=changed)
+    def profileNotice(self):return runtime_text(self._profile_notice or self._profiles.error,self._language)
+
+    @Slot(int)
+    def selectContent(self,index):
+        if index==0:self.useFocus()
+        elif 1<=index<=len(self._profiles.profiles):self.activateProfile(self._profiles.profiles[index-1]['id'])
+    @Slot(str)
+    def activateProfile(self,identifier):
+        item=self._profiles.get(identifier)
+        if item:
+            self._profile_notice=''
+            self.reconfigure({'layoutMode':'editor','scene':item['scene'],'profileId':identifier},None)
+    @Slot()
+    def useFocus(self):self.reconfigure({'layoutMode':'focus','profileId':'','scene':''},None)
+    @Slot()
+    def editActive(self):
+        if self.settings.profile_id:self._workspace.request_profile(self.settings.profile_id)
+        else:self._workspace.requestNew()
+    def _profileSaved(self,identifier):
+        if identifier==self.settings.profile_id and not self._live_preview.active:self.activateProfile(identifier)
+    def _profileDeleted(self,identifier):
+        if identifier==self.settings.profile_id:self.useFocus()
+        self.changed.emit()
+
+    @Property(str, constant=True)
+    def initialAnimation(self): return self.settings.animation
+    @Property(str, constant=True)
+    def initialBackground(self): return self.settings.background_path or ''
+    @Property(float, constant=True)
+    def initialBackgroundDim(self): return self.settings.background_dim
+    @Property('QStringList', notify=fontsChanged)
+    def systemFontLabels(self): return ['Bundled Outfit (default)']+[label for label,_ in self._system_fonts]
+    @Property(str, notify=fontsChanged)
+    def fontNotice(self): return translate(self._font_notice,self._language)
+    @Property(bool, notify=fontsChanged)
+    def fontDiscoveryBusy(self): return self._font_busy
+    @Property('QVariantMap',notify=changed)
+    def globalFontInfo(self):
+        from .typography import capabilities
+        try:return capabilities(self.settings.font_path)
+        except (OSError,ValueError):return {'variable':False,'minimum':100,'maximum':900}
+    @Slot()
+    def refreshSystemFonts(self):
+        if self._font_busy:return
+        self._font_busy=True
+        self._font_notice='Discovering local fonts…'
+        self.fontsChanged.emit()
+        threading.Thread(target=self._discoverFonts,name='fx240-fonts',daemon=True).start()
+
+    def _discoverFonts(self):
+        from .systemfonts import catalog
+        try:
+            fonts=catalog()
+            notice='' if fonts else 'No supported system fonts found'
+        except ValueError as error:
+            fonts=[];notice=str(error)
+        try:self.fontDiscoveryFinished.emit(fonts,notice)
+        except RuntimeError:pass # The window may have been destroyed during discovery.
+
+    @Slot(object,str)
+    def _acceptFonts(self,fonts,notice):
+        self._system_fonts=fonts
+        self._font_notice=notice
+        self._font_busy=False
+        self.fontsChanged.emit()
+        self._workspace.fonts_changed()
+    @Slot(str,result=str)
+    def fontLabel(self,path):
+        return next((label for label,source in self._system_fonts if source==path),Path(path).stem[:128])
+    @Slot(int,result=str)
+    def systemFontPath(self,index):
+        if index==0:return ''
+        if 1<=index<=len(self._system_fonts):return self._system_fonts[index-1][1]
+        return self.settings.font_path or ''
+    @Slot(QUrl,result=str)
+    def localPath(self,url):
+        return url.toLocalFile() if url.isLocalFile() else ''
     @Property(float, constant=True)
     def initialCometSpeed(self): return self.settings.comet_speed
     @Property(int, constant=True)
@@ -287,6 +398,12 @@ class Bridge(QObject):
                 comet_speed=float(options.get('cometSpeed',self.settings.comet_speed)),
                 accent=str(options.get('accent',self.settings.accent)),
                 comet_style=str(options.get('cometStyle',self.settings.comet_style)),
+                animation=str(options.get('animation',self.settings.animation)),
+                background_path=str(options.get('background',self.settings.background_path or '')) or None,
+                background_dim=float(options.get('backgroundDim',self.settings.background_dim)),
+                layout_mode=str(options.get('layoutMode',self.settings.layout_mode)),
+                scene_json=str(options.get('scene',self.settings.scene_json)),
+                profile_id=str(options.get('profileId',self.settings.profile_id)),
                 temperature_decimals=1 if options.get('decimals',self.settings.temperature_decimals == 1) else 0,
                 temperature_unit=str(options.get('temperatureUnit',self.settings.temperature_unit)),
                 device=str(options.get('device',self.settings.device or '')) or None)
@@ -320,6 +437,8 @@ class Bridge(QObject):
 
     @Slot()
     def stopOutput(self):
+        if self._live_preview.active:
+            self._live_preview.pause_output();return
         if self.session:
             self.session.set_output(False)
             self._status = 'Returning LCD to standby…'
@@ -334,6 +453,8 @@ class Bridge(QObject):
         self.reconfigure(options,None)
 
     def reconfigure(self, options, send):
+        if self._live_preview.active:
+            self._workspace.reject('Finish LCD preview before changing output settings');return
         try:
             config = self.configuration(options)
             config.validate()
@@ -354,6 +475,10 @@ class Bridge(QObject):
 
     @Slot(result=bool)
     def requestClose(self):
+        if self._live_preview.active:
+            if self._tray:self._tray.restore()
+            self._live_preview.request_close();return False
+        self._workspace.stop()
         self.flushPreferences()
         if not self._running:
             QCoreApplication.quit()
@@ -363,6 +488,7 @@ class Bridge(QObject):
         return False
 
     def poll(self):
+        self._workspace.poll()
         if self.session is None:
             return
         try:
@@ -372,6 +498,7 @@ class Bridge(QObject):
         if event['kind'] == 'stopped':
             if event.get('last_frame'):
                 self.apply_frame(event['last_frame'])
+            self._live_preview.reset()
             self._running = self._sending = False
             self._error = event['error'] or ''
             self._status = 'Stopped' if not self._error else 'Stopped — check the error below'
@@ -382,11 +509,14 @@ class Bridge(QObject):
         self.apply_frame(event)
 
     def apply_frame(self, event):
+        self._latest_metrics=event['metrics']
         self._sending = event['sent']
         self._error = event.get('config_error') or event.get('output_error') or ''
-        if self.session and not event.get('config_error'):
-            if self.settings != self.session.settings:
-                self.settings = self.session.settings
+        committed=self._live_preview.frame(event)
+        if self.session and committed and not event.get('config_error'):
+            accepted=event.get('configuration',self.session.settings)
+            if self.settings != accepted:
+                self.settings = accepted
                 self.save_timer.start()
         self._status = 'Sending to LCD' if self._sending else 'LCD paused'
         self.images.update(event['image'])
@@ -408,9 +538,12 @@ def create_engine(app, settings, provider=None, preferences=None, application=No
     app.setDesktopFileName('org.fx240lcdstudio')
     app.setWindowIcon(application_icon())
     QQuickStyle.setStyle("Basic")
+    from .filebrowser import register_qml_type
+    register_qml_type()
     bridge = Bridge(settings,provider=provider,preferences=preferences,application=application,session_factory=session_factory,autostart=autostart,start_minimized=start_minimized,standby_guard=standby_guard)
     engine = QQmlApplicationEngine()
     engine.addImageProvider('frames',bridge.images)
+    engine.addImageProvider('draft',bridge.workspace.images)
     engine.rootContext().setContextProperty('bridge',bridge)
     engine.load(QUrl.fromLocalFile(str(Path(__file__).parent/'qml/Main.qml')))
     if not engine.rootObjects():
@@ -421,6 +554,8 @@ def create_engine(app, settings, provider=None, preferences=None, application=No
 
 
 def dispose_engine(engine):
+    bridge=engine.bridge
+    bridge.timer.stop();bridge.workspace.close()
     # Destroy bound QML objects before their Python controller is released.
     for window in engine.rootObjects():
         window.deleteLater()
@@ -429,14 +564,28 @@ def dispose_engine(engine):
     QCoreApplication.sendPostedEvents(None,QEvent.Type.DeferredDelete)
 
 
+def desktop_storage(custom_home=None):
+    """Isolate Studio files without hiding the desktop's XDG user directories."""
+    from .preferences import Preferences
+    from .autostart import Autostart
+    if custom_home is not None:
+        custom_home=Path(custom_home)
+        if not custom_home.is_absolute() or len(str(custom_home))>4096 or any(ord(c)<32 for c in str(custom_home)):
+            raise ValueError('Configuration directory must be an absolute path without control characters')
+    preferences=Preferences(custom_home/'fx240-linux/settings.json' if custom_home else None)
+    startup=Autostart(config_home=custom_home)
+    if custom_home:
+        startup=Autostart(config_home=custom_home,command=(*startup.command,'--config-home',str(custom_home)))
+    return preferences,startup
+
+
 def launch(args,standby_guard=None,trace=None):
     from PySide6.QtWidgets import QApplication
     from .tray import TrayController
     app = QApplication.instance() or QApplication(['fx240'])
     app.setQuitOnLastWindowClosed(False)
     app.setApplicationName(APP_NAME)
-    from .preferences import Preferences
-    preferences = Preferences()
+    preferences,startup=desktop_storage(getattr(args,'config_home',None))
     settings,application = preferences.load()
     explicit = getattr(args,'explicit_options',set())
     mapping = {'--fps':'fps','--quality':'quality','--delay-ms':'delay_ms',
@@ -451,9 +600,8 @@ def launch(args,standby_guard=None,trace=None):
             overrides[field] = str(value) if field=='font_path' and value else value
     settings = replace(settings,**overrides)
     settings.validate()
-    from .autostart import Autostart
     minimized = getattr(args,"start_minimized",False)
-    engine,bridge = create_engine(app,settings,preferences=preferences,application=application,autostart=Autostart(),start_minimized=minimized,standby_guard=standby_guard)
+    engine,bridge = create_engine(app,settings,preferences=preferences,application=application,autostart=startup,start_minimized=minimized,standby_guard=standby_guard)
     tray = TrayController(engine.rootObjects()[0],bridge)
     if minimized:tray.start_minimized()
     from .sleep import SleepMonitor

@@ -2,8 +2,8 @@
   "recorded_on": "2026-11-01",
   "platform_scope": "Arch Linux x86_64, one FX240; other distributions and hardware revisions untested.",
   "automated_checks": {
-    "tests_passed": 129,
-    "scope": "Current source with media/preferences bounds, explicit self-test checks under optimization, and desktop dependencies.",
+    "tests_passed": 162,
+    "scope": "Local candidate with named profiles, isolated drafts, long-drag regression, truthful static/variable typography, and bounded private file handling.",
     "frozen_8px_self_test_passed": true,
     "no_usb_self_test": true,
     "github_actions": {
@@ -837,5 +837,18 @@
       "scope": "Framing, rejected device paths, malformed private preferences, small GIFs and truncation; not exhaustive native fuzzing."
     },
     "independent_security_audit_completed": false
+  },
+  "local_editor_profile_candidate": {
+    "date": "2026-11-02",
+    "tests_passed": 162,
+    "property_tests": 6,
+    "real_usb_used_by_automated_checks": false,
+    "native_user_confirmation_pending": true,
+    "remote_codeql_pending": true,
+    "new_dependencies": false,
+    "private_profile_library": "Fixed local filename, private mode, bounded schema; no media/font embedding or upload",
+    "scope": "Local source and separate frozen candidate; not a public release or an independent audit.",
+    "frozen_self_test_passed": true,
+    "source_and_binary_privacy_review": "No detected development-home, machine-ID, or boot-ID match; flagged native components match previously reviewed originals. Candidate scans are not a no-risk guarantee."
   }
 }
