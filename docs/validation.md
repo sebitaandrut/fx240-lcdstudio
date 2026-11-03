@@ -6,7 +6,7 @@
 
 | Area | Result and scope |
 | --- | --- |
-| Automated checks | 162 local tests passed on the candidate source, including input limits and rejection of unrelated device paths before opening them, with desktop dependencies installed. Synthetic transports and sensors do not establish hardware behavior. |
+| Automated checks | 174 local tests passed on the candidate source, including input limits and rejection of unrelated device paths before opening them, with desktop dependencies installed. Synthetic transports and sensors do not establish hardware behavior. |
 | HID packets | Prototype comparison matched 240 frames; a controlled two-frame USB capture matched 24 expected reports exactly. |
 | Physical content | Images, GIF movement/counter, circular telemetry layout, CPU/GPU target agreement, live edits, Outfit, and the 8 px arc/comet were confirmed visually. |
 | Packaged application | Frozen GUI/USB smoke passed on the development machine. The 8 px executable also passed a no-USB self-test. |
@@ -14,7 +14,8 @@
 | Arch package | Build/install/self-test/removal passed in clean Arch CI. Native operation with fresh settings, a warm reboot, and suspend/resume with active and manually paused output passed initial owner checks. Repeated cycles and full shutdown with this package remain pending. |
 | Preferences and tray | Restarted/minimized operation and saved settings passed initial owner checks. |
 | Reboot and full shutdown | One warm reboot and one full shutdown/power-on passed standby with the desktop-autostarted instance; traces corroborated output release and cleanup. These lifecycle trials preceded the visual-only 8 px rebuild. |
-| FPS and resources | The application remains capped at 24 FPS. Experimental host/optical trials and a ten-minute USB run are summarized in [performance](performance.md). |
+| GIF editor and resources | Complete long-GIF loops and suspend/resume with saved profiles and temporary editor trials passed initial owner checks. A 30-minute run showed stable PSS and process/thread/descriptor counts. These are limited Arch observations; see [performance](performance.md#long-gif-playback). |
+| FPS | The application remains capped at 24 FPS. Host timing and buffer counters do not measure physical refresh; earlier optical trials are summarized in [performance](performance.md). |
 | Publication checks | Source/history/archive candidate scans and dependency metadata were reviewed; this is not a formal security audit. [GitHub Actions passed](https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41365473570) for Python 3.11/3.13 core jobs and a Python 3.13 offscreen Qt/QML job on Ubuntu runners; this is software CI, not Ubuntu hardware validation. |
 
 ## Lifecycle limits

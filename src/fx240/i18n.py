@@ -1,6 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """English source strings and Spanish UI translations. Sensor identities stay raw."""
 SPANISH = {
+    'Experimental':'Experimental',
+    'GIF buffer':'Búfer GIF',
+    'Decoder waits':'Esperas de decodificación',
+    'Queued frames belong to the LCD output renderer. Decoder waits include loading and seeking; they do not measure physical dropped frames.':'Los cuadros en cola pertenecen al renderizador de salida al LCD. Las esperas incluyen carga y búsqueda; no miden cuadros perdidos de la pantalla física.',
+    'Local image or GIF behind the readings. Up to 2000 GIF frames within decoding limits; files stay on this computer.':'Imagen o GIF local detrás de las lecturas. Hasta 2000 cuadros GIF dentro de los límites de decodificación; los archivos permanecen en esta computadora.',
+    'Background could not be loaded; choose a valid local image or GIF within the decoding limits':'No se pudo cargar el fondo; elegí una imagen o GIF local válido dentro de los límites de decodificación',
+
     'Home':'Inicio','Downloads':'Descargas','Pictures':'Imágenes','Documents':'Documentos','Desktop':'Escritorio',
     'Parent folder':'Carpeta superior','Folder path':'Ruta de carpeta','Go':'Ir','Open':'Abrir',
     'Search in this folder…':'Buscar en esta carpeta…','No matching files':'No hay archivos coincidentes',
@@ -101,7 +108,6 @@ SPANISH = {
     'Choose a background':'Elegir un fondo','Choose a font':'Elegir una fuente',
     'Background dimming must be between 0 and 0.9':'El oscurecimiento debe estar entre 0 y 90 %',
     'Background must be a local file':'El fondo debe ser un archivo local',
-    'Background could not be loaded; choose a regular image or GIF with at most 120 frames':'No se pudo cargar el fondo; elegí una imagen o GIF regular con hasta 120 fotogramas',
     'Background has no valid frames':'El fondo no contiene fotogramas válidos',
     'Installed fonts':'Fuentes instaladas','Custom font file':'Archivo de fuente personalizado',
     'Discovering local fonts…':'Buscando fuentes locales…',
@@ -111,7 +117,6 @@ SPANISH = {
     'System font catalog exceeds the size limit':'El catálogo de fuentes supera el límite de tamaño',
     'System font catalog exceeds the entry limit':'El catálogo de fuentes supera el límite de entradas',
     'Fontconfig is unavailable; bundled Outfit and custom font files still work':'Fontconfig no está disponible; podés usar Outfit o elegir un archivo de fuente',
-    'Local image or GIF behind the readings. Up to 120 frames; files stay on this computer.':'Imagen o GIF local detrás de las lecturas. Hasta 120 fotogramas; los archivos permanecen en esta computadora.',
     'Discover local scalable TTF/OTF fonts by family and style. Nothing is uploaded. Collections are not listed.':'Buscá fuentes locales TTF/OTF por familia y estilo. No se sube información. No se incluyen colecciones.',
     'FPS must be between 0 and 24':'Los FPS deben ser mayores que 0 y no superar 24',
     'Comet speed must be between 0.25 and 3':'La velocidad del cometa debe estar entre 0,25 y 3',
@@ -138,7 +143,6 @@ SPANISH = {
     'FX240 / Display studio':'FX240 / Estudio LCD',
     'Display':'Pantalla','Display studio':'Estudio LCD','Sensors':'Sensores',
     'Diagnostics':'Diagnóstico','Settings':'Ajustes','LCD STUDIO':'ESTUDIO LCD',
-    'Experimental / v0.1.0':'Experimental / v0.1.0',
     'Personalize the content on your LCD.':'Personalizá el contenido de tu LCD.',
     'The selected CPU and GPU readings.':'Lecturas actuales de CPU y GPU.',
     'Inspect the same sample and frame used by output.':'Compará la muestra del sensor con el valor enviado.',

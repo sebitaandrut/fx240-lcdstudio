@@ -147,7 +147,6 @@ class Focus:
             raise ValueError('Unknown animation')
         self.animation = animation
         from .background import Background
-        self.background = Background(background_path,background_dim)
         self.comet_speed = comet_speed
         self.comet_offset = 0.0
         if temperature_unit not in ('C','F'):
@@ -158,6 +157,7 @@ class Focus:
         self.fps = fps
         self.keys = keys
         self.font_path = resolve_font(font_path)
+        self.background = Background(background_path,background_dim)
         self.provider = provider if provider is not None else collect
         self.arc_range = arc_range
         self.sampled_at = None
@@ -166,6 +166,8 @@ class Focus:
         self.arc_from = 0
         self.arc_to = 0
         self.static = None
+
+    def close(self):self.background.close()
 
     def text(self, draw, xy, text, size, color, anchor='mm'):
         draw.text(tuple(v*SCALE for v in xy), text, font=font(self.font_path,size,self.font_weight),

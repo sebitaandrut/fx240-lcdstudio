@@ -29,3 +29,16 @@ raise SystemExit(selftest.run())
         self.assertIn('Unexpected application title', report['errors'])
         self.assertEqual(report['hid_open_attempts'], 0)
         self.assertFalse(report['preferences_store_enabled'])
+
+    def test_default_and_legacy_commands_check_long_gif_without_hid(self):
+        for options in ([],['--experimental-gif-buffering']):
+            with self.subTest(options=options):
+                result=subprocess.run([sys.executable,'-m','fx240','self-test',*options],
+                                      capture_output=True,text=True,timeout=12,
+                                      env={**os.environ,'QT_QPA_PLATFORM':'offscreen','QT_QUICK_BACKEND':'software'})
+                self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+                report=json.loads(result.stdout.splitlines()[-1])
+                self.assertTrue(report['gif_buffering'])
+                self.assertEqual(report['errors'],[])
+                self.assertEqual(report['hid_open_attempts'],0)
+                self.assertFalse(report['preferences_store_enabled'])

@@ -190,6 +190,11 @@ class Session:
     def run(self):
         config = self.settings
         manager = device = None
+        theme=None
+
+        def dispose(renderer):
+            close=getattr(renderer,"close",None)
+            if close:close()
 
         def release():
             nonlocal manager, device
@@ -225,6 +230,7 @@ class Session:
                     self._pending_config = None
                 if pending is not None:
                     candidate,send,request_id = pending
+                    replacement=None
                     try:
                         if device is not None and candidate.device != config.device:
                             raise ValueError('Pause LCD output before changing its device')
@@ -234,7 +240,8 @@ class Session:
                         replacement.inherit_motion(theme,elapsed)
                         replacement.sample(elapsed)
                         replacement(elapsed) # Validate drawing before replacing the working renderer.
-                        theme = replacement
+                        previous=theme;theme=replacement;replacement=None
+                        dispose(previous)
                         config = self.settings = candidate
                         if send is not None:
                             self.output_requested = send
@@ -242,6 +249,7 @@ class Session:
                         self.config_error = None
                         self.config_revision += 1
                     except Exception as error:
+                        if replacement is not None:dispose(replacement)
                         self.config_error = str(error)
                 if not self.output_requested:
                     release()
@@ -292,6 +300,9 @@ class Session:
         except Exception as error:
             self.error = str(error)
         finally:
-            release()
+            try:release()
+            except Exception as error:self.error=self.error or str(error)
+            try:dispose(theme)
+            except Exception as error:self.error=self.error or str(error)
             self.publish({'kind':'stopped','error':self.error or self.output_error,
                           'frames':self.frames,'last_frame':self.last_frame})

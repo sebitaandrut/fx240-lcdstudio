@@ -53,7 +53,8 @@ class Preferences:
                         resolve_font(value)
                     if key=='background_path' and value:
                         from .background import Background
-                        Background(value)
+                        checked=Background(value)
+                        checked.close()
                     defaults=candidate
                 except (ValueError,TypeError,OSError) as error:
                     self.issues.append({'field':key,'reason':str(error),'fallback':getattr(defaults,key)})

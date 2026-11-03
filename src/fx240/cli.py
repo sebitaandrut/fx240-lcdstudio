@@ -19,6 +19,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="FX240 LCD STUDIO; experimental native Linux client. CLI simulation by default, GUI auto-starts LCD output")
     parser.add_argument("mode", choices=("image", "gif", "dashboard", "sensors", "focus", "gui", "self-test"))
     parser.add_argument("--start-minimized", action="store_true", help="GUI: start in the tray, or minimize normally when no tray is available")
+    # Accept old trial/autostart commands; buffering is now automatic.
+    parser.add_argument("--experimental-gif-buffering",action="store_true",help=argparse.SUPPRESS)
     parser.add_argument("--config-home", type=Path, help="GUI-only configuration root for Studio; leaves system XDG folders and theme settings unchanged")
     parser.add_argument("file", nargs="?", type=Path)
     parser.add_argument("--temperature-unit", choices=("C","F"), default="C", help="Displayed temperature unit; raw sensors remain Celsius")
@@ -57,6 +59,7 @@ def main(argv=None):
         parser.error("--overlay requires image or gif mode")
     if args.start_minimized and args.mode != 'gui':
         parser.error('--start-minimized requires gui mode')
+    if args.experimental_gif_buffering and args.mode not in ('gui','self-test'):parser.error('--experimental-gif-buffering requires gui or self-test mode')
     if args.config_home is not None:
         if args.mode!='gui':parser.error('--config-home requires gui mode')
         if not args.config_home.is_absolute() or len(str(args.config_home))>4096 or any(ord(c)<32 for c in str(args.config_home)):

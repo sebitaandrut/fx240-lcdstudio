@@ -24,7 +24,7 @@ jobs:
       - name: Check runtime and packaging code
         run: bandit -r src packaging
       - name: Check developer tools for medium and high severity findings
-        run: bandit -r tools examples --severity-level medium
+        run: bandit -r tools examples experiments --severity-level medium
       - name: Check pinned build dependencies against known advisories
         run: pip-audit --require-hashes --disable-pip -r packaging/requirements-build.txt
       - name: Check security tooling and its installed dependencies

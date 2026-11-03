@@ -30,13 +30,22 @@ def run():
     def factory(settings,**kwargs):return Session(settings,transport_factory=forbid,**kwargs)
     metrics=[Metric('ct','CPU synthetic',45.125,'C','synthetic'),Metric('cf','CPU synthetic',4200,'MHz','synthetic'),
              Metric('gt','GPU synthetic',38,'C','synthetic'),Metric('gf','GPU synthetic',1800,'MHz','synthetic')]
-    engine,bridge=create_engine(app,Settings(),provider=lambda:metrics,session_factory=factory)
+    import tempfile
+    from PIL import Image
+    fixture=tempfile.TemporaryDirectory(prefix='fx240-gif-check-')
+    path=Path(fixture.name)/'synthetic.gif'
+    frames=[Image.new('RGB',(32,32),(index%255,(index*3)%255,80)) for index in range(130)]
+    frames[0].save(path,save_all=True,append_images=frames[1:],duration=40,loop=0)
+    config=Settings(background_path=str(path))
+    engine,bridge=create_engine(app,config,provider=lambda:metrics,session_factory=factory)
     errors=[]
     root=Path(__file__).parent
     def inspect():
         try:
             window=engine.rootObjects()[0]
             require(window.title()=='FX240 LCD STUDIO', 'Unexpected application title')
+            from . import __version__
+            require(bridge.applicationVersion==__version__, 'Unexpected application version')
             require(not window.grabWindow().isNull(), 'Window capture is unavailable')
             require(bridge.session.frames>2, 'No rendered frame sequence')
             require(bridge.sensorRows[0]['target']=='45.1°C', 'Unexpected synthetic LCD target')
@@ -49,6 +58,13 @@ def run():
                 require(not window.grabWindow().isNull(), 'Window capture is unavailable')
             require(window.findChild(QObject,'editorCanvas') is not None, 'Editor canvas did not load')
             require(bridge.workspace.model.rowCount()==5, 'Default composition did not load')
+            from .gifstream import statistics
+            require(statistics(bridge.session.thread).get('streams')==1,'GIF stream did not start')
+            stats=bridge.gifBufferStatistics
+            require(set(stats)=={'streams','queued','capacity','waits'},'Unexpected GIF diagnostic fields')
+            require(stats['streams']==1 and stats['capacity']==12 and 0<=stats['queued']<=12,'Invalid GIF diagnostic bounds')
+            require(window.findChild(QObject,'gifBufferDiagnostics') is not None,'GIF diagnostics are missing')
+            require('GIF' not in window.findChild(QObject,'outputRateLabel').property('text'),'Experimental buffer badge remains in output controls')
             # Exercise the packaged registered QML type without listing user files.
             import tempfile,time
             with tempfile.TemporaryDirectory(prefix='fx240-picker-check-') as folder:
@@ -74,9 +90,12 @@ def run():
     bridge.stop();bridge.session.thread.join(2)
     if bridge.running or bridge.session.thread.is_alive():errors.append('Worker did not stop')
     if attempts:errors.append('Unexpected HID access')
-    result={'application':'FX240 LCD STUDIO','frozen':bool(getattr(sys,'frozen',False)),
+    from .gifstream import statistics
+    if statistics(bridge.session.thread).get('streams')!=0:errors.append('GIF stream did not close')
+    result={'gif_buffering':True,'application':'FX240 LCD STUDIO','frozen':bool(getattr(sys,'frozen',False)),
             'qml_loaded':True,'frames':bridge.session.frames,'hid_open_attempts':len(attempts),
             'preferences_store_enabled':bridge.preferences is not None,'errors':errors}
     dispose_engine(engine)
+    if fixture:fixture.cleanup()
     print(json.dumps(result),flush=True)
     return 1 if errors else 0

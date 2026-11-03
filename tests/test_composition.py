@@ -47,7 +47,11 @@ class CompositionTests(unittest.TestCase):
             path=Path(folder)/'budget.gif'
             frames=[Image.new('RGB',(1,1),(i,0,0)) for i in range(121)]
             frames[0].save(path,save_all=True,append_images=frames[1:],duration=40)
-            with self.assertRaisesRegex(ValueError,'120'):Background(path)
+            background=Background(path)
+            self.assertIsNotNone(background._stream)
+            background.close()
+            with patch('fx240.gifstream.MAX_FRAMES',120):
+                with self.assertRaisesRegex(ValueError,'decoding limits'):Background(path)
             path.write_bytes(b'not image data')
             with self.assertRaisesRegex(ValueError,'could not be loaded'):Background(path)
         for dim in (-.1,1,float('nan')):

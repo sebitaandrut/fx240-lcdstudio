@@ -61,7 +61,8 @@ class Bridge(QObject):
         if profile:
             try:
                 from .scene import SceneRenderer
-                SceneRenderer(scene_json=profile['scene'],font_path=settings.font_path,provider=lambda:[])
+                validated=SceneRenderer(scene_json=profile['scene'],font_path=settings.font_path,provider=lambda:[])
+                validated.close()
                 settings=replace(settings,layout_mode='editor',scene_json=profile['scene'])
             except (OSError,ValueError):
                 settings=replace(settings,layout_mode='focus',scene_json='',profile_id='')
@@ -380,6 +381,10 @@ class Bridge(QObject):
     def initialCometSpeed(self): return self.settings.comet_speed
     @Property(int, constant=True)
     def initialWeight(self): return self.settings.font_weight
+    @Property(str, constant=True)
+    def applicationVersion(self):
+        from . import __version__
+        return __version__
     @Property(bool, constant=True)
     def initialDecimals(self): return self.settings.temperature_decimals == 1
 
@@ -507,6 +512,14 @@ class Bridge(QObject):
                 QCoreApplication.quit()
             return
         self.apply_frame(event)
+
+    @Property('QVariantMap',notify=changed)
+    def gifBufferStatistics(self):
+        from .gifstream import statistics,BUFFER_FRAMES
+        stats=statistics(self.session.thread) if self.session else {}
+        streams=stats.get('streams',0)
+        return {'streams':streams,'queued':stats.get('queued_frames',0),
+                'capacity':streams*BUFFER_FRAMES,'waits':stats.get('underruns',0)}
 
     def apply_frame(self, event):
         self._latest_metrics=event['metrics']

@@ -42,6 +42,25 @@ The monitor powered off or the screen locked in the final segment: USB continued
 
 The earlier two-minute synthetic/offscreen run is omitted here because it is a different workload and less representative. Aggregate native run context and statistics remain in [evidence.json](evidence.json); per-second traces and private recordings are excluded.
 
+## Long-GIF playback
+
+The desktop uses a bounded 12-frame queue for GIFs above 120 frames, within the documented byte/frame/pixel budgets. This reduces retained decoded frames, with ongoing decoding work; it does not raise the 24 FPS output limit. The owner observed complete loops of synthetic 120-, 360-, and 720-frame clips and another local GIF on Arch Linux with one FX240.
+
+A 30-minute desktop run with the 720-frame clip selected collected 361 samples at five-second intervals across the application process family:
+
+| Metric | Observation |
+| --- | --- |
+| Proportional memory (PSS) | 209.82 MiB initially; 209.74 MiB finally |
+| CPU | Mean 28.3%; sampled range 26.6–31.8%; 100% means one logical CPU |
+| Proportional swap | 0 MiB throughout |
+| Processes / threads / open descriptors | Constant at 3 / 30 / 37 |
+
+No upward PSS trend or resource-count accumulation was observed during this run. Sampling can miss short peaks; a single run does not establish leak freedom. The sampler did not record media paths, sensor values, environment variables, machine identifiers, or LCD/preview FPS. Visible playback and clip selection were owner-observed. Raw local logs and media are excluded.
+
+The owner subsequently confirmed initial suspend/resume for a saved long-GIF profile and a temporary editor LCD trial, including continued live editing and returning to the saved profile. These are functional observations, not an instrumented sleep trace or repeated-cycle endurance result.
+
+Synthetic reference comparisons, backend-only measurements, and reproduction commands are kept in [the developer experiment guide](../experiments/README.md). They must not be presented as full GUI memory or physical refresh measurements.
+
 ## Repeating measurements
 
 `tools/benchmark_stream.py` and `tools/benchmark_gui.py` measure host/USB and native Qt activity. Both require explicit `--send` for USB and use verified identity/locking. Close other senders first; higher-rate experiments require their explicit experimental option where applicable. Use an external timeout for native instrument trials and retain failures.

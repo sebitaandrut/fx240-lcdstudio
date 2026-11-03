@@ -89,13 +89,20 @@ class SceneRenderer:
         self.sampled_at=None;self.values=(None,)*4
         self.assets={};self.fonts={}
         resolved={}
-        for item in self.scene['layers']:
-            if not item['visible']:continue
-            if item['kind']=='media':self.assets[item['id']]=Background(item['path'],0)
-            elif item['kind'] in ('text','metric'):
-                source=item['font_path'] or font_path
-                if source not in resolved:resolved[source]=resolve_font(source)
-                self.fonts[item['id']]=resolved[source]
+        try:
+            for item in self.scene['layers']:
+                if not item['visible']:continue
+                if item['kind']=='media':self.assets[item['id']]=Background(item['path'],0)
+                elif item['kind'] in ('text','metric'):
+                    source=item['font_path'] or font_path
+                    if source not in resolved:resolved[source]=resolve_font(source)
+                    self.fonts[item['id']]=resolved[source]
+        except Exception:
+            self.close();raise
+
+    def close(self):
+        for asset in self.assets.values():asset.close()
+        self.assets.clear()
 
     def sample(self,elapsed):
         self.values=readings(self.provider());self.sampled_at=elapsed

@@ -325,7 +325,7 @@ ApplicationWindow {
                 NavButton { text: window.tr("Diagnostics"); iconName: "chart-line"; selected: window.page===2; onClicked: window.page=2 }
                 NavButton { text: window.tr("Settings"); iconName: "settings-2"; selected: window.page===3; onClicked: window.page=3 }
                 Rule {}
-                Caption { text: window.tr("Experimental / v0.1.0"); font.pixelSize: 14 }
+                Caption { text: window.tr("Experimental")+" / v"+bridge.applicationVersion; font.pixelSize: 14 }
             }
         }
         ColumnLayout {
@@ -479,7 +479,7 @@ ApplicationWindow {
 
                                 Rule {}
                                 RowLayout { Layout.fillWidth: true;
-                                    InfoLabel { text: window.tr("Background"); help: "Local image or GIF behind the readings. Up to 120 frames; files stay on this computer." }
+                                    InfoLabel { text: window.tr("Background"); help: "Local image or GIF behind the readings. Up to 2000 GIF frames within decoding limits; files stay on this computer." }
                                     Item { Layout.fillWidth: true }
                                     SmallButton { objectName: "backgroundChoose"; text: window.tr(window.backgroundPath ? "Change…" : "Choose…"); onClicked: backgroundDialog.open() }
                                     SmallButton { text: window.tr("Clear"); enabled: window.backgroundPath.length>0; onClicked: { window.backgroundPath=""; window.queueSettings() } }
@@ -531,6 +531,12 @@ ApplicationWindow {
                         Caption { text: bridge.shutdownStatus; wrapMode: Text.Wrap; Layout.fillWidth: true }
                         Caption { text: bridge.standbyFallbackStatus; wrapMode: Text.Wrap; Layout.fillWidth: true }
                         Caption { text: bridge.statistics; wrapMode: Text.Wrap; Layout.fillWidth: true }
+                        InfoLabel {
+                            objectName: "gifBufferDiagnostics"
+                            visible: bridge.gifBufferStatistics.streams > 0
+                            text: window.tr("GIF buffer")+": "+bridge.gifBufferStatistics.queued+" / "+bridge.gifBufferStatistics.capacity+" · "+window.tr("Decoder waits")+": "+bridge.gifBufferStatistics.waits
+                            help: "Queued frames belong to the LCD output renderer. Decoder waits include loading and seeking; they do not measure physical dropped frames."
+                        }
                         Caption { text: window.tr("One sample feeds the LCD and preview. Sensors refresh at 1 Hz; numeric values update directly. Host timing does not measure physical LCD refresh."); wrapMode: Text.Wrap; Layout.fillWidth: true }
                         Item { Layout.fillHeight: true }
                     }
@@ -575,7 +581,7 @@ ApplicationWindow {
                     Rectangle { Layout.alignment: Qt.AlignVCenter; width: 7; height: 7; radius: 3.5; color: bridge.sending ? window.accent : window.muted }
                     Label { Layout.alignment: Qt.AlignVCenter; objectName: "outputStatus"; text: bridge.status; color: window.ink }
                     Item { Layout.fillWidth: true }
-                    Caption { Layout.alignment: Qt.AlignVCenter; text: fps.value+window.tr(" FPS target"); font.pixelSize: 14 }
+                    Caption { objectName: "outputRateLabel"; Layout.alignment: Qt.AlignVCenter; text: fps.value+window.tr(" FPS target"); font.pixelSize: 14 }
                     Action { Layout.alignment: Qt.AlignVCenter; objectName: "stopButton"; text: window.tr("Stop display"); iconName: "square"; visible: bridge.sending; enabled: bridge.sending; onClicked: bridge.stopOutput() }
 
                     Action { Layout.alignment: Qt.AlignVCenter; objectName: "sendButton"; text: window.tr("Start display"); primary: true; visible: !bridge.sending; enabled: !bridge.sending && device.currentText.length>0; onClicked: bridge.startOutput(window.configuration()) }
