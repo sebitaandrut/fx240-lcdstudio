@@ -840,11 +840,11 @@
   },
   "editor_profiles_and_gif_buffering": {
     "date": "2026-11-03",
-    "tests_passed": 174,
+    "tests_passed": 177,
     "property_tests": 6,
     "real_usb_used_by_automated_checks": false,
     "native_user_confirmation_pending": false,
-    "remote_codeql_pending": true,
+    "remote_codeql_pending": false,
     "new_dependencies": false,
     "private_profile_library": "Fixed local filename, private mode, bounded schema; no media/font embedding or upload",
     "scope": "Local integration with source tests and owner observations on one Arch Linux host and FX240; not an independent audit or stable release.",
@@ -867,6 +867,24 @@
       "saved_profile_resume": "Owner confirmed",
       "temporary_lcd_draft_resume_edit_and_return": "Owner confirmed",
       "scope": "Initial functional checks, not an instrumented sleep trace or repeated-cycle endurance test."
+    },
+    "path_alert_follow_up": {
+      "date": "2026-11-03",
+      "analyzed_commit": "7d17f3b2d2d8747f0673bf5f7d496a00d9f2d6f6",
+      "alerts_reviewed": [
+        26,
+        27,
+        28,
+        29
+      ],
+      "classification": "Individually reviewed false positives for explicit same-user configuration/output paths; no code-scanning rule disabled.",
+      "sarif_data_flows_reviewed": true,
+      "added_regression_tests": 3,
+      "local_tests_passed": 177,
+      "property_tests_passed": 6,
+      "independent_audit": false,
+      "report": "docs/security-review.md#020-path-alert-follow-up--2026-11-03",
+      "open_alerts_after_review": 0
     }
   }
 }

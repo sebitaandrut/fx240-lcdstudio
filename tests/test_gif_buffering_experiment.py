@@ -51,3 +51,20 @@ class GifBufferingTests(unittest.TestCase):
             path=Path(folder)/'synthetic.gif';generate(path,121)
             self.assertEqual(len(inspect(path.read_bytes())[1]),121)
             with self.assertRaises(FileExistsError):generate(path,1)
+
+    def test_generator_rejects_existing_files_links_and_fifo(self):
+        import os,stat
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);target=root/'sentinel';target.write_bytes(b'synthetic sentinel')
+            hard=root/'hard.gif';os.link(target,hard)
+            link=root/'symbolic.gif';link.symlink_to(target)
+            dangling=root/'dangling.gif';dangling.symlink_to(root/'absent')
+            fifo=root/'fifo.gif';os.mkfifo(fifo)
+            for path in (target,hard,link,dangling,fifo):
+                with self.subTest(kind=path.name):
+                    with self.assertRaises(FileExistsError):generate(path,1)
+            self.assertEqual(target.read_bytes(),b'synthetic sentinel')
+            self.assertEqual(hard.stat().st_ino,target.stat().st_ino)
+            self.assertTrue(link.is_symlink());self.assertTrue(dangling.is_symlink())
+            self.assertFalse((root/'absent').exists())
+            self.assertTrue(stat.S_ISFIFO(fifo.lstat().st_mode))

@@ -52,6 +52,8 @@ class ProfileStore:
         if len(text.encode('utf-8'))>MAX_LIBRARY_BYTES:raise ValueError('Profile library exceeds the size limit')
         if self.memory:
             self.profiles=data['profiles'];return
+        # The caller selects the configuration root; profile names/scene data
+        # never enter this path. Temporary output stays in the same directory.
         self.path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
         temporary=None
         try:

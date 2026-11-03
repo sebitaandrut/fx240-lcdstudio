@@ -157,6 +157,7 @@ def benchmark(payload,mode,seconds,fps,capacity):
 
 
 def generate(path,count):
+    """Write synthetic content to the caller-selected destination, exclusively."""
     if not 1<=count<=720:raise ValueError('Synthetic generation supports 1..720 frames')
     frames=[]
     for index in range(count):
