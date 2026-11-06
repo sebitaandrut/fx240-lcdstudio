@@ -1,8 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.3.0rc1 — release candidate
 
 - Add editor shortcuts for undo and redo (Ctrl+Z and Ctrl+Y), deleting selected layers (Delete), and moving the selection one LCD pixel at a time (arrow keys).
+- Align the draft action with the saved-design controls on wide displays.
+- Harden the USB capture comparison and Wayland diagnostic tools.
+- Document how to build the Arch package from the release tag. The package CI job builds the exact commit under test.
+
+The default output remains 24 FPS with a 2 ms inter-report delay. Testing on physical hardware is limited to Arch Linux x86_64 and one FX240. Tearing on some moving content remains [under investigation](docs/tearing.md). Multi-hour playback and repeated suspend/resume, reboot, and shutdown checks are pending for this candidate.
 
 ## 0.3.0a1 — experimental alpha
 

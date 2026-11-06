@@ -79,12 +79,17 @@ jobs:
             zlib glib2 krb5 fontconfig libglvnd libxkbcommon libxkbcommon-x11 \
             libxcb libx11 xcb-util-cursor xcb-util-wm xcb-util-keysyms wayland dbus
       - uses: actions/checkout@v7
-      - name: Build the package as an unprivileged user
+        with:
+          fetch-depth: 0
+      - name: Build the checked-out commit as an unprivileged user
         run: |
           useradd --create-home packager
-          install -d -o packager -g packager /tmp/fx240-package
+          install -d /tmp/fx240-package
           install -m644 packaging/arch/PKGBUILD /tmp/fx240-package/PKGBUILD
-          runuser -u packager -- sh -c 'cd /tmp/fx240-package && makepkg --noconfirm --cleanbuild'
+          git clone --mirror --no-hardlinks . /tmp/fx240-package/fx240-lcdstudio
+          chown -R packager:packager /tmp/fx240-package
+          runuser -u packager -- env "FX240_SOURCE_REF=commit=$(git rev-parse HEAD)" \
+            sh -c 'cd /tmp/fx240-package && makepkg --holdver --noconfirm --cleanbuild'
       - name: Install and check the package
         run: |
           pacman -U --noconfirm /tmp/fx240-package/*.pkg.tar.zst

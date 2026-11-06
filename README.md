@@ -33,10 +33,12 @@ python3 -m venv .venv
 
 The GUI starts preview and physical output automatically when one matching LCD is accessible. Close other senders first. **Stop display** leaves a recreated standby image while the preview continues. For a pacman-managed Arch installation, use the [PKGBUILD instructions](docs/building.md#install-with-pacman-using-pkgbuild). The same guide covers native dependencies, USB permissions, and manual executable builds.
 
-## Latest version · 0.3.0a1
+## Latest version · 0.3.0rc1
+
+This is a release candidate for Arch Linux x86_64. To test the exact candidate, use the [tagged Arch build instructions](docs/building.md#build-the-release-candidate).
 
 - **Designs gallery.** Switch between Focus, Dual, Trace, Halo, and saved profiles. Open a built-in design as an editable copy, or select several saved profiles for deletion.
-- **Composition editor.** Select and transform multiple layers, pick colors visually, and combine gradient backgrounds with effects such as the segmented ring and radar sweep.
+- **Composition editor.** Select and transform multiple layers, pick colors visually, and combine gradient backgrounds with effects such as the segmented ring and radar sweep. Use Ctrl+Z/Ctrl+Y to undo/redo, Delete to remove layers, and the arrow keys to move the selection.
 - **Preview and layout.** The editor keeps the draft visible while it waits for the first matching frame sent to the LCD. Larger windows use a wider gallery and a canvas sized to the available space.
 - **GIF playback and output.** Zoom image and GIF layers and optionally match GIF timing to output FPS. Advanced settings offer experimental output rates up to 60 host FPS, with 24 FPS as the default.
 

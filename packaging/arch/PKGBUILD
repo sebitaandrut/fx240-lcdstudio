@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Local source-build recipe; no AUR or prebuilt binary release is implied.
 pkgname=fx240-lcd-studio-git
-pkgver=0.3.0a1
+pkgver=0.3.0rc1
 pkgrel=1
 pkgdesc='Native Linux LCD studio for the ID-COOLING FX240 (experimental)'
 arch=('x86_64')
@@ -18,7 +18,14 @@ options=('!strip' '!debug')
 
 # The Pillow wheel targets CPython 3.14; other wheels are ABI-compatible/pure Python.
 # Refresh URLs/hashes with packaging/requirements-build.txt when updating versions.
-source=('fx240-lcdstudio::git+https://github.com/sebitaandrut/fx240-lcdstudio.git#branch=main'
+_source_ref=${FX240_SOURCE_REF-branch=main}
+if [[ $_source_ref != branch=main &&
+      ! $_source_ref =~ ^tag=v[0-9]+\.[0-9]+\.[0-9]+(rc[0-9]+)?$ &&
+      ! $_source_ref =~ ^commit=[0-9a-f]{40}$ ]]; then
+  printf '%s\n' 'FX240_SOURCE_REF must be branch=main, a release tag, or a full Git commit.' >&2
+  return 1
+fi
+source=("fx240-lcdstudio::git+https://github.com/sebitaandrut/fx240-lcdstudio.git#${_source_ref}"
         'pip-26.2.1-py3-none-any.whl::https://files.pythonhosted.org/packages/f3/6e/1736e5b4ae2b778ef2f81c47d797de9f891d4d8acb047a24ca37a60294dd/pip-26.2.1-py3-none-any.whl'
         'setuptools-84.2.1-py3-none-any.whl::https://files.pythonhosted.org/packages/ef/55/6dc6d6bb953bdfc52519a0059592c52b6e3b8ad51cf8256dffceb55b0610/setuptools-84.2.1-py3-none-any.whl'
         'pillow-13.0.0-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl::https://files.pythonhosted.org/packages/1d/f2/1371707ce438ba9a43f9d24089828494ec6f9396e28cd7903aa704dd6306/pillow-13.0.0-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl'
