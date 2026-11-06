@@ -88,7 +88,7 @@ jobs:
           install -m644 packaging/arch/PKGBUILD /tmp/fx240-package/PKGBUILD
           git clone --mirror --no-hardlinks . /tmp/fx240-package/fx240-lcdstudio
           chown -R packager:packager /tmp/fx240-package
-          runuser -u packager -- env "FX240_SOURCE_REF=commit=$(git rev-parse HEAD)" \
+          runuser -u packager -- env "FX240_SOURCE_REF=commit=$GITHUB_SHA" \
             sh -c 'cd /tmp/fx240-package && makepkg --holdver --noconfirm --cleanbuild'
       - name: Install and check the package
         run: |
