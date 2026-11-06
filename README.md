@@ -33,9 +33,18 @@ python3 -m venv .venv
 
 The GUI starts preview and physical output automatically when one matching LCD is accessible. Close other senders first. **Stop display** leaves a recreated standby image while the preview continues. For a pacman-managed Arch installation, use the [PKGBUILD instructions](docs/building.md#install-with-pacman-using-pkgbuild). The same guide covers native dependencies, USB permissions, and manual executable builds.
 
+## Latest version · 0.3.0a1
+
+- **Designs gallery.** Switch between Focus, Dual, Trace, Halo, and saved profiles. Open a built-in design as an editable copy, or select several saved profiles for deletion.
+- **Composition editor.** Select and transform multiple layers, pick colors visually, and combine gradient backgrounds with effects such as the segmented ring and radar sweep.
+- **Preview and layout.** The editor keeps the draft visible while it waits for the first matching frame sent to the LCD. Larger windows use a wider gallery and a canvas sized to the available space.
+- **GIF playback and output.** Zoom image and GIF layers and optionally match GIF timing to output FPS. Advanced settings offer experimental output rates up to 60 host FPS, with 24 FPS as the default.
+
+See the [full changelog](CHANGELOG.md) for the complete list of changes and earlier versions.
+
 ## Status
 
-Version **0.3.0a1 is experimental**, not a stable release. Output defaults to **24 FPS**, with **1–60 host FPS** available in Advanced settings. Higher rates do not guarantee complete physical LCD frames. Spatial cuts/tearing on some moving content remain [under investigation](docs/tearing.md). Packaged operation and desktop-autostarted reboot/shutdown passed initial hardware checks. Initial suspend/resume checks also passed owner observation, including saved long-GIF profiles and temporary editor trials. A 30-minute GIF run showed stable proportional memory and resource counts; multi-hour stability, repeated lifecycle trials, and a clean native desktop installation remain pending. See [validation and limits](docs/validation.md).
+Studio remains **experimental**. Higher host output rates do not guarantee complete physical LCD frames. Spatial cuts/tearing on some moving content remain [under investigation](docs/tearing.md). Packaged operation and desktop-autostarted reboot/shutdown passed initial hardware checks. Initial suspend/resume checks also passed owner observation, including saved long-GIF profiles and temporary editor trials. A 30-minute GIF run showed stable proportional memory and resource counts. Multi-hour stability, repeated lifecycle trials, and a clean native desktop installation remain pending. See [validation and limits](docs/validation.md).
 
 ## Documentation
 
@@ -47,7 +56,6 @@ Version **0.3.0a1 is experimental**, not a stable release. Output defaults to **
 | Tested behavior and remaining checks | [Validation](docs/validation.md) |
 | FPS, resource measurements, and evidence limits | [Performance](docs/performance.md) |
 | Privacy and publication boundaries | [Privacy review](docs/privacy-review.md) |
-| Version changes | [Changelog](CHANGELOG.md) |
 | Planned work | [Roadmap](docs/roadmap.md) |
 
 For code structure, tests, and commit conventions, see [Contributing](CONTRIBUTING.md). Code, documentation, and commits are in English. Development combined **AI assistance** with hands-on hardware testing.
