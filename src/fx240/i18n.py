@@ -199,7 +199,7 @@ SPANISH = {
     'Layers':'Capas','Properties':'Propiedades','Composition':'Composición',
     'Reading':'Lectura','Text':'Texto','Image / GIF':'Imagen / GIF','Arc':'Arco',
     'Bottom layer first':'Primero la capa del fondo','Send backward':'Enviar atrás','Bring forward':'Traer adelante',
-    'Delete layer':'Eliminar capa','Undo':'Deshacer','Visible':'Visible',
+    'Delete layer':'Eliminar capa','Undo':'Deshacer','Redo':'Rehacer','Visible':'Visible',
     'Width':'Ancho','Height':'Alto','Size':'Tamaño','Weight':'Grosor',
     'Optional label':'Etiqueta opcional','Left':'Izquierda','Center':'Centro','Right':'Derecha',
     'Color':'Color','Opacity':'Opacidad','Global typeface':'Fuente general',

@@ -153,7 +153,7 @@ class EditorWorkspace(QObject):
         item=self.store.get(identifier) if identifier else None
         if identifier and item is None:self.reject('Profile no longer exists');return
         self._model.replace(parse_scene(item['scene']) if item else scene or parse_scene(),0)
-        self._model.history.clear();self._model.gesture=False
+        self._model.clear_history()
         self._loaded_id=identifier;self._name=item['name'] if item else name
         self._baseline=self._model.payload();self._baseline_name=self._name
         self._validated=False;self._failed=False;self._font_key=None

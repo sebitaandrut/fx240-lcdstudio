@@ -111,6 +111,11 @@ with tempfile.TemporaryDirectory() as folder:
     assert bridge.workspace.model.selected['y']>110
     assert find_item(window.contentItem(),'editorLayer-layer-2') is box
     model=bridge.workspace.model
+    y=model.selected['y']
+    QTest.keyClick(window,Qt.Key_Up)
+    assert model.selected['y']==y-1
+    QTest.keyClick(window,Qt.Key_Down)
+    assert model.selected['y']==y
     def click(item, modifiers=Qt.NoModifier):
         point=item.mapToScene(QPointF(item.width()/2,item.height()/2)).toPoint()
         QTest.mouseClick(window,Qt.LeftButton,modifiers,point)
@@ -139,6 +144,25 @@ with tempfile.TemporaryDirectory() as folder:
     assert model.rowCount()==3
     model.undo()
     assert model.payload()==before and model.selectionCount==2
+    click(find_item(window.contentItem(),'editorLayerCheck-2'))
+    assert model.selectionCount==3
+    click(find_item(window.contentItem(),'editorLayerCheck-2'))
+    assert model.selectionCount==2
+    coordinates={i: (model.scene['layers'][i]['x'], model.scene['layers'][i]['y']) for i in model.selection}
+    QTest.keyClick(window,Qt.Key_Right)
+    assert all((model.scene['layers'][i]['x'], model.scene['layers'][i]['y'])==(x+1,y)
+               for i,(x,y) in coordinates.items())
+    moved=model.payload()
+    QTest.keyClick(window,Qt.Key_Z,Qt.ControlModifier)
+    assert model.payload()==before and model.canRedo
+    QTest.keyClick(window,Qt.Key_Y,Qt.ControlModifier)
+    assert model.payload()==moved and model.selectionCount==2
+    QTest.keyClick(window,Qt.Key_Delete)
+    assert model.rowCount()==3
+    QTest.keyClick(window,Qt.Key_Z,Qt.ControlModifier)
+    assert model.payload()==moved and model.selectionCount==2
+    QTest.keyClick(window,Qt.Key_Left)
+    assert model.payload()==before and not model.canRedo
     model.select(1)
     theme=window.findChild(QObject,'appThemeControl')
     icon=window.findChild(QObject,'appThemeIcon')
@@ -164,6 +188,10 @@ with tempfile.TemporaryDirectory() as folder:
     assert icon.property('source').toString().endswith('theme-moon-muted.svg')
     assert bridge.session.settings.layout_mode=='focus'
     label=window.findChild(QObject,'layerLabelControl');label.forceActiveFocus()
+    before=model.payload()
+    QTest.keyClick(window,Qt.Key_Z,Qt.ControlModifier)
+    QTest.keyClick(window,Qt.Key_Y,Qt.ControlModifier)
+    assert model.payload()==before
     QTest.keyClick(window,Qt.Key_A,Qt.ControlModifier)
     for key in (Qt.Key_C,Qt.Key_P,Qt.Key_U):QTest.keyClick(window,key)
     assert bridge.workspace.model.selected['label']=='cpu',(bridge.workspace.model.selected['label'],label.property('text'),label.property('activeFocus'))

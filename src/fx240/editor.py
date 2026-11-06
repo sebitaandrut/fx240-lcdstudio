@@ -20,6 +20,7 @@ class EditorModel(QAbstractListModel):
         self.selected_index=0 if self.scene['layers'] else -1
         self.selection = {self.selected_index} if self.selected_index >= 0 else set()
         self.history = []
+        self.redo_history = []
         self.gesture = False
         self._gesture_start = None
         self._gesture_layers = {}
@@ -47,6 +48,8 @@ class EditorModel(QAbstractListModel):
     def selectedIndex(self):return self.selected_index
     @Property(bool,notify=changed)
     def canUndo(self):return bool(self.history)
+    @Property(bool,notify=changed)
+    def canRedo(self):return bool(self.redo_history)
     def payload(self):return scene_json(self.scene)
 
     @Property(int, notify=changed)
@@ -77,6 +80,7 @@ class EditorModel(QAbstractListModel):
             return
         self.history.append(self._gesture_start if self.gesture else self.snapshot())
         self.history = self.history[-20:]
+        self.redo_history.clear()
         if self.gesture:
             self._gesture_start = None
 
@@ -186,11 +190,20 @@ class EditorModel(QAbstractListModel):
     def moveSelection(self, dx, dy):
         if not self.gesture or not self._gesture_layers or not all(map(math.isfinite, (dx, dy))):
             return
-        bounds = self.bounds(self._gesture_layers.values())
+        self.translate_layers(self._gesture_layers, dx, dy)
+
+    @Slot(int, int)
+    def nudgeSelection(self, dx, dy):
+        if not self.gesture and self.selection:
+            items = {index: self.scene['layers'][index] for index in self.selection}
+            self.translate_layers(items, dx, dy)
+
+    def translate_layers(self, items, dx, dy):
+        bounds = self.bounds(items.values())
         dx = max(-bounds['x'], min(240 - bounds['x'] - bounds['width'], round(dx)))
         dy = max(-bounds['y'], min(240 - bounds['y'] - bounds['height'], round(dy)))
         self.apply_updates({index: dict(x=item['x'] + dx, y=item['y'] + dy)
-                            for index, item in self._gesture_layers.items()})
+                            for index, item in items.items()})
 
     @Slot(float)
     def scaleSelection(self, scale):
@@ -303,8 +316,23 @@ class EditorModel(QAbstractListModel):
     def undo(self):
         if not self.history:return
         self.endGesture()
+        self.redo_history.append(self.snapshot())
         payload, primary, indices = self.history.pop()
         self.reset_model(parse_scene(payload), primary, indices)
+
+    @Slot()
+    def redo(self):
+        if not self.redo_history:return
+        self.endGesture()
+        self.history.append(self.snapshot())
+        payload, primary, indices = self.redo_history.pop()
+        self.reset_model(parse_scene(payload), primary, indices)
+
+    def clear_history(self):
+        self.endGesture()
+        self.history.clear()
+        self.redo_history.clear()
+        self.changed.emit()
 
     @Property(str,notify=changed)
     def temperatureUnit(self):return self.scene.get('temperature_unit','inherit')

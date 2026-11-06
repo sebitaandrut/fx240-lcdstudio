@@ -14,6 +14,29 @@ Item {
     readonly property bool editingMotion: !multiple && (state.kind === "arc" ||
         (state.kind === "effect" && !["disc", "divider"].includes(state.effect)))
     readonly property var bounds: workspace.model.selectionBounds
+    onVisibleChanged: { if (visible && canvas) canvas.forceActiveFocus() }
+    Keys.onPressed: function(event) {
+        if (!visible || bridge.livePreview.finishing) return
+        const focus = studio.activeFocusItem
+        if (focus instanceof TextInput || focus instanceof TextEdit) return
+        if (event.modifiers === Qt.ControlModifier) {
+            if (event.key === Qt.Key_Z) workspace.model.undo()
+            else if (event.key === Qt.Key_Y) workspace.model.redo()
+            else return
+        } else if (event.modifiers === Qt.NoModifier && (canvas.activeFocus || layerList.activeFocus)) {
+            switch (event.key) {
+            case Qt.Key_Delete:
+                if (!event.isAutoRepeat) workspace.model.removeSelected()
+                break
+            case Qt.Key_Left: workspace.model.nudgeSelection(-1, 0); break
+            case Qt.Key_Right: workspace.model.nudgeSelection(1, 0); break
+            case Qt.Key_Up: workspace.model.nudgeSelection(0, -1); break
+            case Qt.Key_Down: workspace.model.nudgeSelection(0, 1); break
+            default: return
+            }
+        } else return
+        event.accepted = true
+    }
     function tr(text) { return studio.tr(text) }
     function chooseGradientColor(button, label, field) {
         const layerId = state.id
@@ -217,6 +240,7 @@ Item {
                 ListView {
                     id: layerList; objectName: "editorLayers"
                     Layout.fillWidth: true; Layout.fillHeight: true; clip: true; spacing: 4
+                    activeFocusOnTab: true; keyNavigationEnabled: false
                     model: workspace.model
                     delegate: Rectangle {
                         required property int index
@@ -230,6 +254,7 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: function(mouse) {
+                                layerList.forceActiveFocus()
                                 if (mouse.modifiers & Qt.ShiftModifier) workspace.model.toggleSelection(layerRow.index)
                                 else workspace.model.select(layerRow.index)
                             }
@@ -246,7 +271,10 @@ Item {
                                 border.color: layerCheck.activeFocus ? studio.accent : studio.muted
                                 Copy { anchors.centerIn: parent; text: "✓"; color: "#08271e"; visible: layerCheck.checked }
                             }
-                            onClicked: workspace.model.toggleSelection(layerRow.index)
+                            onClicked: {
+                                layerList.forceActiveFocus()
+                                workspace.model.toggleSelection(layerRow.index)
+                            }
                         }
                         Copy {
                             anchors.left: layerCheck.right; anchors.right: parent.right; anchors.rightMargin: 8
@@ -264,7 +292,19 @@ Item {
                     Tool { objectName: "deleteSelectedLayers"; text: "×"; enabled: editor.hasSelection; Layout.fillWidth: true; onClicked: workspace.model.removeSelected(); Accessible.name: editor.tr(editor.multiple ? "Delete selected layers" : "Delete layer") }
                 }
                 Tool { objectName: "clearCompositionButton"; text: editor.tr("Clear all"); enabled: layerList.count>0 && !bridge.livePreview.finishing; Layout.fillWidth: true; onClicked: clearDialog.open() }
-                Tool { objectName: "editorUndoButton"; text: editor.tr("Undo"); enabled: workspace.model.canUndo; Layout.fillWidth: true; onClicked: workspace.model.undo() }
+                RowLayout {
+                    Layout.fillWidth: true; spacing: 6
+                    Tool {
+                        objectName: "editorUndoButton"; text: editor.tr("Undo"); enabled: workspace.model.canUndo
+                        Layout.fillWidth: true; leftPadding: 7; rightPadding: 7
+                        onClicked: { workspace.model.undo(); canvas.forceActiveFocus() }
+                    }
+                    Tool {
+                        objectName: "editorRedoButton"; text: editor.tr("Redo"); enabled: workspace.model.canRedo
+                        Layout.fillWidth: true; leftPadding: 7; rightPadding: 7
+                        onClicked: { workspace.model.redo(); canvas.forceActiveFocus() }
+                    }
+                }
             }
         }
         Panel {
@@ -281,6 +321,7 @@ Item {
                     Layout.minimumHeight: 180
                     Item {
                         id: canvas; objectName: "editorCanvas"; clip: true
+                        activeFocusOnTab: true
                         anchors.centerIn: parent
                         width: Math.min(660, parent.width, parent.height); height: width
                         readonly property real zoom: width/240
@@ -290,6 +331,7 @@ Item {
                             source: bridge.livePreview.showOutput ? bridge.previewUrl : workspace.previewUrl
                             retainWhileLoading: true; cache: false; smooth: true
                         }
+                        MouseArea { anchors.fill: parent; onPressed: canvas.forceActiveFocus() }
                         Repeater {
                             model: workspace.model
                             delegate: Rectangle {
@@ -321,6 +363,7 @@ Item {
                                         dragging=true
                                     }
                                     onPressed: function(mouse) {
+                                        canvas.forceActiveFocus()
                                         pressPoint=mapToItem(canvas,mouse.x,mouse.y)
                                         shiftPressed=Boolean(mouse.modifiers & Qt.ShiftModifier)
                                         if (!shiftPressed) startDrag()
@@ -351,7 +394,12 @@ Item {
                                         anchors.fill: parent; preventStealing: true; cursorShape: Qt.SizeFDiagCursor
                                         property rect originBounds
                                         property point pressPoint
-                                        onPressed: function(mouse) { originBounds=Qt.rect(layerBox.px,layerBox.py,layerBox.pw,layerBox.ph); pressPoint=mapToItem(canvas,mouse.x,mouse.y); workspace.model.beginGesture() }
+                                        onPressed: function(mouse) {
+                                            canvas.forceActiveFocus()
+                                            originBounds=Qt.rect(layerBox.px,layerBox.py,layerBox.pw,layerBox.ph)
+                                            pressPoint=mapToItem(canvas,mouse.x,mouse.y)
+                                            workspace.model.beginGesture()
+                                        }
                                         onPositionChanged: function(mouse) {
                                             if (pressed) {
                                                 var point=mapToItem(canvas,mouse.x,mouse.y)
@@ -385,6 +433,7 @@ Item {
                                     property point pressPoint
                                     property point diagonal
                                     onPressed: function(mouse) {
+                                        canvas.forceActiveFocus()
                                         pressPoint=mapToItem(canvas,mouse.x,mouse.y)
                                         diagonal=Qt.point(editor.bounds.width*canvas.zoom,editor.bounds.height*canvas.zoom)
                                         workspace.model.beginGesture()

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add editor shortcuts for undo and redo (Ctrl+Z and Ctrl+Y), deleting selected layers (Delete), and moving the selection one LCD pixel at a time (arrow keys).
+
 ## 0.3.0a1 — experimental alpha
 
 - Add Dual, Trace, and Halo alongside Focus. The Designs gallery switches directly between built-in and saved designs, renders thumbnails using synthetic readings, and supports confirmed bulk deletion of saved profiles.
