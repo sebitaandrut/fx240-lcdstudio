@@ -15,7 +15,7 @@
 | Preferences and tray | Restarted/minimized operation and saved settings passed initial owner checks. |
 | Reboot and full shutdown | One warm reboot and one full shutdown/power-on passed standby with the desktop-autostarted instance; traces corroborated output release and cleanup. These lifecycle trials preceded the visual-only 8 px rebuild. |
 | GIF editor and resources | Complete long-GIF loops and suspend/resume with saved profiles and temporary editor trials passed initial owner checks. A 30-minute run showed stable PSS and process/thread/descriptor counts. These are limited Arch observations; see [performance](performance.md#long-gif-playback). |
-| FPS | The application remains capped at 24 FPS. Host timing and buffer counters do not measure physical refresh; earlier optical trials are summarized in [performance](performance.md). |
+| FPS | 24 FPS remains the default; 1–60 host FPS is editable in Advanced settings in 0.3.0a1. Higher rates are experimental and not optically certified. Earlier instrument trials are summarized in [performance](performance.md). Spatial cuts remain [unresolved](tearing.md). |
 | Publication checks | Source/history/archive candidate scans and dependency metadata were reviewed; this is not a formal security audit. [GitHub Actions passed](https://github.com/sebitaandrut/fx240-lcdstudio/actions/runs/41365473570) for Python 3.11/3.13 core jobs and a Python 3.13 offscreen Qt/QML job on Ubuntu runners; this is software CI, not Ubuntu hardware validation. |
 
 ## Lifecycle limits

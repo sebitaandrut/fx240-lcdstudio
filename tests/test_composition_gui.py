@@ -33,7 +33,7 @@ with tempfile.TemporaryDirectory() as folder:
     with patch('fx240.gui.find_devices',return_value=[]):
         engine,bridge=create_engine(app,Settings(),provider=metrics,session_factory=factory)
     window=engine.rootObjects()[0]
-    for name in ('animationControl','backgroundChoose','backgroundDimControl','systemFontControl'):
+    for name in ('designGallery','editorMotionSpeed','editorFontBrowse','systemFontControl'):
         assert window.findChild(QObject,name) is not None
     bridge.start({},False)
     wait_until(lambda:bridge.session.frames>0)

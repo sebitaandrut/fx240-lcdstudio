@@ -172,7 +172,7 @@ class FocusTests(unittest.TestCase):
         face.get_variation_axes.return_value=[
             {'name':b'Optical size','minimum':14,'default':14,'maximum':32},
             {'name':b'Weight','minimum':100,'default':400,'maximum':900}]
-        with patch('fx240.typography.load_font',return_value=face):
+        with patch('fx240.typography.load_font',return_value=face),patch('fx240.typography.regular_identity',return_value=(0,0,0,0,0)):
             font('synthetic-variable-font',72,350)
         face.set_variation_by_axes.assert_called_once_with([32,350])
         font.cache_clear()

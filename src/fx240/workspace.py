@@ -9,6 +9,8 @@ from .scene import parse_scene,scene_json
 from .session import Session
 from .typography import capabilities
 from .i18n import runtime_text
+from .presets import DESIGNS
+from .preset_scenes import builtin_scene
 
 
 class EditorWorkspace(QObject):
@@ -17,15 +19,15 @@ class EditorWorkspace(QObject):
     libraryChanged=Signal()
     draftChanged=Signal()
     profileSaved=Signal(str)
-    profileDeleted=Signal(str)
     activationRequested=Signal(str)
     discardRequested=Signal()
     validated=Signal(str)
 
-    def __init__(self,settings,store,settings_provider,metrics_provider,fonts_provider,language_provider):
+    def __init__(self,settings,store,settings_provider,metrics_provider,fonts_provider,language_provider,*,pending_profiles=None):
         super().__init__()
         self.store=store;self.settings_provider=settings_provider;self.metrics_provider=metrics_provider
         self.fonts_provider=fonts_provider;self.language_provider=language_provider
+        self.pending_profiles = pending_profiles or (lambda: ())
         self._model=EditorModel(settings.draft_scene_json)
         self._model.sceneChanged.connect(self._queue)
         self._model.changed.connect(self.changed)
@@ -56,6 +58,15 @@ class EditorWorkspace(QObject):
     def profileName(self):return self._name
     @Property(str,notify=changed)
     def loadedId(self):return self._loaded_id
+    @Property(str,notify=changed)
+    def temperatureUnit(self):
+        return self._model.temperatureUnit if self._model.temperatureUnit!='inherit' else self.settings_provider().temperature_unit
+    @Property(int,notify=changed)
+    def temperatureDecimals(self):
+        return self._model.scene.get('temperature_decimals', self.settings_provider().temperature_decimals)
+    @Property(float,notify=changed)
+    def motionSpeed(self):
+        return self._model.scene.get('motion_speed', self.settings_provider().comet_speed)
     @Property(bool,notify=changed)
     def dirty(self):return self._model.payload()!=self._baseline or self._name!=self._baseline_name
 
@@ -118,25 +129,32 @@ class EditorWorkspace(QObject):
         if replace_selected and self._model.selected.get('kind')=='media':self._model.updateSelected({'path':url.toLocalFile()})
         else:self._model.add_layer('media',url.toLocalFile())
 
-    def _request(self,target):
-        if self.dirty:self._pending=target;self.discardRequested.emit()
-        else:self._load(target)
+    def _request(self, identifier, scene=None, name=''):
+        target = (identifier, scene, name)
+        if self.dirty:
+            self._pending = target
+            self.discardRequested.emit()
+        else:
+            self._load(*target)
     @Slot()
     def requestNew(self):self._request('')
     def request_profile(self,identifier):self._request(identifier)
+    def request_builtin(self, settings):
+        name = DESIGNS[settings.layout_mode] + ' ' + runtime_text('copy', self.language_provider())
+        self._request('', builtin_scene(settings), name)
     @Slot()
     def confirmDiscard(self):
         target=self._pending;self._pending=None
-        if target is not None:self._load(target)
+        if target is not None:self._load(*target)
     @Slot()
     def cancelDiscard(self):self._pending=None
 
-    def _load(self,identifier):
+    def _load(self,identifier,scene=None,name=''):
         item=self.store.get(identifier) if identifier else None
         if identifier and item is None:self.reject('Profile no longer exists');return
-        self._model.replace(parse_scene(item['scene']) if item else parse_scene(),0)
+        self._model.replace(parse_scene(item['scene']) if item else scene or parse_scene(),0)
         self._model.history.clear();self._model.gesture=False
-        self._loaded_id=identifier;self._name=item['name'] if item else ''
+        self._loaded_id=identifier;self._name=item['name'] if item else name
         self._baseline=self._model.payload();self._baseline_name=self._name
         self._validated=False;self._failed=False;self._font_key=None
         self._queue();self.changed.emit()
@@ -166,13 +184,24 @@ class EditorWorkspace(QObject):
     @Slot(result=bool)
     def deleteLoaded(self):
         if not self._loaded_id:return False
-        if self._loaded_id==self.settings_provider().profile_id:
-            self.reject('Switch to Focus in Display before deleting this profile');return False
-        identifier=self._loaded_id
-        try:self.store.delete(identifier)
+        return self.deleteProfiles([self._loaded_id])
+
+    @Slot('QStringList',result=bool)
+    def deleteProfiles(self, identifiers):
+        selected = set(identifiers)
+        if not selected:
+            return False
+        protected = {self.settings_provider().profile_id, *self.pending_profiles()}
+        if selected & protected:
+            self.reject('Activate another design before deleting the one in use')
+            return False
+        try:self.store.delete_many(selected)
         except (ValueError,OSError):self.reject('Profile could not be deleted; the library was preserved');return False
-        self._loaded_id='';self._baseline_name='';self._notice='Profile deleted; the draft is still available'
-        self.libraryChanged.emit();self.profileDeleted.emit(identifier);self.changed.emit();self.draftChanged.emit()
+        if self._loaded_id in selected:
+            self._loaded_id='';self._baseline_name=''
+            self.draftChanged.emit()
+        self._notice='Selected designs deleted'
+        self.libraryChanged.emit();self.changed.emit()
         return True
 
     def _font_details(self):

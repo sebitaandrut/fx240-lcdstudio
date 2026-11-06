@@ -12,6 +12,18 @@ def config_home():
     return selected if selected.is_absolute() else home
 
 
+def regular_identity(path):
+    """Cache identity only after rejecting leaf links and special files.
+
+    Kept in memory, never exported. Inode/ctime prevent stale reuse after a
+    same-size replacement or after restoring the modification timestamp.
+    """
+    info=Path(path).lstat()
+    if not stat.S_ISREG(info.st_mode):
+        raise ValueError('Input must be a regular file, not a symbolic link or special file')
+    return (info.st_dev,info.st_ino,info.st_size,info.st_mtime_ns,info.st_ctime_ns)
+
+
 def read_regular(path, limit, *, private=False):
     """Reject special files/leaf symlinks; validate the opened descriptor as well.
 

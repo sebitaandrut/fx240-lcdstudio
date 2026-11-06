@@ -129,8 +129,9 @@ def frequency(value):
 
 class Focus:
     def __init__(self, fps=24, keys=None, font_path=None, provider=None, arc_range=(0,100), font_weight=350, temperature_decimals=0, comet_speed=1.0, accent="#73dfc1", comet_style="accent", temperature_unit="C", animation="comet", background_path=None, background_dim=.65):
-        if not 0 < fps <= 24:
-            raise ValueError('Focus FPS must be greater than zero and at most 24')
+        from .timing import MAX_FPS
+        if type(fps) not in (int,float) or not 0 < fps <= MAX_FPS:
+            raise ValueError('FPS must be greater than zero and at most 60')
         if not all(math.isfinite(x) for x in arc_range) or arc_range[1] <= arc_range[0]:
             raise ValueError('Arc maximum must exceed its minimum')
         if not 100 <= font_weight <= 900:

@@ -30,14 +30,14 @@ def click(item,x=None,y=None):
 def run():
     try:
         count=len(app.topLevelWindows())
-        window.setProperty('page',0);app.processEvents()
-        scroll=window.findChild(QObject,'pageScroll').property('contentItem')
-        anchor=window.findChild(QObject,'customAccentButton')
-        scroll.setProperty('contentY',max(0,anchor.mapToScene(QPointF(0,0)).y()-140))
+        window.setProperty('page',4);app.processEvents()
+        model=bridge.workspace.model
+        custom=window.findChild(QObject,'layerColorPickerButton')
+        scroll=window.findChild(QObject,'editorPropertiesScroll').property('contentItem')
+        scroll.setProperty('contentY',max(0,custom.mapToScene(QPointF(0,0)).y()-320))
         app.processEvents()
-        custom=window.findChild(QObject,'customAccentButton')
         for theme in (0,1):
-            window.findChild(QObject,'appThemeControl').setProperty('currentIndex',theme)
+            bridge.setUiTheme('light' if theme else 'dark')
             QTest.qWait(40)
             click(custom)
             app.processEvents()
@@ -50,12 +50,12 @@ def run():
             QTest.keyClick(window,Qt.Key.Key_A,Qt.KeyboardModifier.ControlModifier)
             for key in (Qt.Key.Key_NumberSign,Qt.Key.Key_2,Qt.Key.Key_4,Qt.Key.Key_6,Qt.Key.Key_8,Qt.Key.Key_A,Qt.Key.Key_B):QTest.keyClick(window,key)
             assert field.property('acceptableInput')
-            assert window.property('lcdAccent').name()=='#2468ab'
-            before=window.property('lcdAccent').name()
+            assert model.selected['color']=='#2468ab'
+            before=model.selected['color']
             field.setProperty('text','#12')
             QMetaObject.invokeMethod(field,'textEdited')
             assert not field.property('acceptableInput')
-            assert window.property('lcdAccent').name()==before
+            assert model.selected['color']==before
             # Visual selection recovers a partial hex edit and stays a valid RGB color.
             sv=window.findChild(QObject,'accentSaturationValue')
             click(sv,sv.width()*.7,sv.height()*.3)
@@ -70,6 +70,59 @@ def run():
         click(custom)
         QTest.mouseClick(window,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier,QPoint(10,10))
         assert not picker.property('visible')
+        previous_color=model.selected['color']
+        click(window.findChild(QObject,'addGradientLayer'))
+        model=bridge.workspace.model
+        assert model.selected['kind']=='gradient' and model.scene['layers'][0]['kind']=='gradient'
+        assert model.selected['path'] is None
+        def find_item(item,name):
+            if item.objectName()==name:return item
+            for child in item.childItems():
+                found=find_item(child,name)
+                if found is not None:return found
+            return None
+        for name, field_name, color in [('gradient-color','color','#337788'),
+                                       ('gradient-gradient_color','gradient_color','#8543a0')]:
+            button=find_item(window.contentItem(),name)
+            assert button is not None and button.property('visible')
+            button.forceActiveFocus()
+            QTest.keyClick(window,Qt.Key.Key_Space)
+            assert picker.property('visible')
+            field.setProperty('text',color)
+            QMetaObject.invokeMethod(field,'textEdited')
+            assert model.selected[field_name]==color
+            QTest.keyClick(window,Qt.Key.Key_Escape)
+            assert not picker.property('visible')
+        assert model.scene['layers'][1]['color']==previous_color
+        assert model.selected['color']=='#337788' and model.selected['gradient_color']=='#8543a0'
+        style=window.findChild(QObject,'gradientStyleControl')
+        direction=window.findChild(QObject,'gradientDirectionControl')
+        style.forceActiveFocus()
+        QTest.keyClick(window,Qt.Key.Key_Down)
+        assert model.selected['gradient_style']=='linear'
+        direction.forceActiveFocus()
+        QTest.keyClick(window,Qt.Key.Key_Up)
+        assert model.selected['gradient_angle']==15
+        style.forceActiveFocus()
+        QTest.keyClick(window,Qt.Key.Key_Down)
+        assert model.selected['gradient_style']=='radial' and not direction.property('visible')
+        click(window.findChild(QObject,'addGradientLayer'))
+        assert sum(item['kind']=='gradient' for item in model.scene['layers'])==1
+        effects_button=window.findChild(QObject,'addEffectsButton')
+        menu=window.findChild(QObject,'effectsMenu')
+        for key in ('dual_cpu','dual_gpu','radar'):
+            click(effects_button)
+            assert menu.property('visible')
+            content=menu.property('contentItem')
+            QTest.qWait(40)
+            entry=find_item(content,'addEffect-'+key)
+            assert entry is not None
+            click(entry)
+            QTest.qWait(20)
+            assert not menu.property('visible') and model.selected['effect']==key, (key,model.selected,menu.property('visible'))
+        assert [item['kind'] for item in model.scene['layers'][:5]]==['gradient','effect','effect','effect','text']
+        model.undo()
+        assert not any(item['effect']=='radar' for item in model.scene['layers'])
     except Exception:
         import traceback
         errors.append(traceback.format_exc())
@@ -77,7 +130,7 @@ def run():
 def finish():
     try:
         assert bridge.session is worker and not worker.stop_event.is_set()
-        assert worker.settings.accent==window.property('lcdAccent').name()
+        assert worker.settings.accent==Settings().accent
         assert not bridge.errorMessage
     except Exception:
         import traceback

@@ -182,9 +182,9 @@ assert app.applicationName()=='FX240 LCD STUDIO'
 assert app.desktopFileName()=='org.fx240lcdstudio'
 assert not app.windowIcon().isNull()
 assert window.findChild(QObject,'brandIcon')
-choice=window.findChild(QObject,'cometStyleControl')
+choice=window.findChild(QObject,'languageControl')
 for theme in (0,1):
-    window.findChild(QObject,'appThemeControl').setProperty('currentIndex',theme)
+    bridge.setUiTheme('light' if theme else 'dark')
     app.processEvents()
     assert window.property('lightTheme')==bool(theme)
     assert window.title()=='FX240 LCD STUDIO'
@@ -194,7 +194,7 @@ for theme in (0,1):
         window.setProperty('page',page)
         app.processEvents()
         assert not window.grabWindow().isNull()
-    window.setProperty('page',0)
+    window.setProperty('page',3)
     app.processEvents()
     scroll=window.findChild(QObject,'pageScroll').property('contentItem')
     scroll.setProperty('contentY',max(0,scroll.property('contentY')+choice.mapToScene(QPointF(0,0)).y()-220))
@@ -206,7 +206,7 @@ for theme in (0,1):
     QTest.keyClick(window,Qt.Key.Key_Escape)
     assert not choice.property('down')
 assert not bridge.trayAvailable
-window.findChild(QObject,'appThemeControl').setProperty('currentIndex',0)
+bridge.setUiTheme('dark')
 # Popup selection remains keyboard operable after custom styling.
 QTest.mouseClick(window,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier,point)
 QTest.keyClick(window,Qt.Key.Key_Down)
@@ -264,22 +264,16 @@ def verify():
         p=button.mapToItem(card,QPointF(0,0))
         assert p.y() >= 0 and p.y()+button.height() <= card.height()
         assert not button.property('enabled')
-        window.findChild(QObject,'weightControl').setProperty('value',500)
-        window.findChild(QObject,'cometSpeedControl').setProperty('value',2.0)
-        window.setProperty('lcdAccent','#ac8aff')
-        window.findChild(QObject,'cometStyleControl').setProperty('currentIndex',1)
-        window.findChild(QObject,'decimalControl').setProperty('currentIndex',0)
+        window.findChild(QObject,'fpsControl').setProperty('value',30)
+        window.findChild(QObject,'qualityControl').setProperty('value',70)
         assert window.findChild(QObject,'outputStatus')
         assert not window.findChild(QObject,'outputError').property('visible')
     except Exception as error:
         errors.append(str(error))
     QTimer.singleShot(400,verify_edit)
 def verify_edit():
-    if bridge.session.settings.font_weight!=500:errors.append('Live QML edit did not apply')
-    if bridge.session.settings.comet_speed!=2:errors.append('Live comet speed did not apply')
-    if bridge.session.settings.accent!='#ac8aff':errors.append('Accent not applied')
-    if bridge.session.settings.comet_style!='rainbow':errors.append('Rainbow style not applied')
-    if bridge.session.settings.temperature_decimals!=0:errors.append('Precision selector not applied')
+    if bridge.session.settings.fps!=30:errors.append('Frame rate edit did not apply')
+    if bridge.session.settings.quality!=70:errors.append('JPEG quality edit did not apply')
     if bridge.session.config_revision<1:errors.append('Missing live revision')
     bridge.stop()
     QTimer.singleShot(150,finish)

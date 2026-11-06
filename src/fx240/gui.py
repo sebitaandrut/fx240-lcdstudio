@@ -14,6 +14,7 @@ from .session import Session, Settings, find_devices
 from .i18n import translate, runtime_text
 from .branding import APP_NAME, application_icon
 from .preview import FrameProvider
+from .presets import DESIGNS, PRESET_ACCENTS
 
 
 def diagnostic_rows(event):
@@ -67,6 +68,8 @@ class Bridge(QObject):
             except (OSError,ValueError):
                 settings=replace(settings,layout_mode='focus',scene_json='',profile_id='')
                 self._profile_notice='Active profile could not be loaded; using Focus'
+        elif settings.layout_mode in DESIGNS and not settings.profile_id:
+            settings = replace(settings, scene_json='')
         else:
             if settings.profile_id:self._profile_notice='Active profile no longer exists; using Focus'
             settings=replace(settings,layout_mode='focus',scene_json='',profile_id='')
@@ -103,9 +106,14 @@ class Bridge(QObject):
         self._font_busy = False
         self.fontDiscoveryFinished.connect(self._acceptFonts)
         self._latest_metrics=[]
+        self._pending_profiles = {}
+        from .thumbnails import GalleryThumbnails
+        self._thumbnails = GalleryThumbnails()
+        self.profilesChanged.connect(self.refresh_thumbnails)
         from .workspace import EditorWorkspace
         self._workspace=EditorWorkspace(settings,self._profiles,lambda:self.settings,lambda:self._latest_metrics,
-                                        lambda:self._system_fonts,lambda:self._language)
+                                        lambda:self._system_fonts,lambda:self._language,
+                                        pending_profiles=lambda:self._pending_profiles)
         from .livepreview import LiveDraftPreview
         self._live_preview=LiveDraftPreview(self)
         self._workspace.validated.connect(self._live_preview.validated)
@@ -113,7 +121,6 @@ class Bridge(QObject):
         self._workspace.libraryChanged.connect(self.profilesChanged)
         self._workspace.libraryChanged.connect(self.changed)
         self._workspace.profileSaved.connect(self._profileSaved)
-        self._workspace.profileDeleted.connect(self._profileDeleted)
         self._workspace.activationRequested.connect(self.activateProfile)
         self._status = 'Ready — preview only'
         self._error = ''
@@ -198,10 +205,15 @@ class Bridge(QObject):
     @Property(bool, notify=changed)
     def trayAvailable(self): return self._tray is not None and self._tray.available
 
-    @Slot()
-    def minimizeToTray(self):
-        if self._tray:
-            self._tray.minimize()
+    @Slot(result=bool)
+    def requestWindowClose(self):
+        # Only a user window-close follows the login/tray preference. Explicit
+        # Quit, signals, and shutdown must still release the LCD and terminate.
+        if not self._closing and self._autostart_enabled and self._tray:
+            if self._tray.minimize():
+                self.flushPreferences()
+                return False
+        return self.requestClose()
 
     @Property(bool, notify=changed)
     def running(self): return self._running
@@ -212,7 +224,7 @@ class Bridge(QObject):
     @Property(str, notify=changed)
     def runtimeError(self):
         if self._startup_error:
-            return self.translate('Login startup could not be updated:',self._language)+' '+self._startup_error
+            return self.translate('Login startup could not be updated:',self._language)+' '+runtime_text(self._startup_error,self._language)
         return runtime_text(self._error,self._language)
     @Property(str, notify=changed)
     def preferenceNotice(self): return runtime_text(self._preference_notice,self._language)
@@ -280,32 +292,80 @@ class Bridge(QObject):
     def initialDelay(self): return str(self.settings.delay_ms)
     @Property(str, constant=True)
     def initialAccent(self): return self.settings.accent
+    @Property('QVariantMap', constant=True)
+    def initialPresetAccents(self):
+        return {name: getattr(self.settings, name + '_accent') for name in PRESET_ACCENTS}
+    @Property(str, constant=True)
+    def initialDualGpuAccent(self): return self.settings.dual_gpu_accent
+    @Property(str, constant=True)
+    def initialDualGpuEffectStyle(self): return self.settings.dual_gpu_effect_style
+    @Property(str, constant=True)
+    def initialPresetAnimation(self): return self.settings.preset_animation
     @Property(str, constant=True)
     def initialCometStyle(self): return self.settings.comet_style
     @Property(QObject,constant=True)
     def workspace(self):return self._workspace
     @Property(QObject,constant=True)
     def livePreview(self):return self._live_preview
+    @Property(QObject,constant=True)
+    def thumbnails(self):return self._thumbnails
     @Property(str,notify=changed)
     def layoutMode(self):return self.settings.layout_mode
     @Property('QStringList',notify=profilesChanged)
-    def contentLabels(self):return ['Focus']+[item['name'] for item in self._profiles.profiles]
+    def contentLabels(self):
+        return list(DESIGNS.values()) + [item['name'] for item in self._profiles.profiles]
+    @Property('QStringList',notify=profilesChanged)
+    def profileIds(self):
+        return [item['id'] for item in self._profiles.profiles]
+    @Property(int,constant=True)
+    def builtinDesignCount(self):return len(DESIGNS)
     @Property(int,notify=changed)
     def activeContentIndex(self):
-        return next((index+1 for index,item in enumerate(self._profiles.profiles) if item['id']==self.settings.profile_id),0)
+        if self.settings.layout_mode in DESIGNS:
+            return tuple(DESIGNS).index(self.settings.layout_mode)
+        return next((index for index, item in enumerate(self._profiles.profiles, len(DESIGNS))
+                     if item['id'] == self.settings.profile_id), 0)
     @Property(str,notify=changed)
     def activeContentName(self):
         item=self._profiles.get(self.settings.profile_id)
-        return item['name'] if item else 'Focus'
+        return item['name'] if item else DESIGNS.get(self.settings.layout_mode, 'Focus')
     @Property(str,notify=changed)
     def activeProfileId(self):return self.settings.profile_id
     @Property(str,notify=changed)
     def profileNotice(self):return runtime_text(self._profile_notice or self._profiles.error,self._language)
 
+    def design_options(self, index):
+        if 0 <= index < len(DESIGNS):
+            return {'layoutMode': tuple(DESIGNS)[index], 'profileId': '', 'scene': ''}
+        elif len(DESIGNS) <= index < len(DESIGNS) + len(self._profiles.profiles):
+            item = self._profiles.profiles[index - len(DESIGNS)]
+            return {'layoutMode': 'editor', 'scene': item['scene'], 'profileId': item['id']}
+        return None
+
     @Slot(int)
     def selectContent(self,index):
-        if index==0:self.useFocus()
-        elif 1<=index<=len(self._profiles.profiles):self.activateProfile(self._profiles.profiles[index-1]['id'])
+        options = self.design_options(index)
+        if options is not None:
+            self._profile_notice = ''
+            self.reconfigure(options, None)
+
+    @Slot(bool)
+    def setGalleryVisible(self, visible):
+        if visible:
+            self._thumbnails.visible = True
+            self.refresh_thumbnails()
+        else:
+            self._thumbnails.hide()
+
+    def refresh_thumbnails(self):
+        if self._thumbnails.visible:
+            configs = (self.configuration(self.design_options(index)) for index in range(len(self.contentLabels)))
+            self._thumbnails.show(
+                replace(config, device=None, fps=24, quality=65, delay_ms=2, rotation=0,
+                        draft_scene_json='', draft_profile_id='', draft_name='')
+                for config in configs
+            )
+
     @Slot(str)
     def activateProfile(self,identifier):
         item=self._profiles.get(identifier)
@@ -316,13 +376,18 @@ class Bridge(QObject):
     def useFocus(self):self.reconfigure({'layoutMode':'focus','profileId':'','scene':''},None)
     @Slot()
     def editActive(self):
-        if self.settings.profile_id:self._workspace.request_profile(self.settings.profile_id)
-        else:self._workspace.requestNew()
+        self.editDesign(self.activeContentIndex)
+
+    @Slot(int)
+    def editDesign(self, index):
+        options = self.design_options(index)
+        if options is not None:
+            if options['profileId']:
+                self._workspace.request_profile(options['profileId'])
+            else:
+                self._workspace.request_builtin(self.configuration(options))
     def _profileSaved(self,identifier):
         if identifier==self.settings.profile_id and not self._live_preview.active:self.activateProfile(identifier)
-    def _profileDeleted(self,identifier):
-        if identifier==self.settings.profile_id:self.useFocus()
-        self.changed.emit()
 
     @Property(str, constant=True)
     def initialAnimation(self): return self.settings.animation
@@ -394,6 +459,7 @@ class Bridge(QObject):
         self.devicesChanged.emit()
 
     def configuration(self, options):
+        preset_accents = options.get('presetAccents', {})
         return replace(self.settings,
                 fps=float(options.get('fps',self.settings.fps)),
                 quality=int(options.get('quality',self.settings.quality)),
@@ -402,8 +468,11 @@ class Bridge(QObject):
                 font_weight=int(options.get('weight',self.settings.font_weight)),
                 comet_speed=float(options.get('cometSpeed',self.settings.comet_speed)),
                 accent=str(options.get('accent',self.settings.accent)),
+                dual_gpu_accent=str(options.get('dualGpuAccent', self.settings.dual_gpu_accent)),
+                dual_gpu_effect_style=str(options.get('dualGpuEffectStyle', self.settings.dual_gpu_effect_style)),
                 comet_style=str(options.get('cometStyle',self.settings.comet_style)),
                 animation=str(options.get('animation',self.settings.animation)),
+                preset_animation=str(options.get('presetAnimation', self.settings.preset_animation)),
                 background_path=str(options.get('background',self.settings.background_path or '')) or None,
                 background_dim=float(options.get('backgroundDim',self.settings.background_dim)),
                 layout_mode=str(options.get('layoutMode',self.settings.layout_mode)),
@@ -411,7 +480,9 @@ class Bridge(QObject):
                 profile_id=str(options.get('profileId',self.settings.profile_id)),
                 temperature_decimals=1 if options.get('decimals',self.settings.temperature_decimals == 1) else 0,
                 temperature_unit=str(options.get('temperatureUnit',self.settings.temperature_unit)),
-                device=str(options.get('device',self.settings.device or '')) or None)
+                device=str(options.get('device',self.settings.device or '')) or None,
+                **{name + '_accent': preset_accents.get(name, getattr(self.settings, name + '_accent'))
+                   for name in PRESET_ACCENTS})
 
     @Slot('QVariantMap', bool)
     def start(self, options, send):
@@ -464,7 +535,9 @@ class Bridge(QObject):
             config = self.configuration(options)
             config.validate()
             if self._running:
-                self.session.configure(config,send)
+                request = self.session.configure(config,send)
+                if config.profile_id:
+                    self._pending_profiles[config.profile_id] = request
             else:
                 self.start(options,bool(send))
         except Exception as error:
@@ -484,6 +557,7 @@ class Bridge(QObject):
             if self._tray:self._tray.restore()
             self._live_preview.request_close();return False
         self._workspace.stop()
+        self._thumbnails.hide()
         self.flushPreferences()
         if not self._running:
             QCoreApplication.quit()
@@ -494,6 +568,7 @@ class Bridge(QObject):
 
     def poll(self):
         self._workspace.poll()
+        self._thumbnails.poll()
         if self.session is None:
             return
         try:
@@ -501,6 +576,7 @@ class Bridge(QObject):
         except queue.Empty:
             return
         if event['kind'] == 'stopped':
+            self._pending_profiles.clear()
             if event.get('last_frame'):
                 self.apply_frame(event['last_frame'])
             self._live_preview.reset()
@@ -522,18 +598,29 @@ class Bridge(QObject):
                 'capacity':streams*BUFFER_FRAMES,'waits':stats.get('underruns',0)}
 
     def apply_frame(self, event):
+        # Poll faster than the requested output cadence at higher host rates.
+        # The single-frame mailbox still bounds GUI backlog when hidden/slow.
+        rate=event.get('configuration',self.session.settings if self.session else self.settings).fps
+        interval = 8 if rate > 24 else 33
+        if self.timer.interval() != interval:
+            self.timer.setInterval(interval)
         self._latest_metrics=event['metrics']
         self._sending = event['sent']
         self._error = event.get('config_error') or event.get('output_error') or ''
+        # Publish the accepted image before switching the editor to output frames.
+        self.images.update(event['image'])
+        self._frame += 1
         committed=self._live_preview.frame(event)
+        if self._pending_profiles:
+            request = event.get('config_request_id', 0)
+            self._pending_profiles = {identifier: pending for identifier, pending in self._pending_profiles.items()
+                                      if pending > request}
         if self.session and committed and not event.get('config_error'):
             accepted=event.get('configuration',self.session.settings)
             if self.settings != accepted:
                 self.settings = accepted
                 self.save_timer.start()
         self._status = 'Sending to LCD' if self._sending else 'LCD paused'
-        self.images.update(event['image'])
-        self._frame += 1
         self.frameChanged.emit()
         if event['sequence'] != self._sequence:
             self._sequence = event['sequence']
@@ -557,6 +644,9 @@ def create_engine(app, settings, provider=None, preferences=None, application=No
     engine = QQmlApplicationEngine()
     engine.addImageProvider('frames',bridge.images)
     engine.addImageProvider('draft',bridge.workspace.images)
+    engine.addImageProvider('thumbnails',bridge.thumbnails.provider)
+    from .thumbnails import EffectThumbnails
+    engine.addImageProvider('effects', EffectThumbnails())
     engine.rootContext().setContextProperty('bridge',bridge)
     engine.load(QUrl.fromLocalFile(str(Path(__file__).parent/'qml/Main.qml')))
     if not engine.rootObjects():
@@ -568,7 +658,7 @@ def create_engine(app, settings, provider=None, preferences=None, application=No
 
 def dispose_engine(engine):
     bridge=engine.bridge
-    bridge.timer.stop();bridge.workspace.close()
+    bridge.timer.stop();bridge.workspace.close();bridge.thumbnails.close()
     # Destroy bound QML objects before their Python controller is released.
     for window in engine.rootObjects():
         window.deleteLater()
@@ -614,7 +704,9 @@ def launch(args,standby_guard=None,trace=None):
     settings = replace(settings,**overrides)
     settings.validate()
     minimized = getattr(args,"start_minimized",False)
-    engine,bridge = create_engine(app,settings,preferences=preferences,application=application,autostart=startup,start_minimized=minimized,standby_guard=standby_guard)
+    from functools import partial
+    session_factory=partial(Session,jpeg_subsampling=2) if getattr(args,'experimental_jpeg_420',False) else Session
+    engine,bridge = create_engine(app,settings,preferences=preferences,application=application,autostart=startup,start_minimized=minimized,standby_guard=standby_guard,session_factory=session_factory)
     tray = TrayController(engine.rootObjects()[0],bridge)
     if minimized:tray.start_minimized()
     from .sleep import SleepMonitor

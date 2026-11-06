@@ -1,6 +1,6 @@
 # Performance and measurement limits
 
-Measurements below were made on **one Arch Linux/Wayland system and one FX240**. The production application remains capped at **24 FPS**. Higher rates used isolated experimental instruments, not saved application presets. They do not establish a panel maximum, universal performance, or stable operation.
+Measurements below were made on **one Arch Linux/Wayland system and one FX240**. Version 0.3.0a1 defaults to **24 FPS** and exposes **1–60 host FPS** under Advanced settings. Higher rates are experimental. The historical higher-rate measurements below used isolated instruments, not the current packaged application, and do not establish a panel maximum, universal performance, or stable operation.
 
 ## Optical observations
 
@@ -17,7 +17,7 @@ A Gray-code row and its inverse identified successive source states. The owner s
 
 These counts use permissive decoding with an inverse-row check. Observed IDs were chronological; stricter confidence thresholds reduce coverage, especially at higher rates. The full confidence sensitivity and aggregate methods are retained in [evidence.json](evidence.json), not just the most favorable counts.
 
-These are **diagnostic-region state observations**, not certified complete-frame FPS. Missing IDs alone do not prove LCD drops, and the approximately 53–54 observed states/s at higher targets does not identify a hardware ceiling. The initial binary-code attempt was inconclusive. Retaining 24 FPS is conservative; 30 FPS remains a candidate for later application validation.
+These are **diagnostic-region state observations**, not certified complete-frame FPS. Missing IDs alone do not prove LCD drops, and the approximately 53–54 observed states/s at higher targets does not identify a hardware ceiling. The initial binary-code attempt was inconclusive. Keeping 24 FPS as the default is conservative; higher settings in 0.3.0a1 still require native application and optical validation.
 
 ## Host and preview throughput
 
@@ -44,7 +44,7 @@ The earlier two-minute synthetic/offscreen run is omitted here because it is a d
 
 ## Long-GIF playback
 
-The desktop uses a bounded 12-frame queue for GIFs above 120 frames, within the documented byte/frame/pixel budgets. This reduces retained decoded frames, with ongoing decoding work; it does not raise the 24 FPS output limit. The owner observed complete loops of synthetic 120-, 360-, and 720-frame clips and another local GIF on Arch Linux with one FX240.
+The desktop uses a bounded 12-frame queue for GIFs above 120 frames, within the documented byte/frame/pixel budgets. This reduces retained decoded frames, with ongoing decoding work; it does not raise output FPS automatically. The owner observed complete loops of synthetic 120-, 360-, and 720-frame clips and another local GIF on Arch Linux with one FX240.
 
 A 30-minute desktop run with the 720-frame clip selected collected 361 samples at five-second intervals across the application process family:
 
@@ -73,3 +73,7 @@ PYTHONPATH=src .venv/bin/python tools/profile_desktop.py \
 ```
 
 This offscreen synthetic tool is not a native LCD endurance test. `tools/analyze_counter_video.py` optionally decodes private diagnostic footage using the matching host trial boundaries and a calibrated crop; install `.[analysis]` only for analysis. Preserve confidence sensitivity and visibility context. Review every output before sharing, and do not equate video container FPS with physical exposures.
+
+## Unresolved spatial cuts
+
+The owner also observes spatial line-like cuts on moving objects in Linux and the official application. This is distinct from whole-frame cadence and remains unresolved. Static protocol/software inspection and firmware searching have not established presentation synchronization or a hardware-only cause. See [tearing investigation](tearing.md); private recordings and vendor binaries are excluded.

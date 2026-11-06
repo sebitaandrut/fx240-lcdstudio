@@ -8,9 +8,10 @@ import threading
 import unittest
 from unittest.mock import Mock
 from PIL import Image
-from fx240.scene import parse_scene,scene_json,default_scene,layer,SceneRenderer
+from fx240.scene import parse_scene,scene_json,default_scene,layer,SceneRenderer,gradient_surface
 from fx240.focus import font,resolve_font
 from fx240.preferences import Preferences
+from fx240.profiles import ProfileStore
 from fx240.session import Settings,Session
 from fx240.telemetry import Metric
 from fx240.media import encode
@@ -21,6 +22,58 @@ def metrics():
 
 
 class SceneTests(unittest.TestCase):
+    def test_gradient_is_bounded_static_and_needs_no_asset(self):
+        gradient = layer('glow', 'gradient', x=0, y=0, width=240, height=240,
+                         color='#ff0000', gradient_color='#0000ff', opacity=.5)
+        payload = scene_json({'version': 1, 'layers': [gradient]})
+        parsed = parse_scene(payload)['layers'][0]
+        self.assertIsNone(parsed['path'])
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'profiles.json'
+            identifier = ProfileStore(path).save('Gradient', payload)
+            self.assertEqual(parse_scene(ProfileStore(path).get(identifier)['scene'])['layers'][0], parsed)
+        with self.assertRaises(ValueError):
+            parse_scene(scene_json({'version': 1, 'layers': [{**gradient, 'gradient_color': '/test/image.png'}]}))
+        with self.assertRaises(ValueError):
+            parse_scene(scene_json({'version': 1, 'layers': [gradient, {**gradient, 'id': 'second'}]}))
+        with self.assertRaises(ValueError):
+            parse_scene(scene_json({'version': 1, 'layers': [layer('label', 'text', gradient_color='#0000ff')]}))
+        renderer = SceneRenderer(scene_json=payload, provider=metrics)
+        try:
+            frame, _ = renderer(0)
+            self.assertEqual(frame.size, (240, 240))
+            red = frame.getpixel((46, 192))
+            blue = frame.getpixel((199, 55))
+            self.assertGreater(red[0], red[2] + 80)
+            self.assertGreater(blue[2], blue[0] + 80)
+            self.assertLessEqual(max(red + blue), 128)
+            self.assertEqual(renderer(.5)[0].tobytes(), frame.tobytes())
+            self.assertFalse(renderer.assets)
+        finally:
+            renderer.close()
+
+    def test_gradient_modes_directions_and_legacy_defaults(self):
+        legacy = {'id': 'glow', 'kind': 'gradient', 'color': '#ff0000', 'gradient_color': '#0000ff',
+                  'x': 0, 'y': 0, 'width': 240, 'height': 240}
+        scene = {'version': 1, 'layers': [legacy]}
+        item = parse_scene(scene_json(scene))['layers'][0]
+        self.assertEqual((item['gradient_style'], item['gradient_angle']), ('aurora', 0))
+        for invalid in ({'gradient_style': 'invalid'}, {'gradient_angle': 360}, {'gradient_angle': True}):
+            with self.assertRaises(ValueError):
+                parse_scene(scene_json({**scene, 'layers': [{**legacy, **invalid}]}))
+        for style, angle, first, second in (
+            ('linear', 0, (.1, .5), (.9, .5)),
+            ('linear', 90, (.5, .1), (.5, .9)),
+            ('radial', 0, (.5, .5), (.95, .5)),
+            ('aurora', 180, (.81, .20), (.17, .77)),
+        ):
+            with self.subTest(style=style, angle=angle):
+                image = gradient_surface({**item, 'gradient_style': style, 'gradient_angle': angle})
+                r = image.getpixel((int(image.width*first[0]), int(image.height*first[1])))
+                b = image.getpixel((int(image.width*second[0]), int(image.height*second[1])))
+                self.assertGreater(r[0], r[2]+100)
+                self.assertGreater(b[2], b[0]+100)
+
     def test_declarative_schema_rejects_unknown_fields_and_resources(self):
         bad=[{'version':True,'layers':[]},{'version':1,'layers':[layer('a','script')]},
              {'version':1,'layers':[layer('a','text',qml='arbitrary code')]},

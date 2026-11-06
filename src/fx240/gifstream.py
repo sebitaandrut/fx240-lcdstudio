@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Bounded GIF playback with bounded queues and renderer-owned leases."""
 from bisect import bisect_right
+from collections import OrderedDict
 import io
 import math
 from pathlib import Path
@@ -8,7 +9,7 @@ import queue
 import struct
 import threading
 from PIL import Image
-from .localfiles import read_regular
+from .localfiles import read_regular,regular_identity
 from .media import canvas,MAX_FILE_BYTES
 
 MAX_FRAMES=2000
@@ -16,6 +17,8 @@ MAX_PIXELS=4_000_000
 MAX_WORK=300_000_000
 BUFFER_FRAMES=12
 _pool={}
+_small_assets=OrderedDict()
+MAX_INSPECTION_CACHE=8
 _pool_lock=threading.RLock()
 
 
@@ -108,6 +111,8 @@ class Lease:
     def __init__(self,key,decoder):self.key=key;self.decoder=decoder;self.closed=False
     @property
     def duration(self):return self.decoder.duration
+    @property
+    def ends(self):return tuple(self.decoder.ends)
     def frame(self,elapsed):return self.decoder.frame(elapsed)
     def close(self):
         if self.closed:return
@@ -119,19 +124,33 @@ class Lease:
         if closing:closing.close()
 
 
-def acquire(path):
-    path=Path(path);stat=path.stat()
-    # A session's replacements share its decoder. Independent preview/output
-    # clocks use independent decoders rather than fighting over one queue.
-    key=(threading.current_thread(),str(path),stat.st_mtime_ns,stat.st_size)
+def acquire(path,clock=None):
+    path=Path(path);identity=regular_identity(path)
+    # Geometry edits must not re-read/index the entire GIF. Long-lived streams
+    # share leases; a bounded metadata-only cache remembers eager assets.
+    asset=(str(path),identity,MAX_FRAMES,MAX_PIXELS,MAX_WORK)
+    key=(threading.current_thread(),*asset,clock)
     with _pool_lock:
         decoder=_pool.get(key)
-        if decoder is None:
-            payload=read_regular(path,MAX_FILE_BYTES);ends=inspect_gif(payload)
-            if ends is None or len(ends)<=120:return None
-            decoder=Decoder(payload,ends);_pool[key]=decoder
-        decoder.refs+=1
-        return Lease(key,decoder)
+        if decoder is not None:
+            decoder.refs+=1
+            return Lease(key,decoder)
+        if asset in _small_assets:
+            _small_assets.move_to_end(asset)
+            return None
+    # File decoding and worker startup never hold the registry lock, allowing
+    # independent preview/output sessions to continue while an asset loads.
+    payload=read_regular(path,MAX_FILE_BYTES);ends=inspect_gif(payload)
+    if ends is None or len(ends)<=120:
+        if regular_identity(path)==identity:
+            with _pool_lock:
+                _small_assets[asset]=True;_small_assets.move_to_end(asset)
+                while len(_small_assets)>MAX_INSPECTION_CACHE:_small_assets.popitem(last=False)
+        return None
+    decoder=Decoder(payload,ends)
+    with _pool_lock:
+        decoder.refs=1;_pool[key]=decoder
+    return Lease(key,decoder)
 
 
 def statistics(owner=None):

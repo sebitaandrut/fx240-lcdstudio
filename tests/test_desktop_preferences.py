@@ -35,13 +35,12 @@ def change():
         buttons=[b for b in window.findChildren(QObject,'infoHelpButton') if b.property('visible')]
         assert buttons
         buttons[0].forceActiveFocus()
-        for name,value in [('cometStyleControl',1),('temperatureUnitControl',1),('appThemeControl',1),('languageControl',1)]:
-            window.findChild(QObject,name).setProperty('currentIndex',value)
-        window.findChild(QObject,'cometSpeedControl').setProperty('value',2.0)
-        window.findChild(QObject,'weightControl').setProperty('value',500)
-        window.setProperty('lcdAccent','#ac8aff')
+        window.findChild(QObject,'languageControl').setProperty('currentIndex',1)
+        bridge.applySettings({'cometStyle':'rainbow','temperatureUnit':'F',
+                              'cometSpeed':2.0,'weight':500,'accent':'#ac8aff'})
         assert bridge.language=='es'
         assert window.title()=='FX240 LCD STUDIO'
+        bridge.setUiTheme('light')
         assert window.property('lightTheme')
         assert not window.findChild(QObject,'advancedSettings').property('visible')
     except Exception as e:errors.append(repr(e))
@@ -55,8 +54,6 @@ def verify():
         assert bridge.status=='LCD en pausa'
         # Translating model labels must not change their selected semantic values.
         bridge.setLanguage('en');bridge.setLanguage('es')
-        assert window.findChild(QObject,'cometStyleControl').property('currentIndex')==1
-        assert window.findChild(QObject,'temperatureUnitControl').property('currentIndex')==1
         bridge.flushPreferences()
         loaded,ui=Preferences(store.path).load()
         assert loaded.comet_style=='rainbow' and loaded.temperature_unit=='F'
@@ -66,10 +63,12 @@ def verify():
         w=restored.rootObjects()[0]
         assert w.property('lightTheme') and other.language=='es'
         assert w.findChild(QObject,'languageControl').property('currentIndex')==1
-        assert w.findChild(QObject,'temperatureUnitControl').property('currentIndex')==1
-        assert w.findChild(QObject,'cometStyleControl').property('currentIndex')==1
-        assert w.findChild(QObject,'cometSpeedControl').property('value')==2
-        assert w.findChild(QObject,'weightControl').property('value')==500
+        other.editDesign(0)
+        assert other.workspace.temperatureUnit=='F'
+        assert other.workspace.motionSpeed==2
+        arc=next(item for item in other.workspace.model.scene['layers'] if item['kind']=='arc')
+        assert arc['effect_style']=='rainbow' and arc['color']=='#ac8aff'
+        assert all(item['weight']==500 for item in other.workspace.model.scene['layers'] if item['kind'] in ('text','metric'))
         dispose_engine(restored)
     except Exception as e:errors.append(repr(e))
     bridge.stop();QTimer.singleShot(200,app.quit)

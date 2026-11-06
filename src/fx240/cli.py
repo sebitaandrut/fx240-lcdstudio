@@ -13,6 +13,7 @@ from .telemetry import collect
 from .transport import Hidraw
 from .overlay import TelemetryOverlay
 from .focus import Focus
+from .timing import DEFAULT_FPS, MAX_FPS
 
 
 def main(argv=None):
@@ -21,6 +22,7 @@ def main(argv=None):
     parser.add_argument("--start-minimized", action="store_true", help="GUI: start in the tray, or minimize normally when no tray is available")
     # Accept old trial/autostart commands; buffering is now automatic.
     parser.add_argument("--experimental-gif-buffering",action="store_true",help=argparse.SUPPRESS)
+    parser.add_argument("--experimental-jpeg-420",action="store_true",help="GUI-only session experiment: JPEG 4:2:0 instead of default 4:4:4; not saved")
     parser.add_argument("--config-home", type=Path, help="GUI-only configuration root for Studio; leaves system XDG folders and theme settings unchanged")
     parser.add_argument("file", nargs="?", type=Path)
     parser.add_argument("--temperature-unit", choices=("C","F"), default="C", help="Displayed temperature unit; raw sensors remain Celsius")
@@ -36,7 +38,7 @@ def main(argv=None):
     parser.add_argument("--device", help="Explicit /dev/hidrawN path for transmission")
     parser.add_argument("--send", action="store_true")
     parser.add_argument("--duration", type=float, default=10)
-    parser.add_argument("--fps", type=float, default=None, help="Maximum 24 FPS; preserve GIF timing unless overridden")
+    parser.add_argument("--fps", type=float, default=None, help=f"Maximum {MAX_FPS} host FPS, experimental above {DEFAULT_FPS}. Preserve GIF timing unless overridden.")
     parser.add_argument("--delay-ms", type=float, default=10)
     parser.add_argument("--quality", type=int, default=85)
     parser.add_argument("--rotation", type=int, choices=(0,90,180,270), default=180)
@@ -49,8 +51,8 @@ def main(argv=None):
         parser.error("Comet speed: 0.25..3")
     if not 0 < args.duration <= 3600 or not math.isfinite(args.duration):
         parser.error("Duration: 0 < seconds <= 3600")
-    if args.fps is not None and not 0 < args.fps <= 24:
-        parser.error("FPS: 0 < FPS <= 24")
+    if args.fps is not None and not 0 < args.fps <= MAX_FPS:
+        parser.error(f"FPS: 0 < FPS <= {MAX_FPS}")
     if not 0 <= args.delay_ms <= 100 or not 1 <= args.quality <= 95:
         parser.error("Delay: 0..100 ms; quality: 1..95")
     if len(args.metric or []) > 4:
@@ -59,6 +61,8 @@ def main(argv=None):
         parser.error("--overlay requires image or gif mode")
     if args.start_minimized and args.mode != 'gui':
         parser.error('--start-minimized requires gui mode')
+    if args.experimental_jpeg_420 and args.mode!='gui':
+        parser.error('--experimental-jpeg-420 requires gui mode')
     if args.experimental_gif_buffering and args.mode not in ('gui','self-test'):parser.error('--experimental-gif-buffering requires gui or self-test mode')
     if args.config_home is not None:
         if args.mode!='gui':parser.error('--config-home requires gui mode')

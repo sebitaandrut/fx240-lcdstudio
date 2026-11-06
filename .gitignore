@@ -6,9 +6,15 @@ __pycache__/
 build/
 dist/
 private/
+/work/
+/outputs/
+.hypothesis/
+*.log
 *.pcap*
 *.mp4
 *.mov
+*.mkv
+*.avi
 *.gif
 *.bin
 .env*

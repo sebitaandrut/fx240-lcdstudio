@@ -58,6 +58,8 @@ def run():
                 require(not window.grabWindow().isNull(), 'Window capture is unavailable')
             require(window.findChild(QObject,'editorCanvas') is not None, 'Editor canvas did not load')
             require(bridge.workspace.model.rowCount()==5, 'Default composition did not load')
+            for name in ('editorRotationControl','editorFahrenheitSwitch','clearCompositionButton','clearCompositionDialog'):
+                require(window.findChild(QObject,name) is not None,'Editor control did not load')
             from .gifstream import statistics
             require(statistics(bridge.session.thread).get('streams')==1,'GIF stream did not start')
             stats=bridge.gifBufferStatistics

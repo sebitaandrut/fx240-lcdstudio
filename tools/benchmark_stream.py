@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Experimental host-throughput sweep and optical-counter generator.
 
-Does not alter the application's 24 FPS cap. Requires explicit --send for USB.
+Uses a separate benchmark rate limit. Requires explicit --send for USB.
 Host write completion is not evidence of physical LCD presentation.
 """
 import argparse

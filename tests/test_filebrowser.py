@@ -115,7 +115,7 @@ with tempfile.TemporaryDirectory() as folder:
         window=engine.rootObjects()[0];window.setProperty('page',4);QTest.qWait(100)
         picker=window.findChild(QObject,'mediaAssetPicker');browser=picker.findChild(QObject,'assetBrowser')
         for theme in (0,1):
-            bridge.setLanguage('es');window.findChild(QObject,'appThemeControl').setProperty('currentIndex',theme)
+            bridge.setLanguage('es');bridge.setUiTheme('light' if theme else 'dark')
             count=len(app.topLevelWindows());before=bridge.workspace.model.rowCount()
             QMetaObject.invokeMethod(picker,'open');wait(lambda:not browser.busy)
             assert picker.property('visible')

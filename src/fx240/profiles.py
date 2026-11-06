@@ -80,5 +80,12 @@ class ProfileStore:
         return identifier
 
     def delete(self,identifier):
-        if self.get(identifier) is None:raise ValueError('Profile no longer exists')
-        self._write([item for item in self.profiles if item['id']!=identifier])
+        self.delete_many([identifier])
+
+    def delete_many(self, identifiers):
+        selected = set(identifiers)
+        if not selected:
+            return
+        if selected - {item['id'] for item in self.profiles}:
+            raise ValueError('Profile no longer exists')
+        self._write([item for item in self.profiles if item['id'] not in selected])

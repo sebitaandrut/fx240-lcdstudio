@@ -19,6 +19,10 @@ from fx240.gui import create_engine,dispose_engine
 from fx240.tray import TrayController,tray_icon
 from fx240.session import Settings
 from fx240.telemetry import Metric
+from unittest.mock import patch
+class FakeStartup:
+    enabled=False
+    def set_enabled(self,value):self.enabled=value
 class FakeTray(QObject):
     activated=Signal(object)
     available=True
@@ -39,7 +43,7 @@ for size in (16,22,32):
     assert not dark.isNull() and not light.isNull() and not fallback.isNull()
     assert dark!=light
     assert any(dark.pixelColor(x,y).alpha()>0 for y in range(size) for x in range(size))
-engine,bridge=create_engine(app,Settings(),provider=lambda:[Metric('ct','CPU synthetic',45,'C','synthetic')])
+engine,bridge=create_engine(app,Settings(),provider=lambda:[Metric('ct','CPU synthetic',45,'C','synthetic')],autostart=FakeStartup())
 window=engine.rootObjects()[0]
 tray=TrayController(window,bridge,tray_factory=FakeTray)
 tray.update_icon(Qt.ColorScheme.Dark)
@@ -92,6 +96,21 @@ def finish():
         assert [a.text() for a in tray.menu.actions()]==['Show studio','','Quit']
         bridge.setLanguage('es')
         assert [a.text() for a in tray.menu.actions()]==['Mostrar estudio','','Salir']
+        bridge.setAutostart(True)
+        window.close()
+        assert tray.hidden and not window.isVisible()
+        assert bridge.session is worker and not worker.stop_event.is_set() and not bridge._closing
+        tray.restore()
+        bridge.setAutostart(False)
+        with patch.object(bridge,'requestClose',return_value=False) as close:
+            window.close();close.assert_called_once()
+        assert window.isVisible()
+        bridge.setAutostart(True)
+        FakeTray.available=False
+        with patch.object(bridge,'requestClose',return_value=False) as close:
+            window.close();close.assert_called_once()
+        assert window.isVisible()
+        FakeTray.available=True;tray.check_availability()
     except Exception as e:errors.append(repr(e))
     tray.quit()
 QTimer.singleShot(300,begin)

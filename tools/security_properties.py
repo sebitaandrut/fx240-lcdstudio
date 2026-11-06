@@ -16,7 +16,7 @@ from PIL import Image, UnidentifiedImageError
 from fx240.media import load
 from fx240.preferences import Preferences
 from fx240.protocol import build_reports
-from fx240.scene import parse_scene,scene_json
+from fx240.scene import parse_scene,scene_json,layer
 from fx240.profiles import validate_library
 from fx240.transport import Hidraw
 
@@ -85,6 +85,23 @@ class InputProperties(unittest.TestCase):
             else:
                 self.assertLessEqual(len(scene['layers']),16)
                 self.assertEqual(parse_scene(scene_json(scene)),scene)
+            opened.assert_not_called()
+
+    @PROPERTY
+    @given(st.one_of(st.integers(-720,720),st.booleans(),st.floats(allow_nan=True,allow_infinity=True),st.text(max_size=8)),
+           st.one_of(st.sampled_from(['inherit','C','F']),scalar),
+           st.sampled_from(['source','smooth','script','https://example.invalid']))
+    def test_rotation_and_unit_metadata_remain_bounded(self,angle,unit,pacing):
+        payload={'version':1,'temperature_unit':unit,'layers':[layer('a','text',rotation=angle,gif_pacing=pacing)]}
+        with patch('fx240.localfiles.os.open') as opened:
+            try:scene=parse_scene(scene_json(payload))
+            except ValueError:
+                self.assertFalse(type(angle) is int and 0<=angle<=359 and unit in ('inherit','C','F') and pacing in ('source','smooth'))
+            else:
+                self.assertIs(type(scene['layers'][0]['rotation']),int)
+                self.assertTrue(0<=scene['layers'][0]['rotation']<=359)
+                self.assertIn(scene.get('temperature_unit','inherit'),('inherit','C','F'))
+                self.assertIn(scene['layers'][0]['gif_pacing'],('source','smooth'))
             opened.assert_not_called()
 
     @PROPERTY

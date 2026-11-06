@@ -23,10 +23,11 @@ with patch('fx240.gui.find_devices',return_value=[]):
 window=engine.rootObjects()[0]
 assert window.minimumWidth()==1200
 assert window.minimumHeight()==760
+window.setProperty('page',4);QTest.qWait(80)
 picker=window.findChild(QObject,'systemFontControl')
 picker.setProperty('model',['Bundled Outfit (default)','Example Regular','Example Bold'])
 for theme in (0,1):
-    window.findChild(QObject,'appThemeControl').setProperty('currentIndex',theme)
+    bridge.setUiTheme('light' if theme else 'dark')
     QTest.qWait(80)
     count=len(app.topLevelWindows())
     point=picker.mapToScene(QPointF(picker.width()/2,picker.height()/2)).toPoint()
@@ -57,27 +58,18 @@ window.setProperty('page',0)
 for language in ('en','es'):
     bridge.setLanguage(language)
     for theme in (0,1):
-        window.findChild(QObject,'appThemeControl').setProperty('currentIndex',theme)
+        bridge.setUiTheme('light' if theme else 'dark')
         for width in (1200,1280,1440,1600):
             window.setWidth(width);window.setHeight(760);QTest.qWait(50)
-            content=window.findChild(QObject,'focusPropertiesContent')
-            for child in content.childItems():
-                if child.isVisible():
-                    assert child.x()>=-1 and child.x()+child.width()<=content.width()+1,(width,child.x(),child.width(),content.width())
-            assert window.findChild(QObject,'focusPropertiesScroll').height()>300
+            gallery=window.findChild(QObject,'designGallery')
+            assert gallery.property('visible')
+            assert window.findChild(QObject,'focusInspector') is None
             preview=window.findChild(QObject,'framePreview')
             assert preview.width()>=280 and preview.height()>=280
-            assert window.findChild(QObject,'appearanceWorkspace').property('columns')==3
-            palette=window.findChild(QObject,'accentPalette')
-            custom=window.findChild(QObject,'customAccentButton')
-            center=custom.mapToScene(QPointF(0,custom.height()/2)).y()
-            animation=window.findChild(QObject,'animationControl')
-            assert abs(custom.width()-animation.width())<1
-            assert abs(custom.mapToScene(QPointF(0,0)).x()-animation.mapToScene(QPointF(0,0)).x())<1
-            swatches=[item for item in palette.childItems() if item.objectName().startswith('accentSwatch-')]
-            assert len(swatches)==6
-            for swatch in swatches:
-                assert abs(swatch.mapToScene(QPointF(0,swatch.height()/2)).y()-center)<1
+            assert window.findChild(QObject,'applyDesignButton') is None
+            grid=window.findChild(QObject,'builtinDesignGrid')
+            assert grid.property('columns')==(4 if grid.width()>=720 else 2)
+            assert grid.width()<gallery.width()
 
             window.setProperty('page',4);QTest.qWait(50)
             toolbar=window.findChild(QObject,'compositionToolbar')
@@ -94,11 +86,38 @@ for language in ('en','es'):
             assert canvas.width()>=180 and canvas.height()>=180
             assert canvas.mapToScene(QPointF(0,0)).y()>toolbar.mapToScene(QPointF(0,toolbar.height())).y()
             window.setProperty('page',0);QTest.qWait(30)
+for width,height in ((2548,967),(2474,1345),(2560,1440)):
+    window.resize(width,height)
+    QTest.qWait(100)
+    gallery=window.findChild(QObject,'designGallery')
+    grid=window.findChild(QObject,'builtinDesignGrid')
+    preview=window.findChild(QObject,'framePreview')
+    edit=window.findChild(QObject,'openEditorButton')
+    left_gap=gallery.mapToScene(QPointF()).x()-180
+    right_gap=width-gallery.mapToScene(QPointF(gallery.width(),0)).x()
+    assert 20<=left_gap<=48 and abs(left_gap-right_gap)<=1
+    assert grid.property('columns')==4 and gallery.property('thumbnailSize')>=155
+    assert window.findChild(QObject,'designPreviewPanel').width()<=720
+    assert 490<=preview.width()<=560 and preview.width()==preview.height()
+    gap=edit.mapToScene(QPointF()).y()-preview.mapToScene(QPointF(0,preview.height())).y()
+    assert 10<=gap<=14
+    window.setProperty('page',4);QTest.qWait(100)
+    canvas=window.findChild(QObject,'editorCanvas')
+    assert 510<=canvas.width()<=660 and canvas.width()==canvas.height()
+    layers=window.findChild(QObject,'editorLayersPanel')
+    properties=window.findChild(QObject,'editorPropertiesPanel')
+    assert 300<=layers.width()<=320 and 330<=properties.width()<=380
+    assert abs(layers.mapToScene(QPointF()).x()-180-left_gap)<=1
+    assert abs(width-properties.mapToScene(QPointF(properties.width(),0)).x()-right_gap)<=1
+    assert window.findChild(QObject,'profileNameControl').width()<=460
+    assert bridge.workspace.model.payload()==payload
+    window.setProperty('page',0);QTest.qWait(50)
+window.resize(1200,760)
 window.setWidth(1200);window.setProperty('page',4);QTest.qWait(100)
 bridge.setLanguage('es')
 dialog=window.findChild(QObject,'discardDraftDialog')
 for theme in (0,1):
-    window.findChild(QObject,'appThemeControl').setProperty('currentIndex',theme)
+    bridge.setUiTheme('light' if theme else 'dark')
     bridge.workspace.requestNew();QTest.qWait(50)
     assert dialog.property('visible')
     assert dialog.property('acceptText')=='Descartar borrador'

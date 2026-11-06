@@ -4,26 +4,47 @@ from PySide6.QtCore import QRectF
 from PySide6.QtGui import QImage,QPainter,QPainterPath
 from PySide6.QtQuick import QQuickImageProvider
 
+
+def circular_image(image):
+    rgb = image.convert('RGB')
+    frame = QImage(rgb.tobytes(), rgb.width, rgb.height, rgb.width*3, QImage.Format.Format_RGB888).copy()
+    result = QImage(rgb.width, rgb.height, QImage.Format.Format_ARGB32_Premultiplied)
+    result.fill(0)
+    painter = QPainter(result)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    clip = QPainterPath()
+    margin = rgb.width * 3 / 240
+    clip.addEllipse(QRectF(margin, margin, rgb.width - 2*margin, rgb.height - 2*margin))
+    painter.setClipPath(clip)
+    painter.drawImage(0, 0, frame)
+    painter.end()
+    return result
+
+
 class FrameProvider(QQuickImageProvider):
     def __init__(self):
         super().__init__(QQuickImageProvider.ImageType.Image)
-        self.image = QImage(240,240,QImage.Format.Format_RGB888)
-        self.image.fill('#080b0e')
+        self.image = QImage(240,240,QImage.Format.Format_ARGB32_Premultiplied)
+        self.image.fill(0)
 
     def update(self, image):
-        rgb = image.convert('RGB')
-        frame = QImage(rgb.tobytes(),rgb.width,rgb.height,rgb.width*3,QImage.Format.Format_RGB888).copy()
-        self.image = QImage(rgb.width,rgb.height,QImage.Format.Format_ARGB32_Premultiplied)
-        self.image.fill(0)
-        painter = QPainter(self.image)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        clip = QPainterPath()
-        clip.addEllipse(QRectF(3,3,234,234))
-        painter.setClipPath(clip)
-        painter.drawImage(0,0,frame)
-        painter.end()
+        self.image = circular_image(image)
 
     def requestImage(self, identifier, size, requested_size):
         size.setWidth(self.image.width())
         size.setHeight(self.image.height())
         return self.image.copy()
+
+
+class ThumbnailProvider(QQuickImageProvider):
+    def __init__(self):
+        super().__init__(QQuickImageProvider.ImageType.Image)
+        self.images = {}
+        self.empty = QImage(1, 1, QImage.Format.Format_ARGB32_Premultiplied)
+        self.empty.fill(0)
+
+    def requestImage(self, identifier, size, requested_size):
+        image = self.images.get(identifier, self.empty)
+        size.setWidth(image.width())
+        size.setHeight(image.height())
+        return image.copy()

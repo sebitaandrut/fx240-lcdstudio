@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.0a1 — experimental alpha
+
+- Add Dual, Trace, and Halo alongside Focus. The Designs gallery switches directly between built-in and saved designs, renders thumbnails using synthetic readings, and supports confirmed bulk deletion of saved profiles.
+- Open originals as editable copies and keep appearance controls in the composition editor. Add responsive layouts, a direct light/dark toggle, and a wider gallery on large displays.
+- Select layers with Shift-click or checkboxes. Move, resize, rotate, recolor, and delete selections with undo, or clear the entire draft after confirmation.
+- Add a visual color picker, independent CPU and GPU accents for Dual, and an effects catalog with a temperature arc, Dual arcs, temperature history, radial pulse, segmented ring, and radar sweep.
+- Add Aurora, Linear, and Radial gradients without image assets. Save animation speed and temperature precision per design, and edit Celsius/Fahrenheit in temperature-layer properties.
+- Add per-layer image and GIF zoom, optional GIF timing matched to output FPS, and reuse unchanged media and fonts across edits.
+- Keep the draft visible until the first matching frame is sent during temporary LCD preview. Improve host delivery pacing and keep 24 FPS as the default, with experimental 1–60 host FPS in Advanced settings.
+- Keep 2 ms as the default inter-report delay. Add a session-only JPEG 4:2:0 diagnostic option and document the unresolved tearing investigation without publishing private evidence.
+- Close to the tray when minimized login startup is enabled. Explicit Quit and lifecycle shutdown retain the standby path.
+- Expand Spanish translation coverage and add tests for scene bounds, playback, editor interactions, and wide layouts.
+
 ## 0.2.0 — experimental
 
 - Unify Focus and saved designs under Appearance, with responsive panels, themed local file/font pickers, and English/Spanish controls.
@@ -9,7 +22,7 @@
 - Decode desktop GIFs above 120 frames automatically with bounded queues, up to 2000 frames within byte/pixel/work limits. Keep technical buffer counters in Diagnostics.
 - Preserve local-only asset references and bounded private settings; validate renderer ownership, replacement, failure, and cleanup.
 
-The application remains experimental and capped at 24 FPS. Initial long-GIF playback/resume checks and a 30-minute resource run are limited to Arch Linux and one FX240; they do not establish optical FPS, leak freedom, or compatibility elsewhere. See [validation](docs/validation.md) and [performance](docs/performance.md).
+At the 0.2.0 baseline, the application was capped at 24 FPS. Initial long-GIF playback/resume checks and a 30-minute resource run are limited to Arch Linux and one FX240; they do not establish optical FPS, leak freedom, or compatibility elsewhere. See [validation](docs/validation.md) and [performance](docs/performance.md).
 
 ## 0.1.0 — initial experimental baseline
 

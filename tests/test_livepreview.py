@@ -60,12 +60,29 @@ with tempfile.TemporaryDirectory() as folder:
     with patch.object(bridge.session,'configure',side_effect=ValueError('synthetic validation')):
         assert not live.start()
     assert not live.active and bridge.settings==baseline
+    previous_frame=bridge.session.last_frame
+    preview=window.findChild(QObject,'editorFramePreview')
     click(window.findChild(QObject,'draftPreviewButton'))
-    wait(lambda:live.active and bridge.session.settings.layout_mode=='editor' and bridge.sending)
-    assert bridge.settings==baseline
-    assert window.findChild(QObject,'editorFramePreview').property('source').toString()==bridge.previewUrl
-    assert len(bridge.contentLabels)==1
+    assert live.active and not live.showOutput
+    assert preview.property('source').toString().startswith('image://draft/')
+    bridge.apply_frame(previous_frame)
+    assert not live.showOutput
+    assert preview.property('source').toString().startswith('image://draft/')
+    wait(lambda:live.showOutput and bridge.sending)
+    assert bridge.session.settings.layout_mode=='editor' and bridge.settings==baseline
+    assert preview.property('source').toString()==bridge.previewUrl
+    assert len(bridge.contentLabels)==4
     edit(22);assert bridge.settings==baseline
+    workspace.model.updateSelected({'rotation':90})
+    workspace.model.setTemperatureUnit('F')
+    wait(lambda:workspace.ready and bridge.session.settings.scene_json==workspace.model.payload() and bridge.sensorRows[0]['target']=='113.0°F')
+    rotated=workspace.model.payload()
+    workspace.model.resetComposition(True)
+    wait(lambda:workspace.ready and bridge.session.settings.scene_json==workspace.model.payload())
+    wait(lambda:bridge.images.image.pixelColor(120,120).getRgb()[:3]==(0,0,0))
+    assert not workspace.store.profiles and bridge.settings==baseline
+    workspace.model.undo()
+    wait(lambda:workspace.ready and bridge.session.settings.scene_json==rotated)
     bridge.flushPreferences();stored,_=prefs.load()
     assert stored.layout_mode=='focus' and not stored.profile_id and not stored.scene_json
     # Invalid media cannot replace the last accepted physical renderer.
@@ -85,7 +102,7 @@ with tempfile.TemporaryDirectory() as folder:
     wait(lambda:not live.active)
     assert bridge.settings==baseline and bridge.sending
     assert window.findChild(QObject,'editorFramePreview').property('source').toString()==workspace.previewUrl
-    assert len(bridge.contentLabels)==2
+    assert len(bridge.contentLabels)==5
     assert workspace.model.payload()==valid
     assert Transport.opens==1 and Transport.maximum==1
     # Apply commits only after the main sender accepts the saved scene.

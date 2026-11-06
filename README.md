@@ -6,10 +6,10 @@ An experimental native Linux application for the **ID-COOLING FX240 LCD**, built
 
 ## Features
 
-- Focus dashboard with CPU/GPU temperatures and frequencies, Outfit typography, and an animated comet.
+- Focus, Dual, Trace, and Halo dashboards with CPU/GPU readings and a gallery of built-in and saved designs.
 - Live colors, rainbow effect, animation speed, fonts, precision, and Celsius/Fahrenheit.
 - Dark/light interface, English/Spanish, saved settings, tray support, and opt-in login startup.
-- A drag-and-drop composition editor for local images/GIFs, text, CPU/GPU readings, and optional arcs.
+- A composition editor with multi-layer selection, visual color pickers, gradients, animated effects, local images/GIFs, rotation, zoom, and undo.
 - Named designs, live LCD trials before saving, and automatic bounded playback for longer GIFs.
 - A locally built executable that runs without an activated Python environment.
 
@@ -35,7 +35,7 @@ The GUI starts preview and physical output automatically when one matching LCD i
 
 ## Status
 
-Version **0.2.0 remains experimental**, not a stable release. The application is capped at **24 FPS**; higher host throughput is not proof of complete physical LCD frames. Packaged operation and desktop-autostarted reboot/shutdown passed initial hardware checks. Initial suspend/resume checks also passed owner observation, including saved long-GIF profiles and temporary editor trials. A 30-minute GIF run showed stable proportional memory and resource counts; multi-hour stability, repeated lifecycle trials, and a clean native desktop installation remain pending. See [validation and limits](docs/validation.md).
+Version **0.3.0a1 is experimental**, not a stable release. Output defaults to **24 FPS**, with **1–60 host FPS** available in Advanced settings. Higher rates do not guarantee complete physical LCD frames. Spatial cuts/tearing on some moving content remain [under investigation](docs/tearing.md). Packaged operation and desktop-autostarted reboot/shutdown passed initial hardware checks. Initial suspend/resume checks also passed owner observation, including saved long-GIF profiles and temporary editor trials. A 30-minute GIF run showed stable proportional memory and resource counts; multi-hour stability, repeated lifecycle trials, and a clean native desktop installation remain pending. See [validation and limits](docs/validation.md).
 
 ## Documentation
 

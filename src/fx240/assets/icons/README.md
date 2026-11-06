@@ -5,3 +5,5 @@ The complete upstream license and Feather-derived MIT notices are preserved in L
 Source URLs and SHA-256 hashes of original downloads are recorded in sources.json.
 Dark theme variants replace currentColor with fixed theme colors; geometry is unchanged.
 Icons are local files and require no online icon service.
+
+The theme sun and moon icons are original Studio artwork, licensed with the project.

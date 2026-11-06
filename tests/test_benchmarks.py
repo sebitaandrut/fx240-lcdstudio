@@ -41,10 +41,10 @@ class BenchmarkTests(unittest.TestCase):
         transport.assert_not_called()
 
     @unittest.skipUnless(importlib.util.find_spec('PySide6'),'Optional Qt dependency missing')
-    def test_experimental_rate_does_not_raise_production_limit(self):
+    def test_benchmark_limit_is_independent_of_desktop_limit(self):
         from benchmark_gui import BenchmarkSettings,Histogram
         BenchmarkSettings(fps=120).validate()
-        with self.assertRaises(ValueError):Settings(fps=60).validate()
+        with self.assertRaises(ValueError):Settings(fps=61).validate()
         with self.assertRaises(ValueError):BenchmarkSettings(fps=121).validate()
         histogram=Histogram()
         for value in range(100):histogram.add(value)

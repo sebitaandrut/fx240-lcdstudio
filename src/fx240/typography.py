@@ -5,7 +5,7 @@ import io
 from pathlib import Path
 import threading
 from PIL import ImageFont
-from .localfiles import read_regular
+from .localfiles import read_regular,regular_identity
 
 SCALE=2
 MAX_FONT_BYTES = 16 * 1024 * 1024
@@ -16,10 +16,16 @@ def load_font(path, size):
     return ImageFont.truetype(io.BytesIO(read_regular(path,MAX_FONT_BYTES)),size)
 
 
+@lru_cache(maxsize=32)
+def _validate_font(path,identity):
+    # Validation is immutable per file version; native faces remain per-thread.
+    load_font(path,12)
+
+
 def resolve_font(path=None):
     if path is not None:
         # Validate explicit choices instead of silently substituting another font.
-        load_font(path, 12)
+        _validate_font(str(path),regular_identity(path))
         return str(path)
     for candidate in (str(Path(__file__).parent/'assets/fonts/Outfit.ttf'),
                       '/usr/share/fonts/noto/NotoSans-Regular.ttf',
@@ -30,7 +36,7 @@ def resolve_font(path=None):
 
 
 @lru_cache(maxsize=32)
-def _font(path, size, weight, owner):
+def _font(path, size, weight, owner, identity):
     face = load_font(path, size*SCALE) if path else ImageFont.load_default(size=size*SCALE)
     try:
         axes = face.get_variation_axes()
@@ -47,7 +53,7 @@ def _font(path, size, weight, owner):
 
 def font(path,size,weight=400):
     # FreeType faces are not shared between the LCD and draft-preview threads.
-    return _font(path,size,weight,threading.current_thread())
+    return _font(path,size,weight,threading.current_thread(),regular_identity(path) if path else None)
 
 
 font.cache_clear = _font.cache_clear
@@ -55,7 +61,7 @@ font.cache_clear = _font.cache_clear
 
 
 @lru_cache(maxsize=32)
-def _capabilities(path,modified,size):
+def _capabilities(path,modified,size,identity=None):
     face=load_font(path,12)
     family,style=face.getname()
     try:axes=face.get_variation_axes()
@@ -70,4 +76,4 @@ def capabilities(path=None):
     source=resolve_font(path)
     if source is None:return {'variable':False,'family':'Default','style':'Regular','minimum':100,'maximum':900}
     metadata=Path(source).stat()
-    return dict(_capabilities(source,metadata.st_mtime_ns,metadata.st_size))
+    return dict(_capabilities(source,metadata.st_mtime_ns,metadata.st_size,regular_identity(source)))

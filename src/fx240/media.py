@@ -25,21 +25,28 @@ def canvas(image):
     return result.convert("RGB")
 
 
-def encode(image, quality=85, rotation=180):
+def encode(image, quality=85, rotation=180, *, subsampling=0):
     if not 1 <= quality <= 95 or rotation not in (0, 90, 180, 270):
         raise ValueError("Invalid quality or rotation")
+    if type(subsampling) is not int or subsampling not in (0,2):
+        raise ValueError("JPEG subsampling must be 0 (4:4:4) or 2 (4:2:0)")
     output = io.BytesIO()
-    canvas(image).rotate(rotation).save(output, "JPEG", quality=quality, subsampling=0)
+    canvas(image).rotate(rotation).save(output, "JPEG", quality=quality, subsampling=subsampling)
     return output.getvalue()
 
 
-def load(path, max_frames=1000):
+def load(path, max_frames=1000, *, validate_gif=False):
     try:
         payload=read_regular(path,MAX_FILE_BYTES)
     except ValueError as error:
         raise ValueError('Media input must be a regular file of at most 64 MiB') from error
     frames = []
     try:
+        if validate_gif:
+            # Enforce desktop GIF budgets on the same immutable bytes decoded
+            # below, even if the selected pathname changed after cache lookup.
+            from .gifstream import inspect_gif
+            inspect_gif(payload)
         with Image.open(io.BytesIO(payload)) as source:
             check_size(source)
             if getattr(source, "n_frames", 1) > max_frames:

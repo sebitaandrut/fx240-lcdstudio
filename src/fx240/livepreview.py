@@ -15,11 +15,14 @@ class LiveDraftPreview(QObject):
         self._active=False;self._finishing=False;self._original=None;self._target=None
         self._original_send=False;self._trial_send=True;self._paused=False
         self._finish_request=None;self._device=None;self._last_scene=None;self._close_after=False
+        self._trial_request=None;self._show_output=False
 
     @Property(bool,notify=changed)
     def active(self):return self._active
     @Property(bool,notify=changed)
     def finishing(self):return self._finishing
+    @Property(bool,notify=changed)
+    def showOutput(self):return self._show_output
 
     @Slot(result=bool)
     def start(self):
@@ -45,7 +48,7 @@ class LiveDraftPreview(QObject):
         if scene==self._last_scene:return True
         try:
             config=replace(self.bridge.settings,layout_mode='editor',scene_json=scene,profile_id='',device=self._device)
-            self.bridge.session.configure(config,self._trial_send)
+            self._trial_request=self.bridge.session.configure(config,self._trial_send)
             self._last_scene=scene
             return True
         except (OSError,ValueError) as error:
@@ -68,7 +71,7 @@ class LiveDraftPreview(QObject):
             self._finish_request=self.bridge.session.configure(self._target,False)
         else:
             config=replace(self.bridge.settings,layout_mode='editor',scene_json=self._last_scene,profile_id='',device=self._device)
-            self.bridge.session.configure(config,False)
+            self._trial_request=self.bridge.session.configure(config,False)
         self.bridge.session.set_output(False)
         self.requestEnd()
 
@@ -112,10 +115,15 @@ class LiveDraftPreview(QObject):
                 self.reset()
                 if close:QTimer.singleShot(0,self.bridge.requestClose)
                 return True
+        elif (not self._show_output and event.get('config_request_id')==self._trial_request
+              and event.get('sent') and not event.get('config_error')):
+            self._show_output=True
+            self.changed.emit()
         return False
 
     def reset(self,closing=False):
         self._ignore_until_stop=closing
         self._active=False;self._finishing=False;self._original=None;self._target=None
         self._device=None;self._last_scene=None;self._close_after=False
+        self._trial_request=None;self._show_output=False
         self.changed.emit()

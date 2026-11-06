@@ -71,6 +71,8 @@ class TrayController(QObject):
         if self.available:
             self.hidden = True
             self.window.hide()
+            return True
+        return False
 
     def visibility_changed(self, visibility):
         if visibility == QWindow.Visibility.Minimized:

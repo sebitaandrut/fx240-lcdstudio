@@ -15,11 +15,13 @@ from .protocol import build_reports
 from .telemetry import collect
 from .transport import Hidraw
 from .idle import render_idle
+from .timing import DEFAULT_FPS,MAX_FPS
+from .presets import DEFAULT_GPU_ACCENT, DESIGNS, PRESET_ACCENTS, PresetRenderer
 
 
 @dataclass(frozen=True)
 class Settings:
-    fps: float = 24
+    fps: float = DEFAULT_FPS
     quality: int = 65
     delay_ms: float = 2
     rotation: int = 180
@@ -29,6 +31,12 @@ class Settings:
     accent: str = "#73dfc1"
     comet_style: str = "accent"
     animation: str = "comet"
+    dual_accent: str = PRESET_ACCENTS['dual']
+    dual_gpu_accent: str = DEFAULT_GPU_ACCENT
+    dual_gpu_effect_style: str = 'accent'
+    trace_accent: str = PRESET_ACCENTS['trace']
+    halo_accent: str = PRESET_ACCENTS['halo']
+    preset_animation: str = 'signature'
     background_path: str | None = None
     background_dim: float = .65
     temperature_decimals: int = 1
@@ -42,7 +50,8 @@ class Settings:
     device: str | None = None
 
     def validate(self):
-        if self.layout_mode not in ("focus","editor"):raise ValueError("Unknown layout mode")
+        if not isinstance(self.layout_mode, str) or (self.layout_mode not in DESIGNS and self.layout_mode != 'editor'):
+            raise ValueError("Unknown layout mode")
         from .scene import parse_scene
         parse_scene(self.scene_json)
         parse_scene(self.draft_scene_json)
@@ -51,8 +60,8 @@ class Settings:
         import re
         for identifier in (self.profile_id,self.draft_profile_id):
             if not isinstance(identifier,str) or (identifier and re.fullmatch(r'profile-[1-9][0-9]{0,6}',identifier) is None):raise ValueError('Invalid profile identifier')
-        if not 0 < self.fps <= 24 or not math.isfinite(self.fps):
-            raise ValueError('FPS must be between 0 and 24')
+        if type(self.fps) not in (int,float) or not math.isfinite(self.fps) or not 0 < self.fps <= MAX_FPS:
+            raise ValueError('FPS must be greater than zero and at most 60')
         if not 1 <= self.quality <= 95 or not 0 <= self.delay_ms <= 100:
             raise ValueError('Invalid JPEG quality or report delay')
         if not math.isfinite(self.comet_speed) or not .25 <= self.comet_speed <= 3:
@@ -60,9 +69,12 @@ class Settings:
         if self.temperature_unit not in ('C','F'):
             raise ValueError('Temperature unit must be C or F')
         accent_rgb(self.accent)
-        if self.comet_style not in ('accent','rainbow'):
+        accent_rgb(self.dual_gpu_accent)
+        for design in PRESET_ACCENTS:
+            accent_rgb(getattr(self, design + '_accent'))
+        if self.comet_style not in ('accent','rainbow') or self.dual_gpu_effect_style not in ('accent','rainbow'):
             raise ValueError('Unknown comet style')
-        if self.animation not in ('comet','orbit','pulse','none'):
+        if self.animation not in ('comet','orbit','pulse','none') or self.preset_animation not in ('signature','none'):
             raise ValueError('Unknown animation')
         if not math.isfinite(self.background_dim) or not 0 <= self.background_dim <= .9:
             raise ValueError('Background dimming must be between 0 and 0.9')
@@ -101,8 +113,12 @@ def find_devices(root=Path('/sys/class/hidraw')):
 
 
 class Session:
-    def __init__(self, settings, send=False, provider=None, transport_factory=Hidraw, theme_factory=Focus, standby_guard=None):
+    def __init__(self, settings, send=False, provider=None, transport_factory=Hidraw, theme_factory=Focus, standby_guard=None, jpeg_subsampling=0):
         settings.validate()
+        if type(jpeg_subsampling) is not int or jpeg_subsampling not in (0,2):
+            raise ValueError('Invalid experimental JPEG subsampling')
+        # Session-only experiment: never part of saved preferences or profiles.
+        self.jpeg_subsampling=jpeg_subsampling
         if send and not settings.device:
             raise ValueError('Select a device before starting LCD output')
         self.settings = settings
@@ -178,13 +194,22 @@ class Session:
     def make_theme(self,config):
         factory=self.theme_factory
         options={}
+        accent = config.accent
+        animation = config.animation
         if config.layout_mode=='editor':
             from .scene import SceneRenderer
             factory=SceneRenderer;options['scene_json']=config.scene_json
+        elif config.layout_mode != 'focus':
+            factory = PresetRenderer
+            options['design'] = config.layout_mode
+            options['gpu_accent'] = config.dual_gpu_accent
+            options['gpu_effect_style'] = config.dual_gpu_effect_style
+            accent = getattr(config, config.layout_mode + '_accent')
+            animation = config.preset_animation
         return factory(config.fps,font_path=config.font_path,font_weight=config.font_weight,
                        temperature_decimals=config.temperature_decimals,temperature_unit=config.temperature_unit,
-                       comet_speed=config.comet_speed,accent=config.accent,comet_style=config.comet_style,
-                       animation=config.animation,background_path=config.background_path,background_dim=config.background_dim,
+                       comet_speed=config.comet_speed,accent=accent,comet_style=config.comet_style,
+                       animation=animation,background_path=config.background_path,background_dim=config.background_dim,
                        provider=self.snapshot.sample,**options)
 
     def run(self):
@@ -200,7 +225,7 @@ class Session:
             nonlocal manager, device
             if device is not None:
                 try:
-                    jpeg = encode(render_idle(),config.quality,config.rotation)
+                    jpeg = encode(render_idle(),config.quality,config.rotation,subsampling=self.jpeg_subsampling)
                     device.send(build_reports(jpeg),config.delay_ms)
                     if self.standby_guard:self.standby_guard.disarm()
                 except Exception as error:
@@ -216,15 +241,17 @@ class Session:
             theme = self.make_theme(config)
             start = time.monotonic()
             target = start
+            target_offset = 0.0
             request_id = 0
             while not self.stop_event.is_set():
-                if self.stop_event.wait(max(0,target-time.monotonic())):
-                    break
                 if self.suspended.is_set():
                     release()
                     self.stop_event.wait(.05)
                     target = time.monotonic()
+                    target_offset = target-start
                     continue
+                began = time.monotonic()
+                prepared_frame = None
                 with self._update_lock:
                     pending = self._pending_config
                     self._pending_config = None
@@ -236,10 +263,10 @@ class Session:
                             raise ValueError('Pause LCD output before changing its device')
                         replacement = self.make_theme(candidate)
                         # Preserve the decorative arc position and animation clock.
-                        elapsed = time.monotonic()-start
+                        elapsed = max(target_offset,time.monotonic()-start)
                         replacement.inherit_motion(theme,elapsed)
                         replacement.sample(elapsed)
-                        replacement(elapsed) # Validate drawing before replacing the working renderer.
+                        prepared_frame,_ = replacement(elapsed) # Validate once and send this same frame.
                         previous=theme;theme=replacement;replacement=None
                         dispose(previous)
                         config = self.settings = candidate
@@ -249,8 +276,22 @@ class Session:
                         self.config_error = None
                         self.config_revision += 1
                     except Exception as error:
+                        prepared_frame=None
                         if replacement is not None:dispose(replacement)
                         self.config_error = str(error)
+                if prepared_frame is None:
+                    frame,_ = theme(max(target_offset,time.monotonic()-start))
+                else:frame=prepared_frame
+                jpeg = encode(frame,config.quality,config.rotation,subsampling=self.jpeg_subsampling)
+                reports = build_reports(jpeg)
+                # Prepare before the delivery deadline: sensor/render/encode
+                # work must not shift every USB burst after its scheduled time.
+                waiting_at=time.monotonic()
+                if self.stop_event.wait(max(0,target-waiting_at)):
+                    break
+                waited=time.monotonic()-waiting_at
+                if self.suspended.is_set():
+                    continue
                 if not self.output_requested:
                     release()
                 elif device is None:
@@ -266,10 +307,6 @@ class Session:
                         self.output_requested = self.send = False
                         self.output_error = str(error)
                         self.output_released.set()
-                began = time.monotonic()
-                frame,_ = theme(began-start)
-                jpeg = encode(frame,config.quality,config.rotation)
-                reports = build_reports(jpeg)
                 tx = 0
                 sent = False
                 if device is not None:
@@ -291,12 +328,16 @@ class Session:
                 self.publish({'kind':'frame','image':preview,'metrics':self.snapshot.metrics,
                               'sequence':self.snapshot.sequence,'timestamp':self.snapshot.timestamp,
                               'display_values':readings(self.snapshot.metrics),
-                              'temperature_decimals':config.temperature_decimals,'temperature_unit':config.temperature_unit,
+                              'temperature_decimals':getattr(theme,'temperature_decimals',config.temperature_decimals),
+                              'temperature_unit':getattr(theme,'temperature_unit',config.temperature_unit),
                               'frames':self.frames,'transmission_ms':tx,'reports':len(reports),
-                              'pipeline_ms':(finished-began)*1000,
+                              'pipeline_ms':max(0,(finished-began-waited)*1000),
                               'sent':sent,'output_error':self.output_error,'config_error':self.config_error,
                               'config_revision':self.config_revision,'configuration':config,'config_request_id':request_id,'elapsed':finished-start})
-                target = max(target+1/config.fps,time.monotonic())
+                # Accumulate the small relative clock, not large absolute
+                # monotonic timestamps, to keep GIF boundary sampling stable.
+                target_offset = max(target_offset+1/config.fps,time.monotonic()-start)
+                target = start+target_offset
         except Exception as error:
             self.error = str(error)
         finally:
