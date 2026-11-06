@@ -146,7 +146,7 @@ RowLayout {
                 }
             }
             RowLayout {
-                Layout.fillWidth: true
+                Layout.fillWidth: true; spacing: 10
                 Heading { text: gallery.tr("My designs") }
                 ActionButton {
                     objectName: "manageDesignsButton"; visible: savedGrid.count > 0
@@ -159,6 +159,12 @@ RowLayout {
                 ActionButton {
                     objectName: "newDesignButton"; text: gallery.tr("New design"); visible: !gallery.managing
                     onClicked: { studio.page = 4; bridge.workspace.requestNew() }
+                }
+                ActionButton {
+                    objectName: "continueDraftButton"
+                    visible: !gallery.managing && bridge.workspace.dirty
+                    text: gallery.tr("Continue draft")
+                    onClicked: studio.page = 4
                 }
                 ActionButton {
                     objectName: "deleteSelectedDesignsButton"; visible: gallery.managing
@@ -179,6 +185,7 @@ RowLayout {
             }
             Note { visible: savedGrid.count === 0; text: gallery.tr("Saved designs appear here."); Layout.fillWidth: true }
             GridLayout {
+                objectName: "savedDesignGrid"; visible: savedGrid.count > 0
                 columns: gallery.columns; uniformCellWidths: true
                 Layout.fillWidth: true; columnSpacing: 10; rowSpacing: 10
                 Repeater {
@@ -197,7 +204,6 @@ RowLayout {
                     delegate: Item { Layout.fillWidth: true }
                 }
             }
-            ActionButton { visible: bridge.workspace.dirty; text: gallery.tr("Continue draft"); onClicked: studio.page = 4 }
             Note { text: bridge.profileNotice; visible: text.length > 0; Layout.fillWidth: true }
         }
     }

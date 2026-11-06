@@ -52,6 +52,14 @@ number.forceActiveFocus()
 QTest.keyClick(window,Qt.Key_Up)
 assert bridge.workspace.model.selected['x']==before+2
 payload=bridge.workspace.model.payload()
+def check_draft_actions():
+    new=window.findChild(QObject,'newDesignButton')
+    resume=window.findChild(QObject,'continueDraftButton')
+    assert resume.isVisible()
+    assert abs(new.mapToScene(QPointF()).y()-resume.mapToScene(QPointF()).y())<=1
+    gap=resume.mapToScene(QPointF()).x()-new.mapToScene(QPointF(new.width(),0)).x()
+    assert 8<=gap<=12
+    assert not window.findChild(QObject,'savedDesignGrid').isVisible()
 # Long translations, a long font label, scrollbars and window resizing must not
 # push inspector controls past the viewport's right edge.
 window.setProperty('page',0)
@@ -70,6 +78,7 @@ for language in ('en','es'):
             grid=window.findChild(QObject,'builtinDesignGrid')
             assert grid.property('columns')==(4 if grid.width()>=720 else 2)
             assert grid.width()<gallery.width()
+            check_draft_actions()
 
             window.setProperty('page',4);QTest.qWait(50)
             toolbar=window.findChild(QObject,'compositionToolbar')
@@ -101,6 +110,7 @@ for width,height in ((2548,967),(2474,1345),(2560,1440)):
     assert 490<=preview.width()<=560 and preview.width()==preview.height()
     gap=edit.mapToScene(QPointF()).y()-preview.mapToScene(QPointF(0,preview.height())).y()
     assert 10<=gap<=14
+    check_draft_actions()
     window.setProperty('page',4);QTest.qWait(100)
     canvas=window.findChild(QObject,'editorCanvas')
     assert 510<=canvas.width()<=660 and canvas.width()==canvas.height()
