@@ -44,7 +44,7 @@ def tshark_command(capture, address):
     if executable is None:
         raise RuntimeError('tshark is required for offline capture analysis')
     fields = ['usb.urb_type', 'usbhid.data', 'usb.capdata', 'usb.urb_status', 'frame.len', 'frame.cap_len']
-    command = [executable, '-r', str(capture), '-Y',
+    command = [executable, '-n', '-r', str(capture), '-Y',
                f'usb.device_address == {address} && usb.endpoint_address.direction == 0 && usb.endpoint_address.number != 0',
                '-T', 'fields']
     for field in fields:

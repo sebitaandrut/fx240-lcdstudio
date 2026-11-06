@@ -33,6 +33,10 @@ The [user build guide](docs/building.md) makes the full suite optional for end u
 
 A local commit does not authorize publishing. Creating a GitHub repository, adding/pushing to a remote, or sharing personal evidence requires the maintainer's explicit authorization.
 
+## Reviewing CodeQL path alerts
+
+Trace the input to the filesystem operation and identify the trust boundary. For an explicitly selected local asset, use the bounded regular-file reader in `src/fx240/localfiles.py` for content and keep cache metadata local. For paths derived from untrusted names, enforce the intended directory and test traversal and link handling. Record the reasoning when dismissing an individual false positive. Keep the query enabled so it can still detect new unsafe flows. See the [security review](docs/security-review.md).
+
 ## Code structure
 
 | Responsibility | Location |

@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Synthetic client for reproduce_wayland_loss.py; never opens a real HID device."""
 import os,json
-from pathlib import Path
+from wayland_trial_files import open_trial_file, private_run_directory
 from fx240.session import Settings,Session
 from fx240.telemetry import Metric
 from fx240.media import encode
 from fx240.protocol import build_reports
 from fx240.idle import render_idle
-root=Path(os.environ['FX240_TRIAL_ROOT'])
+root=private_run_directory(os.environ['FX240_TRIAL_ROOT'])
 def record(event):
-    with (root/'client-events.jsonl').open('a') as stream:stream.write(json.dumps(event)+'\n')
+    with open_trial_file(root/'client-events.jsonl','a') as stream:stream.write(json.dumps(event)+'\n')
 idle=build_reports(encode(render_idle(),65,180))
 class Device:
     def __enter__(self):return self
@@ -39,7 +39,7 @@ app.aboutToQuit.connect(lambda:record({'event':'about-to-quit'}))
 bridge.start({},True)
 def ready():
     if bridge.session.frames>1:
-        (root/'ready').write_text('ready')
+        with open_trial_file(root/'ready','x') as stream:stream.write('ready')
         timer.stop()
 timer=QTimer();timer.setInterval(30);timer.timeout.connect(ready);timer.start()
 QTimer.singleShot(20000,app.quit)

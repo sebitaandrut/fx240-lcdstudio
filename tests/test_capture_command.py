@@ -16,7 +16,7 @@ class CaptureCommandTests(unittest.TestCase):
             path = Path(folder)/'-X lua_script=synthetic'; path.write_bytes(b'capture')
             with patch.object(capture_example.shutil, 'which', return_value='/usr/bin/tshark'):
                 command = capture_example.tshark_command(path, 12)
-                self.assertEqual(command[:3], ['/usr/bin/tshark', '-r', str(path.resolve())])
+                self.assertEqual(command[:4], ['/usr/bin/tshark', '-n', '-r', str(path.resolve())])
                 self.assertEqual(command.count('-r'), 1)
                 with self.assertRaises(ValueError):
                     capture_example.tshark_command(path, '12 -X payload')
@@ -29,8 +29,8 @@ class CaptureCommandTests(unittest.TestCase):
             with patch.object(capture_example.shutil,'which',return_value='/usr/bin/tshark'):
                 for address in (1,127):
                     command=capture_example.tshark_command(path,address)
-                    self.assertEqual(command[2],str(path.resolve()))
-                    self.assertEqual(command[4],f'usb.device_address == {address} && usb.endpoint_address.direction == 0 && usb.endpoint_address.number != 0')
+                    self.assertEqual(command[3],str(path.resolve()))
+                    self.assertEqual(command[5],f'usb.device_address == {address} && usb.endpoint_address.direction == 0 && usb.endpoint_address.number != 0')
                     self.assertNotIn('-X',command)
                 for address in (0,128,True,'1; arbitrary command'):
                     with self.assertRaises(ValueError):capture_example.tshark_command(path,address)
