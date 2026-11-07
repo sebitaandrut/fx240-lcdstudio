@@ -97,7 +97,7 @@ def parse_scene(payload=''):
             if value['gif_pacing'] not in ('source','smooth'):raise ValueError('Unknown GIF timing mode')
             zoom=value['media_zoom']
             if type(zoom) not in (float,int) or not math.isfinite(zoom) or not .25<=zoom<=4:
-                raise ValueError('Image zoom must be between 25% and 400%')
+                raise ValueError('Layer zoom must be between 25% and 400%')
             if value['metric'] not in METRICS or value['animation'] not in ('comet','orbit','pulse','none','signature'):
                 raise ValueError('Unknown metric or animation')
             if value['effect'] not in EFFECT_TITLES or value['effect_style'] not in ('accent','rainbow'):
@@ -128,6 +128,15 @@ def parse_scene(payload=''):
 
 def scene_json(scene):
     return json.dumps(scene,ensure_ascii=False,separators=(',',':'))
+
+
+def zoom_surface(source, size, zoom):
+    """Sample a centered viewport into the layer without a zoom-sized allocation."""
+    cx, cy = source.width / 2, source.height / 2
+    half_width, half_height = cx / zoom, cy / zoom
+    return source.transform(size, Image.Transform.EXTENT,
+                            (cx - half_width, cy - half_height, cx + half_width, cy + half_height),
+                            Image.Resampling.BICUBIC, fillcolor=(0, 0, 0, 0))
 
 
 def gradient_mask(sample):
@@ -169,6 +178,8 @@ def gradient_surface(item):
         mask = mask.resize(size, Image.Resampling.BILINEAR)
         surface.paste(accent_rgb(color), (0, 0, *size), mask)
     surface.putalpha(round(255*item['opacity']))
+    if item['media_zoom'] != 1:
+        surface = zoom_surface(surface, size, item['media_zoom'])
     return surface
 
 
@@ -229,19 +240,13 @@ class SceneRenderer:
         for item in self.scene['layers']:
             if not item['visible']:continue
             size=(item['width']*SCALE,item['height']*SCALE)
+            zoom = item['media_zoom']  # Keep the stored field name for existing profiles.
             if item['kind']=='media':
                 source=self.assets[item['id']].frame(elapsed)
-                zoom=item['media_zoom']
                 if zoom==1:
                     surface=source.resize(size,Image.Resampling.LANCZOS).convert('RGBA')
                 else:
-                    # Sample a centered viewport directly into the bounded layer.
-                    # Never allocate a zoom-sized image or mutate cached GIF frames.
-                    cx=source.width/2;cy=source.height/2
-                    half_width=cx/zoom;half_height=cy/zoom
-                    surface=source.convert('RGBA').transform(size,Image.Transform.EXTENT,
-                        (cx-half_width,cy-half_height,cx+half_width,cy+half_height),
-                        Image.Resampling.BICUBIC,fillcolor=(0,0,0,0))
+                    surface=zoom_surface(source.convert('RGBA'),size,zoom)
             elif item['kind']=='gradient':
                 surface = self.gradients[item['id']]
             elif item['kind']=='arc':
@@ -250,7 +255,7 @@ class SceneRenderer:
                 progress=self.arc_value(elapsed)
                 if progress>0:draw_active_arc(surface,self.comet_time(elapsed),progress,accent_rgb(item['color']),item['effect_style'],item['animation'])
                 mask=Image.new('L',surface.size);round_arc(ImageDraw.Draw(mask),135,405,255)
-                surface=surface.convert('RGBA');surface.putalpha(mask);surface=surface.resize(size,Image.Resampling.LANCZOS)
+                surface=surface.convert('RGBA');surface.putalpha(mask)
             elif item['kind']=='effect':
                 surface = Image.new('RGBA', (240 * SCALE, 240 * SCALE))
                 draw = ImageDraw.Draw(surface)
@@ -259,8 +264,6 @@ class SceneRenderer:
                 if item['animation'] != 'none':
                     draw_effect_motion(draw, item['effect'], color, self.comet_time(elapsed),
                                        item['effect_style'], self.trace)
-                if surface.size != size:
-                    surface = surface.resize(size, Image.Resampling.LANCZOS)
             else:
                 surface=Image.new('RGBA',size)
                 face=font(self.fonts[item['id']],item['size'],item['weight']);text=self.text_value(item)
@@ -275,6 +278,11 @@ class SceneRenderer:
                     box=face.getbbox(text,anchor='lt');width=box[2]-box[0]
                     left=0 if item['align']=='left' else size[0]-width if item['align']=='right' else (size[0]-width)/2
                     ImageDraw.Draw(surface).text((left-box[0],-box[1]),text,font=face,fill=item['color'],anchor='lt')
+            if item['kind'] not in ('media', 'gradient'):
+                if zoom != 1:
+                    surface = zoom_surface(surface, size, zoom)
+                elif surface.size != size:
+                    surface = surface.resize(size, Image.Resampling.LANCZOS)
             if item['kind'] != 'gradient' and item['opacity']!=1:surface.putalpha(surface.getchannel('A').point(lambda value:round(value*item['opacity'])))
             left=item['x']*SCALE;top=item['y']*SCALE
             if item['rotation']:

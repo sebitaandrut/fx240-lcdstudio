@@ -232,6 +232,21 @@ with tempfile.TemporaryDirectory() as folder:
             assert model.rowCount()==0 and model.temperatureUnit=='F'
             assert bridge.workspace.store.get(bridge.workspace.loadedId)['scene']==saved['scene']
             click(window,window.findChild(QObject,'editorUndoButton'));assert model.payload()==baseline
+    model.addEffect('halo')
+    halo_index=next(i for i,item in enumerate(model.scene['layers']) if item['kind']=='effect' and item['effect']=='halo')
+    model.select(halo_index);wait(lambda:bridge.workspace.ready)
+    layer_zoom=window.findChild(QObject,'editorLayerZoom');assert layer_zoom.isVisible()
+    bounds=model.selectionBounds
+    for value in (125,75):
+        layer_zoom.setProperty('value',value)
+        assert QMetaObject.invokeMethod(layer_zoom,'moved')
+        wait(lambda:bridge.workspace.ready and model.selected['media_zoom']==value/100)
+        assert model.selectionBounds==bounds
+    model.undo()
+    assert model.selected['media_zoom']==1.25
+    assert QMetaObject.invokeMethod(window.findChild(QObject,'resetLayerZoom'),'clicked')
+    wait(lambda:bridge.workspace.ready and model.selected['media_zoom']==1)
+    model.removeSelected();wait(lambda:bridge.workspace.ready)
     from PIL import Image
     source=Path(folder)/'synthetic.png';Image.new('RGB',(8,8),'navy').save(source)
     model.add_layer('media',str(source));wait(lambda:bridge.workspace.ready)

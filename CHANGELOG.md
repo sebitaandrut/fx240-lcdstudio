@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add centered content zoom to effects, text, readings, and gradient layers in the composition editor.
+
 ## 0.3.0rc1 — release candidate
 
 - Add editor shortcuts for undo and redo (Ctrl+Z and Ctrl+Y), deleting selected layers (Delete), and moving the selection one LCD pixel at a time (arrow keys).

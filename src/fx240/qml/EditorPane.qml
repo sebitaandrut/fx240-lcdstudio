@@ -644,22 +644,25 @@ Item {
                         }
                         Tool { objectName: "replaceLayerMediaButton"; visible: !editor.multiple && editor.state.kind==="media"; text: editor.tr("Replace image / GIF…"); Layout.fillWidth: true; onClicked: { mediaDialog.replaceSelected=true; mediaDialog.open() } }
                         ColumnLayout {
-                            visible: !editor.multiple && editor.state.kind==="media"; Layout.fillWidth: true
+                            id: zoomControls
+                            readonly property bool isMedia: editor.state.kind === "media"
+                            readonly property string title: editor.tr(isMedia ? "Image zoom" : "Layer zoom")
+                            visible: !editor.multiple; Layout.fillWidth: true
                             RowLayout {
                                 Layout.fillWidth: true
-                                Hint { text: editor.tr("Image zoom"); Layout.fillWidth: true }
+                                Hint { text: zoomControls.title; Layout.fillWidth: true }
                                 Copy { text: Math.round((editor.state.media_zoom || 1)*100)+"%" }
-                                Tool { objectName: "resetMediaZoom"; text: "100%"; Accessible.name: editor.tr("Reset image zoom"); onClicked: workspace.model.updateSelected({media_zoom:1}) }
+                                Tool { objectName: zoomControls.isMedia ? "resetMediaZoom" : "resetLayerZoom"; text: "100%"; Accessible.name: editor.tr(zoomControls.isMedia ? "Reset image zoom" : "Reset layer zoom"); onClicked: workspace.model.updateSelected({media_zoom:1}) }
                             }
                             StudioSlider {
-                                id: mediaZoomSlider; objectName: "editorMediaZoom"; Layout.fillWidth: true
+                                objectName: zoomControls.isMedia ? "editorMediaZoom" : "editorLayerZoom"; Layout.fillWidth: true
                                 studio: editor.studio
                                 from: 25; to: 400; stepSize: 5; value: (editor.state.media_zoom || 1)*100
-                                Accessible.name: editor.tr("Image zoom")
+                                Accessible.name: zoomControls.title
                                 onPressedChanged: { if (pressed) workspace.model.beginGesture(); else workspace.model.endGesture() }
                                 onMoved: workspace.model.updateSelected({media_zoom:value/100})
                             }
-                            Hint { text: editor.tr("Zoom around the image center. Enlarged edges are cropped to the layer."); Layout.fillWidth: true }
+                            Hint { text: editor.tr("Zoom around the layer center. Content outside the layer is cropped."); Layout.fillWidth: true }
                         }
                         RowLayout {
                             visible: !editor.multiple && editor.state.kind==="media" && (editor.state.path || "").toLowerCase().endsWith(".gif")

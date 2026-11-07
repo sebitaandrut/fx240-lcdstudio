@@ -22,6 +22,26 @@ def metrics():
 
 
 class SceneTests(unittest.TestCase):
+    def test_halo_zoom_scales_the_ring_around_the_layer_center(self):
+        halo = layer('halo', 'effect', effect='halo', x=0, y=0, width=240, height=240)
+        diameters = []
+        for zoom in (.75, 1, 1.15):
+            payload = scene_json({'version': 1, 'layers': [dict(halo, media_zoom=zoom)]})
+            renderer = SceneRenderer(scene_json=payload, provider=metrics)
+            try:
+                frame, _ = renderer(0)
+                self.assertEqual(frame.size, (240, 240))
+                left, top, right, bottom = frame.convert('L').point(
+                    lambda value: 255 if value > 32 else 0
+                ).getbbox()
+                self.assertAlmostEqual((left + right) / 2, 120, delta=1)
+                self.assertAlmostEqual((top + bottom) / 2, 120, delta=1)
+                diameters.append(right - left)
+            finally:
+                renderer.close()
+        for zoom, diameter in zip((.75, 1.15), (diameters[0], diameters[2])):
+            self.assertAlmostEqual(diameter, diameters[1] * zoom, delta=2)
+
     def test_gradient_is_bounded_static_and_needs_no_asset(self):
         gradient = layer('glow', 'gradient', x=0, y=0, width=240, height=240,
                          color='#ff0000', gradient_color='#0000ff', opacity=.5)

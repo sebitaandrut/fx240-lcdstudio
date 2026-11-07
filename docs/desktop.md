@@ -88,6 +88,8 @@ Shift-click layers in the canvas or list, or use the list checkboxes to build a 
 
 With the canvas or layer list focused, press an arrow key to move the selection by one LCD pixel or Delete to remove it. Use Ctrl+Z to undo a composition edit and Ctrl+Y to redo it. Text fields keep their own editing shortcuts.
 
+Select one layer and use **Layer zoom** in Properties to scale its contents from 25% to 400% around the center. This works for effects such as Halo as well as text, readings, and gradients. The layer keeps its position and dimensions, and content outside it is cropped. Use **100%** to reset. Image and GIF layers keep the equivalent **Image zoom** control.
+
 Give the draft a name and use Save, Save copy, or Save and show. Up to eight named compositions are stored in private `profiles.json` beside `settings.json`; names never become filenames. Draft and active profile are restored separately. New/Open ask before replacing an unsaved draft. Delete a profile only after switching away from it in Designs; its draft remains available. Missing assets preserve editable references and prevent invalid previews from being saved/activated. An unavailable startup profile falls back to Focus without deleting the library.
 
 Variable fonts expose a supported weight axis. Static fonts expose their installed styles (Regular/Bold/etc.) instead of a numeric weight control that cannot affect that face; refresh installed fonts to discover variants. Font collection/named-instance support remains limited as documented above. Per-layer fonts, sizes, colors, alignment, opacity, and geometry are stored in each composition. Temperature units/precision and global output settings remain shared.
