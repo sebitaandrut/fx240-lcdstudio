@@ -194,6 +194,48 @@ class OutputLifecycleTests(unittest.TestCase):
 
 
 class LiveConfigurationTests(unittest.TestCase):
+    def test_brightness_changes_between_frames_and_reapplies_on_reopen(self):
+        from dataclasses import replace
+        from fx240.protocol import build_brightness_report
+        from fx240.scene import scene_json
+        session, device, manager = OutputLifecycleTests().make_session()
+        baseline = session.settings
+        dimmed = replace(baseline, layout_mode='editor',
+                         scene_json=scene_json({'version': 1, 'layers': [], 'lcd_brightness': 50}))
+        events = []
+
+        def publish(event):
+            if event['kind'] != 'frame':
+                return
+            events.append(event)
+            if len(events) == 1:
+                session.configure(dimmed)
+            elif len(events) == 3:
+                session.set_output(False)
+            elif len(events) == 4:
+                session.set_output(True)
+            elif len(events) == 5:
+                session.configure(baseline)
+            elif len(events) == 6:
+                session.stop()
+
+        session.publish = publish
+        session.run()
+        self.assertEqual([event['sent'] for event in events], [True, True, True, False, True, True])
+        self.assertEqual(manager.__enter__.call_count, 2)
+        reports = [call.args[0] for call in device.send.call_args_list]
+        self.assertEqual([index for index, batch in enumerate(reports) if batch[0][5:8] == b'LIG'], [1, 5, 7])
+        self.assertEqual(reports[1], [build_brightness_report(50)])
+        self.assertEqual(reports[5], reports[1])
+        self.assertEqual(reports[7], [build_brightness_report(100)])
+        self.assertEqual(reports[1][0][:11], b'CRT\x00\x00LIG\x00\x002')
+        self.assertEqual(reports[1][0][11:], bytes(1013))
+        for valid in (0, 49, 100):
+            self.assertEqual(build_brightness_report(valid)[10], valid)
+        for invalid in (-1, 101, 50.0, True):
+            with self.subTest(level=invalid), self.assertRaises(ValueError):
+                replace(dimmed, scene_json=scene_json({'version': 1, 'layers': [], 'lcd_brightness': invalid})).validate()
+
     def test_live_edit_keeps_usb_open_and_rejects_invalid_font(self):
         from dataclasses import replace
         device=Mock();device.send.return_value=(1,[])

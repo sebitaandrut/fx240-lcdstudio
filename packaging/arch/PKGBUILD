@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Local source-build recipe; no AUR or prebuilt binary release is implied.
 pkgname=fx240-lcd-studio-git
-pkgver=0.3.0rc1
+pkgver=0.3.0rc2
 pkgrel=1
 pkgdesc='Native Linux LCD studio for the ID-COOLING FX240 (experimental)'
 arch=('x86_64')

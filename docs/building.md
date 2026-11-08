@@ -31,9 +31,9 @@ On Arch x86_64, check out the release tag and use it for both the recipe and its
 
 ```bash
 sudo pacman -Syu --needed base-devel git
-git clone --branch v0.3.0rc1 --single-branch https://github.com/sebitaandrut/fx240-lcdstudio.git fx240-lcdstudio-rc1
-cd fx240-lcdstudio-rc1/packaging/arch
-export FX240_SOURCE_REF=tag=v0.3.0rc1
+git clone --branch v0.3.0rc2 --single-branch https://github.com/sebitaandrut/fx240-lcdstudio.git fx240-lcdstudio-rc2
+cd fx240-lcdstudio-rc2/packaging/arch
+export FX240_SOURCE_REF=tag=v0.3.0rc2
 makepkg -s
 sudo pacman -U "$(makepkg --packagelist)"
 unset FX240_SOURCE_REF
@@ -41,6 +41,8 @@ fx240-lcd-studio self-test
 ```
 
 This upgrades the existing `fx240-lcd-studio-git` package and uses the same per-user preferences and saved designs. Close any running Studio instance, including the tray, before replacing the package. After installation, verify the saved designs, editor shortcuts, and physical LCD. Test long GIF playback with the defaults of 24 FPS and a 2 ms inter-report delay. Repeat suspend/resume with output active and paused, and check login startup and standby across reboot and shutdown. Report tearing separately from playback stalls. See [validation and limits](validation.md).
+
+RC2 reads existing RC1 designs. RC1 cannot read designs saved with the new brightness field. If you plan to switch back, keep a copy of your RC1 configuration or use a separate configuration directory for the candidate. During lifecycle testing, verify that the active design's brightness is reapplied when LCD output resumes.
 
 The following sections describe the manual standalone build alternative.
 

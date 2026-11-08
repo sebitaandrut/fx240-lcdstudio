@@ -23,7 +23,7 @@ The modular sender matched the prototype's packets for 240/240 checked frames. A
 
 An older capture had a one-byte-short final payload and an inconsistent JPEG boundary; it is not exact-validation evidence. The controlled trial did not reproduce that discrepancy, and the historical cause remains unknown.
 
-The meaning of `B1`, full descriptor semantics, initial device-state requirements, buffering, acknowledgements, refresh synchronization, size/rate limits, and brightness/firmware commands remain unknown. Host-call acceptance and USB completion do not prove optical presentation or absence of panel losses. Full PC shutdown was tested without verifying removal of USB standby power, so independence from earlier vendor initialization is not established.
+The meaning of `B1`, full descriptor semantics, initial device-state requirements, buffering, acknowledgements, refresh synchronization, size/rate limits, and firmware commands remain unknown. Host-call acceptance and USB completion do not prove optical presentation or absence of panel losses. Full PC shutdown was tested without verifying removal of USB standby power, so independence from earlier vendor initialization is not established.
 
 Use `examples/compare_usb_capture.py` for controlled payload comparisons and `tests/test_fx240.py` for framing regressions. Keep captures private and inspect only the intended LCD traffic. Never treat a small diagnostic code region as proof of a complete tear-free LCD frame.
 
@@ -38,3 +38,9 @@ Additional observed CRT tokens were `DIS`, `LIG`, `CON`, `CLE`, and `HAN`. Three
 Six packets for a different USB address were excluded before protocol analysis. The original capture, filtered derivative, JPEGs, detailed traces, and environment metadata remain private and are not repository assets. No new device commands or output defaults were introduced from these observations.
 
 The focused [tearing investigation](tearing.md) separates spatial discontinuities from fading and timing irregularity and records the limits of the subsequent static software review.
+
+## Display brightness
+
+A separate official-app capture contained 39 brightness reports. The 1024-byte payload starts with `CRT\0\0LIG` at offsets 0–7, followed by two zero bytes and one level byte at offset 10. The remaining bytes were zero. Observed levels ranged from 0 to 100. At levels 0 and 100, 39 distinct JPEG payloads were identical byte for byte across both levels. The owner observed the LCD dim and brighten as the official setting changed.
+
+In a standalone Linux trial on one FX240, the sender uploaded one fixed image, then sent the captured report payloads for 100 → 50 → 100 using the verified hidraw transport. The owner confirmed visible dimming and recovery with the image held fixed. In the Studio editor trial on the same unit, the owner reported that level 0 dimmed the panel while the content remained visible. Switching between two designs with different saved levels visibly changed the brightness. These trials did not measure luminance or establish device persistence across suspend, reboot, or power loss. The capture and local trial script are outside the repository.

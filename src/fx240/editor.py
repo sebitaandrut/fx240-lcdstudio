@@ -357,15 +357,17 @@ class EditorModel(QAbstractListModel):
     def setMotionSpeed(self, speed):
         self.update_composition(motion_speed=speed)
 
+    @Property(int, notify=changed)
+    def lcdBrightness(self):
+        return self.scene.get('lcd_brightness', 100)
+
+    @Slot(int)
+    def setLcdBrightness(self, level):
+        self.update_composition(lcd_brightness=level)
+
     @Slot(str)
-    def setTemperatureUnit(self,unit):
-        if unit not in ('inherit','C','F'):
-            self.rejected.emit('Temperature unit must be C or F');return
-        scene=dict(self.scene)
-        if unit=='inherit':scene.pop('temperature_unit',None)
-        else:scene['temperature_unit']=unit
-        if scene==self.scene:return
-        self.remember();self.scene=scene;self.changed.emit();self.sceneChanged.emit()
+    def setTemperatureUnit(self, unit):
+        self.update_composition(temperature_unit=unit)
 
     @Slot(bool)
     def resetComposition(self,blank):

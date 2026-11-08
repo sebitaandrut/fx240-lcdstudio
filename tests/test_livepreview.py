@@ -16,7 +16,7 @@ from pathlib import Path
 import tempfile,time
 from unittest.mock import patch
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QObject,Qt,QPointF
+from PySide6.QtCore import QObject,Qt,QPointF,QMetaObject
 from PySide6.QtTest import QTest
 from fx240.gui import create_engine,dispose_engine
 from fx240.preferences import Preferences
@@ -25,13 +25,17 @@ from fx240.telemetry import Metric
 app=QApplication([]);app.setQuitOnLastWindowClosed(False)
 class Transport:
     active=0;maximum=0;opens=0
+    brightness=[]
     def __init__(self,path):assert path=='/dev/hidraw999'
     def __enter__(self):
         Transport.active+=1;Transport.opens+=1
         Transport.maximum=max(Transport.maximum,Transport.active)
         return self
     def __exit__(self,*args):Transport.active-=1
-    def send(self,*args):return (0,0)
+    def send(self,reports,*args):
+        if reports[0][5:8]==b'LIG':
+            Transport.brightness.append(reports[0][10])
+        return (0,0)
 
 def wait(condition):
     deadline=time.monotonic()+6
@@ -72,6 +76,12 @@ with tempfile.TemporaryDirectory() as folder:
     assert bridge.session.settings.layout_mode=='editor' and bridge.settings==baseline
     assert preview.property('source').toString()==bridge.previewUrl
     assert len(bridge.contentLabels)==4
+    brightness=window.findChild(QObject,'designBrightnessControl')
+    assert brightness.isVisible() and brightness.property('value')==100
+    brightness.setProperty('value',37)
+    assert QMetaObject.invokeMethod(brightness,'moved')
+    wait(lambda:Transport.brightness==[37])
+    assert workspace.model.lcdBrightness==37 and bridge.settings==baseline
     edit(22);assert bridge.settings==baseline
     workspace.model.updateSelected({'rotation':90})
     workspace.model.setTemperatureUnit('F')
@@ -105,6 +115,8 @@ with tempfile.TemporaryDirectory() as folder:
     assert len(bridge.contentLabels)==5
     assert workspace.model.payload()==valid
     assert Transport.opens==1 and Transport.maximum==1
+    assert Transport.brightness==[37,100]
+    assert '"lcd_brightness":37' in workspace.store.profiles[0]['scene']
     # Apply commits only after the main sender accepts the saved scene.
     assert live.start();edit(24)
     assert live.finish('apply')

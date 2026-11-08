@@ -1,8 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Observed DRA framing; no device I/O."""
+"""Observed DRA and LIG framing; no device I/O."""
 MAGIC = b"CRT\x00\x00DRA"
 REPORT_SIZE = 1024
 HEADER_SIZE = 32
+
+
+def validate_brightness(level: int) -> None:
+    if type(level) is not int or not 0 <= level <= 100:
+        raise ValueError("Invalid LCD brightness level")
+
+
+def build_brightness_report(level: int) -> bytes:
+    validate_brightness(level)
+    return (b"CRT\x00\x00LIG\x00\x00" + bytes([level])).ljust(REPORT_SIZE, b"\x00")
 
 
 def build_reports(jpeg: bytes) -> list[bytes]:

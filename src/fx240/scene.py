@@ -11,6 +11,7 @@ from .background import Background
 from .focus import SCALE,accent_rgb,font,resolve_font,readings,temperature,frequency,round_arc,draw_active_arc
 from .telemetry import collect
 from .presets import EDITOR_EFFECTS, EFFECT_TITLES, draw_effect_base, draw_effect_motion, update_trace
+from .protocol import validate_brightness
 
 MAX_SCENE_BYTES=24576
 METRICS=('cpu_temp','cpu_clock','gpu_temp','gpu_clock')
@@ -55,7 +56,7 @@ def parse_scene(payload=''):
         if not isinstance(payload,str) or len(payload.encode('utf-8'))>MAX_SCENE_BYTES:
             raise ValueError('Composition exceeds the size limit')
         scene=json.loads(payload) if payload else default_scene()
-        if not isinstance(scene,dict) or not {'version','layers'}<=set(scene) or set(scene)-{'version','layers','temperature_unit','temperature_decimals','motion_speed'} or type(scene['version']) is not int or scene['version']!=1:
+        if not isinstance(scene,dict) or not {'version','layers'}<=set(scene) or set(scene)-{'version','layers','temperature_unit','temperature_decimals','motion_speed','lcd_brightness'} or type(scene['version']) is not int or scene['version']!=1:
             raise ValueError('Unsupported composition format')
         if not isinstance(scene['layers'],list) or len(scene['layers'])>16:
             raise ValueError('A composition supports at most 16 layers')
@@ -69,6 +70,8 @@ def parse_scene(payload=''):
             speed = scene['motion_speed']
             if type(speed) not in (int, float) or not .25 <= speed <= 3:
                 raise ValueError('Comet speed must be between 0.25 and 3')
+        if 'lcd_brightness' in scene:
+            validate_brightness(scene['lcd_brightness'])
         identifiers=set();counts={kind:0 for kind in KINDS};result=[]
         for item in scene['layers']:
             if not isinstance(item,dict) or set(item)-({'id','kind'}|GRADIENT_FIELDS|set(DEFAULTS)):
@@ -118,7 +121,7 @@ def parse_scene(payload=''):
             raise ValueError('A composition supports one gradient layer')
         result={'version':1,'layers':result}
         if unit!='inherit':result['temperature_unit']=unit
-        for key in ('temperature_decimals', 'motion_speed'):
+        for key in ('temperature_decimals', 'motion_speed', 'lcd_brightness'):
             if key in scene:
                 result[key] = scene[key]
         return result

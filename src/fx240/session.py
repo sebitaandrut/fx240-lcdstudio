@@ -11,7 +11,7 @@ import time
 from PIL import Image
 from .focus import Focus, readings, accent_rgb
 from .media import encode
-from .protocol import build_reports
+from .protocol import build_brightness_report, build_reports
 from .telemetry import collect
 from .transport import Hidraw
 from .idle import render_idle
@@ -216,6 +216,8 @@ class Session:
         config = self.settings
         manager = device = None
         theme=None
+        last_brightness = (None, None)
+        applied_brightness = None
 
         def dispose(renderer):
             close=getattr(renderer,"close",None)
@@ -298,6 +300,7 @@ class Session:
                     try:
                         manager = self.transport_factory(config.device)
                         device = manager.__enter__()
+                        applied_brightness = None
                         self.send = True
                         self.output_error = None
                         self.output_released.clear()
@@ -311,6 +314,13 @@ class Session:
                 sent = False
                 if device is not None:
                     try:
+                        level = theme.scene.get('lcd_brightness') if config.layout_mode == 'editor' else None
+                        if level is None and last_brightness[0] == config.device and last_brightness[1] != 100:
+                            level = 100
+                        if level is not None and level != applied_brightness:
+                            device.send([build_brightness_report(level)], config.delay_ms)
+                            applied_brightness = level
+                            last_brightness = (config.device, level)
                         tx,_ = device.send(reports,config.delay_ms)
                         sent = True
                     except Exception as error:

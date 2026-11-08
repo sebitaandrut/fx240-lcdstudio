@@ -160,10 +160,16 @@ For controlled comparison, `gui --experimental-jpeg-420` changes the main sessio
 
 Stop interrupts an alignment wait and discards the prepared frame; pause/sleep are rechecked before USB upload so pending work does not bypass standby. Synthetic-clock tests cover variable rendering costs, pause, sleep/resume, and stop during this wait. With a synthetic 15 ms sensor delay, a short simulated transport exercise reduced the maximum completion gap from 56.8 to 41.8 ms after startup. This does not measure the real panel or establish a physical fix; native optical comparison remains pending.
 
+## LCD brightness
+
+In the **composition editor**, use **LCD brightness** above the canvas to adjust the whole panel from **0% to 100%**. The selected level is stored in the design and takes effect when it is shown on the LCD. Use **Visualize on LCD** to try the adjustment before saving. Returning from a trial restores the previous design and its brightness. Studio sends the level between complete frames and reapplies it when reopening the LCD with that design. The desktop preview keeps the original image colors. Standby uses the current device brightness.
+
+Designs without a saved brightness leave the device level alone at startup. After using a design that sets brightness, switching to a design without a saved level restores 100% on the same output device during that session. The available values are device levels, with no luminance calibration. At 0%, the tested FX240 dimmed and kept its content visible. See [display brightness](protocol.md#display-brightness).
+
 ## Advanced output timing
 
 Output defaults to 24 FPS, JPEG quality 65, and a 2 ms pause between HID reports. Settings has no output-preset selector. Advanced settings allow 1–60 host FPS, quality, and report delay independently; accepted changes persist. Rates above 24 are experimental and may increase CPU use, USB traffic, and incomplete optical transitions. The GUI polls the bounded latest-frame mailbox more often above 24 FPS; this does not certify native preview or LCD FPS.
 
 Trying a 1 or 0 ms pause may help when USB transmission exceeds the requested frame budget. It cannot create intermediate GIF frames, synchronize LCD scanout, or guarantee elimination of tearing. Previous shorter-delay trials did not establish a tearing fix. Restore 2 ms if problems appear. Source GIF timing is preserved, including the existing 40 ms minimum frame duration; raising output FPS does not accelerate the source animation or interpolate it. Match GIF to output FPS only slows source frames when they are faster than output.
 
-Line-like cuts on moving content remain under investigation; see [the focused tearing report](tearing.md). No new protocol command or firmware-writing capability was added.
+Line-like cuts on moving content remain under investigation; see [the focused tearing report](tearing.md).

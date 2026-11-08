@@ -316,6 +316,25 @@ Item {
                     Item { Layout.fillWidth: true }
                     Hint { text: "240 × 240" }
                 }
+                RowLayout {
+                    Layout.fillWidth: true; spacing: 10
+                    Hint { text: editor.tr("LCD brightness") }
+                    StudioSlider {
+                        id: brightnessSlider; objectName: "designBrightnessControl"
+                        studio: editor.studio; Layout.fillWidth: true
+                        from: 0; to: 100; stepSize: 1; snapMode: Slider.SnapAlways
+                        value: workspace.model.lcdBrightness
+                        enabled: !bridge.livePreview.finishing
+                        Accessible.name: editor.tr("LCD brightness")
+                        hoverEnabled: true
+                        ToolTip.visible: hovered && !pressed
+                        ToolTip.delay: 500
+                        ToolTip.text: editor.tr("Applies to the whole LCD when this design is shown. At 0%, the panel may go dark.")
+                        onPressedChanged: { if (pressed) workspace.model.beginGesture(); else workspace.model.endGesture() }
+                        onMoved: workspace.model.setLcdBrightness(Math.round(value))
+                    }
+                    Hint { text: Math.round(brightnessSlider.value) + "%"; Layout.minimumWidth: 34; horizontalAlignment: Text.AlignRight }
+                }
                 Item {
                     Layout.fillWidth: true; Layout.fillHeight: true
                     Layout.minimumHeight: 180

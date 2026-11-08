@@ -1,8 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.3.0rc2 — release candidate
 
 - Add centered content zoom to effects, text, readings, and gradient layers in the composition editor.
+- Add a per-design physical LCD brightness slider to the composition editor, including during live LCD preview.
+
+The owner confirmed brightness changes between saved designs and visible content at level 0 on one FX240 under Arch Linux. Reapplying the selected level after suspend and reboot, and multi-hour playback, remain part of the release candidate validation.
 
 ## 0.3.0rc1 — release candidate
 
