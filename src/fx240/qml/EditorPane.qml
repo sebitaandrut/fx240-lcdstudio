@@ -10,6 +10,7 @@ Item {
     readonly property var state: workspace.model.selected
     readonly property bool hasSelection: workspace.model.selectedIndex>=0
     readonly property bool multiple: workspace.model.selectionCount > 1
+    readonly property var typeface: workspace.model.selectionTypeface
     readonly property bool editingGradient: !multiple && state.kind === "gradient"
     readonly property bool editingMotion: !multiple && (state.kind === "arc" ||
         (state.kind === "effect" && !["disc", "divider"].includes(state.effect)))
@@ -141,12 +142,13 @@ Item {
     }
     AssetPicker {
         id: fontDialog; objectName: "fontAssetPicker"; studio: editor.studio; kind: "font"
-        initialPath: editor.state.font_path || ""
-        property string layerId
+        initialPath: editor.typeface.path || ""
+        property string layerIds
         title: editor.tr("Choose a font")
         onSelected: function(file) {
             const path = bridge.localPath(file)
-            if (path && editor.state.id === layerId) workspace.model.updateSelected({font_path: path})
+            if (path && workspace.model.typefaceLayerIds.join(",") === layerIds)
+                workspace.model.updateSelectionTypeface({font_path: path})
         }
     }
     Connections { target: workspace; function onDiscardRequested() { discardDialog.open() } }
@@ -544,24 +546,53 @@ Item {
                             Entry { text: editor.state.label || ""; placeholderText: editor.tr("Optional label"); maximumLength: 32; Layout.fillWidth: true; objectName: "layerLabelControl"; onTextEdited: workspace.model.updateSelected({label:text}) }
                         }
                         Entry { visible: !editor.multiple && editor.state.kind==="text"; text: editor.state.text || ""; maximumLength: 160; Layout.fillWidth: true; onTextEdited: workspace.model.updateSelected({text:text}) }
-                        ColumnLayout { visible: !editor.multiple && (editor.state.kind==="metric" || editor.state.kind==="text"); Layout.fillWidth: true
+                        ColumnLayout { visible: workspace.model.typefaceLayerIds.length > 0; Layout.fillWidth: true
                             Hint { text: editor.tr("Typeface") }
                             RowLayout { Layout.fillWidth: true
-                                FontPicker { objectName: "systemFontControl"; studio: editor.studio; model: [editor.tr("Global typeface")].concat(bridge.systemFontLabels.slice(1)); Layout.fillWidth: true; displayText: editor.state.font_path ? bridge.fontLabel(editor.state.font_path) : editor.tr("Global typeface"); onActivated: function(index) { workspace.model.updateSelected({font_path:bridge.systemFontPath(index) || null}) } }
+                                FontPicker {
+                                    objectName: "systemFontControl"; studio: editor.studio; Layout.fillWidth: true
+                                    model: [editor.tr("Global typeface")].concat(bridge.systemFontLabels.slice(1))
+                                    displayText: editor.typeface.mixedPaths ? editor.tr("Mixed typefaces")
+                                        : editor.typeface.path ? bridge.fontLabel(editor.typeface.path) : editor.tr("Global typeface")
+                                    onActivated: function(index) { workspace.model.updateSelectionTypeface({font_path:bridge.systemFontPath(index) || null}) }
+                                }
                                 Tool { text: "↻"; enabled: !bridge.fontDiscoveryBusy; onClicked: bridge.refreshSystemFonts(); Accessible.name: editor.tr("Refresh") }
                             }
                             Tool {
                                 objectName: "editorFontBrowse"; text: editor.tr("Browse…"); Layout.fillWidth: true
-                                onClicked: { fontDialog.layerId = editor.state.id; fontDialog.open() }
+                                onClicked: { fontDialog.layerIds = workspace.model.typefaceLayerIds.join(","); fontDialog.open() }
                             }
                             GridLayout { columns: 2; Layout.fillWidth: true
-                                Hint { text: editor.tr("Size") } Number { from: 6; to: 72; value: editor.state.size || 24; onValueModified: workspace.model.updateSelected({size:value}) }
+                                Hint { text: editor.tr("Size"); visible: !editor.multiple }
+                                Number { visible: !editor.multiple; from: 6; to: 72; value: editor.state.size || 24; onValueModified: workspace.model.updateSelected({size:value}) }
                                 Hint { text: editor.tr("Weight"); visible: workspace.fontInfo.variable===true }
-                                Number { visible: workspace.fontInfo.variable===true; from: workspace.fontInfo.minimum || 100; to: workspace.fontInfo.maximum || 900; stepSize: 50; value: editor.state.weight || 350; onValueModified: workspace.model.updateSelected({weight:value}) }
+                                Number {
+                                    visible: workspace.fontInfo.variable===true && !editor.typeface.mixedWeights
+                                    from: workspace.fontInfo.minimum || 100; to: workspace.fontInfo.maximum || 900
+                                    stepSize: 50; value: editor.typeface.weight || 350
+                                    onValueModified: workspace.model.updateSelectionTypeface({weight:value})
+                                }
+                                Entry {
+                                    visible: workspace.fontInfo.variable===true && editor.typeface.mixedWeights
+                                    objectName: "mixedWeightControl"
+                                    Layout.fillWidth: true; placeholderText: editor.tr("Mixed weights")
+                                    Accessible.name: editor.tr("Weight")
+                                    validator: IntValidator { bottom: workspace.fontInfo.minimum || 100; top: workspace.fontInfo.maximum || 900 }
+                                    onAccepted: {
+                                        if (acceptableInput) workspace.model.updateSelectionTypeface({weight:parseInt(text, 10)})
+                                        text = ""
+                                    }
+                                    onVisibleChanged: if (!visible) text = ""
+                                }
                             }
-                            Hint { visible: workspace.fontInfo.variable!==true; text: editor.tr("Static font: select an installed style to change its weight."); Layout.fillWidth: true }
-                            Choice { objectName: "staticStyleControl"; visible: workspace.fontInfo.variable!==true; Layout.fillWidth: true; model: workspace.fontStyles; currentIndex: workspace.fontStyleIndex; onActivated: function(index) { workspace.selectFontStyle(index) } }
-                            Choice { Layout.fillWidth: true; model: [editor.tr("Left"),editor.tr("Center"),editor.tr("Right")]; currentIndex: ["left","center","right"].indexOf(editor.state.align); onActivated: function(index) { workspace.model.updateSelected({align:["left","center","right"][index]}) } }
+                            Hint { visible: workspace.fontStyles.length > 0; text: editor.tr("Static font: select an installed style to change its weight."); Layout.fillWidth: true }
+                            Choice {
+                                objectName: "staticStyleControl"; visible: workspace.fontStyles.length > 0
+                                Layout.fillWidth: true; model: workspace.fontStyles; currentIndex: workspace.fontStyleIndex
+                                displayText: currentIndex < 0 ? editor.tr("Choose a style") : currentText
+                                onActivated: function(index) { workspace.selectFontStyle(index) }
+                            }
+                            Choice { visible: !editor.multiple; Layout.fillWidth: true; model: [editor.tr("Left"),editor.tr("Center"),editor.tr("Right")]; currentIndex: ["left","center","right"].indexOf(editor.state.align); onActivated: function(index) { workspace.model.updateSelected({align:["left","center","right"][index]}) } }
                         }
                         Choice { visible: !editor.multiple && editor.state.kind==="arc"; Layout.fillWidth: true; model: [editor.tr("Comet"),editor.tr("Orbit"),editor.tr("Pulse"),editor.tr("Static")]; currentIndex: ["comet","orbit","pulse","none"].indexOf(editor.state.animation); onActivated: function(index) { workspace.model.updateSelected({animation:["comet","orbit","pulse","none"][index]}) } }
                         RowLayout {

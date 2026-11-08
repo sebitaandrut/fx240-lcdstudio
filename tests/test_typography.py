@@ -30,10 +30,27 @@ class TypographyTests(unittest.TestCase):
         app=QCoreApplication.instance() or QCoreApplication([])
         workspace=EditorWorkspace(Settings(),ProfileStore(memory=True),lambda:Settings(),lambda:[],
                     lambda:[('Synthetic Family · Regular','/synthetic/regular.ttf'),('Synthetic Family · Bold','/synthetic/bold.ttf')],lambda:'en')
-        workspace.model.updateSelected({'font_path':'/synthetic/regular.ttf'})
+        model = workspace.model
+        model.updateSelected({'font_path':'/synthetic/regular.ttf'})
+        model.select(1)
+        model.updateSelected({'font_path':'/synthetic/bold.ttf'})
+        model.addEffect('halo')
+        effect = model.selected_index
+        text, reading = (i for i, item in enumerate(model.scene['layers']) if item['id'] in ('layer-1', 'layer-2'))
+        model.toggleSelection(text)
+        model.toggleSelection(reading)
+        model.selectForDrag(effect)
+        self.assertEqual(model.typefaceLayerIds, ['layer-1', 'layer-2'])
         with patch('fx240.workspace.capabilities',return_value={'variable':False,'family':'Synthetic Family','style':'Regular','minimum':100,'maximum':900}):
             self.assertFalse(workspace.fontInfo['variable'])
             self.assertEqual(workspace.fontStyles,['Regular','Bold'])
+            self.assertEqual(workspace.fontStyleIndex,-1)
+            before=model.payload()
             workspace.selectFontStyle(1)
-        self.assertEqual(workspace.model.selected['font_path'],'/synthetic/bold.ttf')
+            self.assertEqual(workspace.fontStyleIndex,1)
+        self.assertEqual([item['font_path'] for item in model.selected_text_layers().values()],
+                         ['/synthetic/bold.ttf','/synthetic/bold.ttf'])
+        self.assertIsNone(model.scene['layers'][effect]['font_path'])
+        model.undo()
+        self.assertEqual(model.payload(), before)
         workspace.close()

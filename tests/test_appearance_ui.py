@@ -13,7 +13,7 @@ class AppearanceTests(unittest.TestCase):
         script=r'''
 from unittest.mock import patch
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QObject,QPointF,Qt
+from PySide6.QtCore import QObject,QPointF,Qt,QMetaObject,Q_ARG
 from PySide6.QtTest import QTest
 from fx240.gui import create_engine,dispose_engine
 from fx240.session import Settings
@@ -42,6 +42,26 @@ for theme in (0,1):
     assert len(app.topLevelWindows())==count
     assert bridge.session is None
     picker.setProperty('currentIndex',0)
+from fx240.typography import resolve_font
+model=bridge.workspace.model
+model.select(1)
+model.updateSelected({'weight':500})
+model.toggleSelection(0)
+font_path=str(resolve_font())
+bridge._system_fonts=[('Synthetic Outfit',font_path)]
+assert picker.isVisible()
+assert QMetaObject.invokeMethod(picker,'activated',Q_ARG(int,1))
+assert all(item['font_path']==font_path for item in model.selected_text_layers().values())
+weight=window.findChild(QObject,'mixedWeightControl')
+assert weight.isVisible()
+weight.setProperty('text','350')
+assert QMetaObject.invokeMethod(weight,'accepted')
+assert all(item['weight']==350 for item in model.selected_text_layers().values())
+model.undo()
+assert sorted(item['weight'] for item in model.selected_text_layers().values())==[350,500]
+model.undo()
+assert all(item['font_path'] is None for item in model.selected_text_layers().values())
+model.select(0)
 window.setProperty('page',4);QTest.qWait(120)
 number=window.findChild(QObject,'editorX')
 before=bridge.workspace.model.selected['x']

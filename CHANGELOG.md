@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Apply typefaces, compatible static styles, and variable font weights to selected text and reading layers in one edit.
+
 ## 0.3.0rc2 — release candidate
 
 - Add centered content zoom to effects, text, readings, and gradient layers in the composition editor.

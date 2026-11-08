@@ -205,20 +205,32 @@ class EditorWorkspace(QObject):
         return True
 
     def _font_details(self):
-        selected=self._model.selected;source=selected.get('font_path') or self.settings_provider().font_path
-        key=(selected.get('kind'),source)
+        fallback = self.settings_provider().font_path
+        sources = {item['font_path'] or fallback for item in self._model.selected_text_layers().values()}
+        key = frozenset(sources)
         if key==self._font_key:return
         self._font_key=key;self._styles=[]
-        if selected.get('kind') not in ('text','metric'):
-            self._font_info={'variable':False,'minimum':100,'maximum':900};return
-        try:self._font_info=capabilities(source)
+        self._font_info={'variable':False,'minimum':100,'maximum':900}
+        if not sources:return
+        try:info = {source: capabilities(source) for source in sources}
         except (OSError,ValueError):self._font_info={'variable':False,'minimum':100,'maximum':900,'style':'Unavailable'};return
-        if self._font_info['variable']:return
+        if len(sources) == 1:
+            self._font_info = next(iter(info.values()))
+        elif all(face['variable'] for face in info.values()):
+            minimum = max(face['minimum'] for face in info.values())
+            maximum = min(face['maximum'] for face in info.values())
+            if minimum <= maximum:
+                self._font_info = {'variable': True, 'minimum': minimum, 'maximum': maximum}
+        if any(face['variable'] for face in info.values()):return
         catalog=self.fonts_provider()
-        match=next((label for label,path in catalog if path==source),None)
-        family=match.rpartition(' · ')[0] if match else self._font_info['family']
-        self._styles=[(label.rpartition(' · ')[2],path) for label,path in catalog if label.rpartition(' · ')[0]==family]
-        if not self._styles:self._styles=[(self._font_info['style'],source)]
+        families = {path: label.rpartition(' · ')[0] for label, path in catalog}
+        selected_families = {families.get(source, face['family']) for source, face in info.items()}
+        if len(selected_families) == 1:
+            family = next(iter(selected_families))
+            self._styles=[(label.rpartition(' · ')[2],path) for label,path in catalog if families[path]==family]
+        if not self._styles and len(info) == 1:
+            source, face = next(iter(info.items()))
+            self._styles = [(face['style'], source)]
 
     @Property('QVariantMap',notify=changed)
     def fontInfo(self):self._font_details();return dict(self._font_info)
@@ -226,12 +238,12 @@ class EditorWorkspace(QObject):
     def fontStyles(self):self._font_details();return [label for label,_ in self._styles]
     @Property(int,notify=changed)
     def fontStyleIndex(self):
-        self._font_details();source=self._model.selected.get('font_path') or self.settings_provider().font_path
-        return next((index for index,(_,path) in enumerate(self._styles) if path==source),0)
+        self._font_details()
+        return next((index for index, (_, path) in enumerate(self._styles) if self._font_key == {path}), -1)
     @Slot(int)
     def selectFontStyle(self,index):
         self._font_details()
-        if 0<=index<len(self._styles):self._model.updateSelected({'font_path':self._styles[index][1]})
+        if 0<=index<len(self._styles):self._model.updateSelectionTypeface({'font_path':self._styles[index][1]})
     def fonts_changed(self):self._font_key=None;self.changed.emit()
 
     def stop(self):

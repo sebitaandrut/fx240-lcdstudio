@@ -60,6 +60,23 @@ class EditorModel(QAbstractListModel):
     def selectionHasColor(self):
         return any(self.scene['layers'][index]['kind'] != 'media' for index in self.selection)
 
+    def selected_text_layers(self):
+        return {index: item for index in sorted(self.selection)
+                if (item := self.scene['layers'][index])['kind'] in ('text', 'metric')}
+
+    @Property('QStringList', notify=changed)
+    def typefaceLayerIds(self):
+        return [item['id'] for item in self.selected_text_layers().values()]
+
+    @Property('QVariantMap', notify=changed)
+    def selectionTypeface(self):
+        layers = self.selected_text_layers().values()
+        paths = {item['font_path'] for item in layers}
+        weights = {item['weight'] for item in layers}
+        return {'path': next(iter(paths)) if len(paths) == 1 else None,
+                'mixedPaths': len(paths) > 1, 'mixedWeights': len(weights) > 1,
+                'weight': next(iter(weights)) if len(weights) == 1 else None}
+
     @staticmethod
     def bounds(items):
         x = min(item['x'] for item in items)
@@ -185,6 +202,16 @@ class EditorModel(QAbstractListModel):
             index: {key: value for key, value in values.items() if key != 'color' or self.scene['layers'][index]['kind'] != 'media'}
             for index in self.selection
         })
+
+    @Slot('QVariantMap')
+    def updateSelectionTypeface(self, values):
+        if set(values) - {'font_path', 'weight'}:
+            return
+        values = dict(values)
+        weight = values.get('weight')
+        if type(weight) is float and weight.is_integer():
+            values['weight'] = int(weight)
+        self.apply_updates({index: values for index in self.selected_text_layers()})
 
     @Slot(float, float)
     def moveSelection(self, dx, dy):
