@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.3.0rc3 — release candidate
 
 - Apply typefaces, compatible static styles, and variable font weights to selected text and reading layers in one edit.
+
+Multi-hour playback and repeated lifecycle checks remain part of release candidate validation on Arch Linux x86_64.
 
 ## 0.3.0rc2 — release candidate
 

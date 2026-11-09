@@ -33,11 +33,11 @@ python3 -m venv .venv
 
 The GUI starts preview and physical output automatically when one matching LCD is accessible. Close other senders first. **Stop display** leaves a recreated standby image while the preview continues. For a pacman-managed Arch installation, use the [PKGBUILD instructions](docs/building.md#install-with-pacman-using-pkgbuild). The same guide covers native dependencies, USB permissions, and manual executable builds.
 
-## Latest version · 0.3.0rc2
+## Latest version · 0.3.0rc3
 
 This is a release candidate for Arch Linux x86_64. To test the exact candidate, use the [tagged Arch build instructions](docs/building.md#build-the-release-candidate).
 
-RC2 adds centered zoom for more layer types and a per-design LCD brightness slider in the composition editor.
+RC3 adds batch typeface editing for selected text and sensor readings. It includes RC2's expanded layer zoom and per-design LCD brightness.
 
 - **Designs gallery.** Switch between Focus, Dual, Trace, Halo, and saved profiles. Open a built-in design as an editable copy, or select several saved profiles for deletion.
 - **Composition editor.** Select and transform multiple layers, pick colors visually, and combine gradient backgrounds with effects such as the segmented ring and radar sweep. Use Ctrl+Z/Ctrl+Y to undo/redo, Delete to remove layers, and the arrow keys to move the selection.
